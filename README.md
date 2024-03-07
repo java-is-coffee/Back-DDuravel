@@ -38,9 +38,9 @@
             <td><img src="https://contrib.rocks/image?repo=j5i3h8o8/NETFLIX" width="200px" /> </td>
         </tr>
         <tr>
-            <td><a href="https://github.com/nohsa97">@nohsa97</a></td>
-            <td><a href="https://github.com/koreaygj">@koreaygj</a></td>
-            <td><a href="https://github.com/gooowoon">@gooowoon</a></td>
+            <td><a href="https://github.com/">@M-roaroa</a>@M-roaroa</td>
+            <td><a href="https://github.com/cocohodo">@cocohodo</a></td>
+            <td><a href="https://github.com/j5i3h8o8">@j5i3h8o8</a></td>
         </tr>
         <tr>
               <td>어려워도 팀원들과 즐겁게 <br> 소통하면서 프로젝트 완성해내기!</td>
