@@ -23,12 +23,12 @@ spec:
             - name: DATABASE_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: my-secret-env
+                  name: db-secrets
                   key: DATABASE_USENRNAME
             - name: DATABASE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: my-secret-env
+                  name: db-secrets
                   key: DATABASE_PASSWORD
             - name: mysqldb_DISABLE_UPGRADE_BACKUP
               value: '1'
