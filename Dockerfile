@@ -2,7 +2,7 @@
 ARG JWT_SECRET_KEY
 
 # gradle:7.3.1-jdk17 이미지를 기반으로 함
-FROM openjdk:21
+FROM krmp-d2hub-idock.9rum.cc/goorm/gradle:7.3.1-jdk17
 
 # 작업 디렉토리 설정
 WORKDIR /home/gradle/project
@@ -14,8 +14,6 @@ COPY . .
 ENV JWT_SECRET_KEY=$JWT_SECRET_KEY
 RUN echo "JWT_SECRET_KEY=${JWT_SECRET_KEY}"
 
-# gradle.properties 파일이 위치할 디렉토리를 생성
-RUN mkdir -p /root/.gradle
 # gradle 빌드 시 proxy 설정을 gradle.properties에 추가
 RUN echo "systemProp.http.proxyHost=krmp-proxy.9rum.cc\nsystemProp.http.proxyPort=3128\nsystemProp.https.proxyHost=krmp-proxy.9rum.cc\nsystemProp.https.proxyPort=3128" > /root/.gradle/gradle.properties
 
