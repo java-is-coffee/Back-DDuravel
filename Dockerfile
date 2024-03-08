@@ -23,5 +23,7 @@ RUN chmod +x ./gradlew && ./gradlew clean build
 # DATABASE_URL을 환경 변수로 삽입
 ENV DATABASE_URL=jdbc:mysql://mysql/krampoline
 
+COPY build/libs/kakao-1.0.jar /home/gradle/project/build/libs/
+
 # 빌드 결과 jar 파일을 실행
 CMD ["java", "-jar", "-Dspring.profiles.active=prod", "/home/gradle/project/build/libs/kakao-1.0.jar"]
