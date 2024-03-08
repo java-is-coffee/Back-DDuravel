@@ -1,13 +1,13 @@
-package Javaiscoffee.Groomy.IDE;
+package javaiscoffee.polaroad;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class GroomyIdeApplication {
+public class PolaRoadApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(GroomyIdeApplication.class, args);
+		SpringApplication.run(PolaRoadApplication.class, args);
 	}
 
 }

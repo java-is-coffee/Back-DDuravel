@@ -1,10 +1,10 @@
-package Javaiscoffee.Groomy.IDE;
+package javaiscoffee.polaroad;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class GroomyIdeApplicationTests {
+class PolaRoadApplicationTest {
 
 	@Test
 	void contextLoads() {
