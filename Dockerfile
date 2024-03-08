@@ -24,4 +24,4 @@ RUN chmod +x ./gradlew && ./gradlew clean build
 ENV DATABASE_URL=jdbc:mysql://mysql/krampoline
 
 # 빌드 결과 jar 파일을 실행
-CMD ["java", "-jar", "-Dspring.profiles.active=prod", "/home/gradle/project/build/libs/kakao-1.0.jar"]
+CMD ["java", "-jar", "-Dspring.profiles.active=prod", "/home/gradle/project/build/libs/DDuravel-0.0.1-SNAPSHOT.jar"]
