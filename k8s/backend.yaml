@@ -22,22 +22,22 @@ spec:
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
-                  name: DATABASE_URL
+                  name: my-secret-env
                   key: DATABASE_URL
             - name: DATABASE_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: DATABASE_USERNAME
+                  name: my-secret-env
                   key: DATABASE_USERNAME
             - name: DATABASE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: DATABASE_PASSWORD
+                  name: my-secret-env
                   key: DATABASE_PASSWORD
             - name: JWT_SECRET_KEY
               valueFrom:
                 secretKeyRef:
-                  name: jwt.secret
+                  name: my-secret-env
                   key: JWT_SECRET_KEY
           resources:
             requests:
