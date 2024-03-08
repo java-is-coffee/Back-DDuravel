@@ -2,25 +2,30 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: backend
+  name: polaroad-backend
 spec:
   selector:
     matchLabels:
-      app: backend
+      app: polaroad-backend
   template:
     metadata:
       labels:
-        app: backend
+        app: polaroad-backend
     spec:
       containers:
-        - name: backend
-          # 여러분의 backend image 주소를 입력해주세요.
+        - name: polaroad-backend
+          # 여러분의 polaroad-backend image 주소를 입력해주세요.
           image: krmp-d2hub-idock.9rum.cc/dev-test/repo_be7ebb42b53e
           env:
             - name: TZ
               value: Asia/Seoul
             - name: DATABASE_URL
               value: jdbc:mysql://mysql:3306/krampoline
+            - name: JWT_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: jwt.secret
+                  key: JWT_SECRET_KEY
           resources:
             requests:
               memory: 8Gi
@@ -32,10 +37,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: backend
+  name: polaroad-backend
 spec:
   selector:
-    app: backend
+    app: polaroad-backend
   ports:
     - port: 8080
       targetPort: 8080
