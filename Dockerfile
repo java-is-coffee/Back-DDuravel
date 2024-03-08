@@ -2,7 +2,7 @@
 ARG JWT_SECRET_KEY
 
 # gradle:7.3.1-jdk17 이미지를 기반으로 함
-FROM openjdk:17
+FROM openjdk:21
 
 # 작업 디렉토리 설정
 WORKDIR /home/gradle/project
