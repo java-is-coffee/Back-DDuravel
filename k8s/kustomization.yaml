@@ -2,3 +2,7 @@ namespace: default
 resources:
   - mysqldb.yaml
   - backend.yaml
+configMapGenerator:
+  - name: init-db
+    files:
+      - configs/init.sql
