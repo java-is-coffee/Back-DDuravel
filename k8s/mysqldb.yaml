@@ -66,11 +66,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: mysqldb
+  name: mysql
 spec:
-  type: ClusterIP
-  clusterIP: None # Headless
-  selector:
-    app: mysqldb
+  type: LoadBalancer
   ports:
     - port: 3306
+      targetPort: 3306
+  selector:
+    app: mysqldb
