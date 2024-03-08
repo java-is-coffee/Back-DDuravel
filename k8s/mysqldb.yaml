@@ -24,7 +24,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: db-secrets
-                  key: DATABASE_USENRNAME
+                  key: DATABASE_USERNAME
             - name: DATABASE_PASSWORD
               valueFrom:
                 secretKeyRef:
