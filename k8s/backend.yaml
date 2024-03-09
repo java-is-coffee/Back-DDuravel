@@ -20,7 +20,10 @@ spec:
             - name: TZ
               value: Asia/Seoul
             - name: DATABASE_URL
-              value: jdbc:mysql://mysqldb:3306/polaroad
+              valueFrom:
+                secretKeyRef:
+                  name: db-secrets
+                  key: DATABASE_URL
             - name: DATABASE_USERNAME
               valueFrom:
                 secretKeyRef:
