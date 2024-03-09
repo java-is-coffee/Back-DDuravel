@@ -20,10 +20,7 @@ spec:
             - name: TZ
               value: Asia/Seoul
             - name: DATABASE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: db-secrets
-                  key: DATABASE_URL
+              value: jdbc:mysqldb://mysqldb:3306/krampoline
             - name: DATABASE_USERNAME
               valueFrom:
                 secretKeyRef:
