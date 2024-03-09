@@ -52,7 +52,7 @@ spec:
       volumes:
         - name: init-db
           configMap:
-            name: init-db-k6hkc54fc4
+            name: init-db
   volumeClaimTemplates:
     - metadata:
         name: data
@@ -66,11 +66,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: mysql
+  name: mysqldb
 spec:
-  type: LoadBalancer
+  type: ClusterIP
+  clusterIP: None # Headless
   ports:
     - port: 3306
-      targetPort: 3306
   selector:
     app: mysqldb
