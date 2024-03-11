@@ -1,5 +1,6 @@
 package javaiscoffee.polaroad.login;
 
+import jakarta.servlet.http.HttpServletResponse;
 import javaiscoffee.polaroad.response.ResponseStatus;
 import javaiscoffee.polaroad.response.Status;
 import javaiscoffee.polaroad.security.TokenDto;
@@ -27,15 +28,18 @@ public class LoginController {
     private final LoginService loginService;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody RequestWrapperDto<LoginDto> requestDto) {
+    public ResponseEntity<?> login(@RequestBody RequestWrapperDto<LoginDto> requestDto, HttpServletResponse response) {
         LoginDto loginDto = requestDto.getData();
         log.info("로그인 요청");
-        TokenDto tokenDto = loginService.login(loginDto);
+        loginService.login(loginDto,response);
         //로그인 실패했을 경우 실패 Response 반환
-        if (tokenDto == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Status(ResponseStatus.NOT_FOUND));
-        }
-        return ResponseEntity.ok(tokenDto);
+        return ResponseEntity.ok("");
+    }
+
+    @PostMapping("test")
+    public ResponseEntity<?> test() {
+        log.info("토큰 테스트");
+        return ResponseEntity.ok("토큰 인증 성공");
     }
 
     @PostMapping("/register")

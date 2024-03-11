@@ -25,6 +25,7 @@ import java.util.List;
         property = "memberId"
 )
 @Builder
+@ToString
 public class Member implements UserDetails {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "member_id")

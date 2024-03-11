@@ -1,7 +1,7 @@
 package javaiscoffee.polaroad.login;
 
+import jakarta.servlet.http.HttpServletResponse;
 import javaiscoffee.polaroad.login.emailAuthentication.EmailCertificationRepository;
-import javaiscoffee.polaroad.login.emailAuthentication.MailVerifyService;
 import javaiscoffee.polaroad.response.ResponseStatus;
 import javaiscoffee.polaroad.security.BaseException;
 import javaiscoffee.polaroad.security.JwtTokenProvider;
@@ -9,6 +9,7 @@ import javaiscoffee.polaroad.security.TokenDto;
 import javaiscoffee.polaroad.member.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -35,7 +36,7 @@ public class LoginService {
      * 2. authenticate() 메서드를 통해 요청된 Member에 대한 검증이 진행된다.
      * 3. 검증이 정상적으로 통과되었다면 인증된 Authentication 객체를 기반으로 JWT 토큰을 생성한다.
      */
-    public TokenDto login(LoginDto loginDto) {
+    public ResponseEntity<?> login(LoginDto loginDto, HttpServletResponse response) {
         log.info("로그인 검사 시작 loginDto={}",loginDto);
         Member member = memberRepository.findByEmail(loginDto.getEmail()).orElseThrow(() -> new BaseException(ResponseStatus.NOT_FOUND.getMessage()));
         if(member.getStatus() == MemberStatus.DELETED) throw new BaseException(ResponseStatus.NOT_FOUND.getMessage());
@@ -49,9 +50,8 @@ public class LoginService {
             Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
             log.info("Authentication successful, authentication = {}", authentication);
 
-            TokenDto tokenDto = jwtTokenProvider.generateToken(authentication);
-            log.info("로그인 성공, tokenDto={}", tokenDto);
-            return tokenDto;
+            jwtTokenProvider.generateToken(authentication, response);
+            return ResponseEntity.ok("로그인 성공");
         } catch (Exception e) {
             log.error("로그인 실패: {}", e.getMessage());
             return null;
@@ -76,7 +76,7 @@ public class LoginService {
         //중복이 없으면 회원가입 진행
         Member newMember = new Member(registerDto.getEmail(), registerDto.getName(), registerDto.getNickname(), registerDto.getPassword(), "", 0, 0, 0, MemberRole.USER);
         newMember.hashPassword(bCryptPasswordEncoder);
-        log.info("save하려는 멤버 = {}", newMember);
+//        log.info("save하려는 멤버 = {}", newMember);
         memberRepository.save(newMember);
         Optional<Member> savedMember = memberRepository.findByEmail(newMember.getEmail());
         if(savedMember.isPresent()) {
