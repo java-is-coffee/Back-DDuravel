@@ -1,6 +1,6 @@
 package javaiscoffee.polaroad;
 
-import javaiscoffee.polaroad.config.jpa.JpaConfig;
+import javaiscoffee.polaroad.config.JpaConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;

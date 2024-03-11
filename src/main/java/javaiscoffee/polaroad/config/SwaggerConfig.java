@@ -1,4 +1,4 @@
-package javaiscoffee.polaroad.config.swagger;
+package javaiscoffee.polaroad.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

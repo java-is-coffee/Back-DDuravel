@@ -9,6 +9,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+/**
+ * 크램폴린에서 처음 실행될 때 자동 api테스트에 사용되는 컨트롤러
+ */
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api")
