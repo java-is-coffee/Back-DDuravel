@@ -1,5 +1,6 @@
 package javaiscoffee.polaroad.test;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,6 +12,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api")
+@Hidden
 public class TestController {
 
     private final SampleDataRepository sampleDataRepository;

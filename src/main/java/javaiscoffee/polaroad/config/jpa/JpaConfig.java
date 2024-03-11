@@ -1,4 +1,4 @@
-package javaiscoffee.polaroad.config;
+package javaiscoffee.polaroad.config.jpa;
 
 import jakarta.persistence.EntityManager;
 import org.springframework.context.annotation.Configuration;

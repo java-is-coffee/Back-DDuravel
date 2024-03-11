@@ -1,27 +1,28 @@
 package javaiscoffee.polaroad.security;
 
-
-
+import javaiscoffee.polaroad.exception.CustomAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 
 @EnableWebSecurity
 @Configuration
 @RequiredArgsConstructor
 @Slf4j
 public class SecurityConfig {
-
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -37,8 +38,36 @@ public class SecurityConfig {
                 .and()
                 .authorizeRequests()
                 //로그인과 회원가입은 모든 요청을 허가
+                .requestMatchers(new AntPathRequestMatcher("/api/member/login")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/api/member/login/reset-password")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/api/member/register")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/api/member/register/email-check")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/api/member/refresh")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/ws/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/YJS/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/login/oauth2/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/api/email/**")).permitAll()
+                //swagger 인증 예외
+                .requestMatchers(new AntPathRequestMatcher("/swagger-ui/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/swagger-ui.html")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/swagger-resources/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/swagger-ui.html/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/swagger-ui/index.html")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/v3/api-docs/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/v3/api-docs")).permitAll()
+                //테스트 api 인증 예외
+                .requestMatchers(new AntPathRequestMatcher("/api/test")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/api/db")).permitAll()
                 //그 외 나머지 요청은 전부 인증이 필요
-                .anyRequest().permitAll();
+                .anyRequest().authenticated();
+
+        // /error 엔트리 포인트 진입했을 경우 에러 응답을 반환하도록 커스텀 핸들러 추가
+        //JWT 인증을 위하여 직접 구현한 필터를 UsernamePasswordAuthenticationFilter 전에 실행하겠다는 설정
+        http.exceptionHandling()
+                .authenticationEntryPoint(new CustomAuthenticationEntryPoint())
+                .and()
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
