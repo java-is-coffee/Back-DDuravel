@@ -5,6 +5,7 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import javaiscoffee.polaroad.exception.NotFoundException;
 import javaiscoffee.polaroad.member.JpaMemberRepository;
 import javaiscoffee.polaroad.member.Member;
 import lombok.extern.slf4j.Slf4j;
@@ -179,7 +180,7 @@ public class JwtTokenProvider {
 
         log.info("토큰 재발급하는 memberId = {}", memberId);
 
-        Member member = memberRepository.findByMemberId(memberId).orElseThrow(() -> new BaseException("유저를 찾을 수 없습니다."));
+        Member member = memberRepository.findByMemberId(memberId).orElseThrow(() -> new NotFoundException("유저를 찾을 수 없습니다."));
 
         // 사용자 정보에서 권한 가져오기
         String authorities = member.getAuthorities().stream()

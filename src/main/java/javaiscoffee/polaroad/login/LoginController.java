@@ -32,6 +32,7 @@ public class LoginController {
         LoginDto loginDto = requestDto.getData();
         log.info("로그인 요청");
         loginService.login(loginDto,response);
+        ResponseEntity.notFound();
         //로그인 실패했을 경우 실패 Response 반환
         return ResponseEntity.ok("");
     }

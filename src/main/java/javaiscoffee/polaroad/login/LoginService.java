@@ -3,9 +3,8 @@ package javaiscoffee.polaroad.login;
 import jakarta.servlet.http.HttpServletResponse;
 import javaiscoffee.polaroad.login.emailAuthentication.EmailCertificationRepository;
 import javaiscoffee.polaroad.response.ResponseStatus;
-import javaiscoffee.polaroad.security.BaseException;
+import javaiscoffee.polaroad.exception.NotFoundException;
 import javaiscoffee.polaroad.security.JwtTokenProvider;
-import javaiscoffee.polaroad.security.TokenDto;
 import javaiscoffee.polaroad.member.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,8 +37,8 @@ public class LoginService {
      */
     public ResponseEntity<?> login(LoginDto loginDto, HttpServletResponse response) {
         log.info("로그인 검사 시작 loginDto={}",loginDto);
-        Member member = memberRepository.findByEmail(loginDto.getEmail()).orElseThrow(() -> new BaseException(ResponseStatus.NOT_FOUND.getMessage()));
-        if(member.getStatus() == MemberStatus.DELETED) throw new BaseException(ResponseStatus.NOT_FOUND.getMessage());
+        Member member = memberRepository.findByEmail(loginDto.getEmail()).orElseThrow(() -> new NotFoundException(ResponseStatus.NOT_FOUND.getMessage()));
+        if(member.getStatus() == MemberStatus.DELETED) throw new NotFoundException(ResponseStatus.NOT_FOUND.getMessage());
         // 1. Login ID/PW 를 기반으로 Authentication 객체 생성
         // 이때 authentication 는 인증 여부를 확인하는 authenticated 값이 false
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginDto.getEmail(), loginDto.getPassword());
