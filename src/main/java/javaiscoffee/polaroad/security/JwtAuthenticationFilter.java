@@ -36,11 +36,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         log.debug("Filtering request: {}", requestURI);
 
         // 로그인과 회원가입 요청에 대해서는 필터를 적용하지 않음
-        if (requestURI.startsWith("/api/member/login") || "/api/member/register".equals(requestURI)
-                || "/api/member/refresh".equals(requestURI) || "/api/member/register/email-check".equals(requestURI)
-                || requestURI.startsWith("/ws") || requestURI.startsWith("/YJS")
-                || requestURI.startsWith("/auth") || requestURI.startsWith("/api/email")
-                || requestURI.startsWith("/login/oauth2/")) {
+        if (requestURI.startsWith("/api/member/login")
+                || "/api/member/register".equals(requestURI)
+                || "/api/member/refresh".equals(requestURI)
+                || "/api/member/register/email-check".equals(requestURI)
+                || requestURI.startsWith("/ws")
+                || requestURI.startsWith("/YJS")
+                || requestURI.startsWith("/auth")
+                || requestURI.startsWith("/api/email")
+                || requestURI.startsWith("/login/oauth2/")
+                || requestURI.startsWith("/swagger-ui")
+                || requestURI.startsWith("/swagger-resources")
+                || requestURI.startsWith("/webjars/")
+                || requestURI.startsWith("/v3/api-docs")
+                || requestURI.startsWith("/v3/api-docs/")) {
             filterChain.doFilter(request, response);
             return;
         }

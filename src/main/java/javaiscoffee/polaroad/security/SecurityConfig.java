@@ -48,6 +48,14 @@ public class SecurityConfig {
                 .requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/login/oauth2/**")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/api/email/**")).permitAll()
+                //swagger 인증 예외
+                .requestMatchers(new AntPathRequestMatcher("/swagger-ui/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/swagger-ui.html")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/swagger-resources/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/swagger-ui.html/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/swagger-ui/index.html")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/v3/api-docs/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/v3/api-docs")).permitAll()
                 //그 외 나머지 요청은 전부 인증이 필요
                 .anyRequest().authenticated();
 

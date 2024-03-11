@@ -9,7 +9,11 @@ public interface MemberRepository {
     //이메일로 Member 찾기 spring security 위해 추가
     Optional<Member> findByMemberId(Long memberId);
 
+    public Optional<Member> findById(Long id);
+
     public void save(Member newMember);
+
+    public void delete(Member member);
 
 }
 

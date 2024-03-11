@@ -22,10 +22,12 @@ public class JpaMemberRepository implements MemberRepository {
         em.persist(member);
     }
 
+    @Override
     public void delete(Member member) {
         em.remove(member);
     }
 
+    @Override
     public Optional<Member> findById(Long id) {
         return Optional.ofNullable(em.find(Member.class,id));
     }
@@ -54,10 +56,5 @@ public class JpaMemberRepository implements MemberRepository {
         TypedQuery<Member> query = em.createQuery("SELECT m FROM Member m WHERE m.memberId = :memberId", Member.class);
         query.setParameter("memberId", memberId);
         return Optional.ofNullable(query.getSingleResult());
-    }
-
-    public Member saveOAuthMember(Member member) {
-        em.persist(member);
-        return member;
     }
 }
