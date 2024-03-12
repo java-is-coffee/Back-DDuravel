@@ -12,6 +12,6 @@ public class LoginDto {
     @Schema(description = "## 사용자 이메일", example = "aaa@naver.com")
     private String email;
     @PasswordCheck
-    @Schema(description = "## 사용자 비밀번호", example = "AaBb1234%")
+    @Schema(description = "## 사용자 비밀번호", example = "Abcdefgh1!")
     private String password;
 }

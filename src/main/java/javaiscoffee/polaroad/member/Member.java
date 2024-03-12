@@ -66,6 +66,9 @@ public class Member implements UserDetails {
     @Setter @NotNull
     @Enumerated(EnumType.STRING)
     private MemberStatus status;
+    @Setter
+    @Enumerated(EnumType.STRING)
+    private SocialLogin socialLogin;
 
     @PrePersist
     public void PrePersist() {
@@ -153,7 +156,7 @@ public class Member implements UserDetails {
         this.password = password;
     }
 
-    public Member(String email, String name, String nickname, String password, String profileImage, Integer postNumber, Integer followedNumber, Integer followingNumber, MemberRole role) {
+    public Member(String email, String name, String nickname, String password, String profileImage, Integer postNumber, Integer followedNumber, Integer followingNumber, MemberRole role, SocialLogin socialLogin) {
         this.email = email;
         this.name = name;
         this.nickname = nickname;
@@ -163,5 +166,6 @@ public class Member implements UserDetails {
         this.followedNumber = followedNumber;
         this.followingNumber = followingNumber;
         this.role = role;
+        this.socialLogin = socialLogin;
     }
 }

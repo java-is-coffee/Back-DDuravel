@@ -73,7 +73,8 @@ public class LoginService {
 
 
         //중복이 없으면 회원가입 진행
-        Member newMember = new Member(registerDto.getEmail(), registerDto.getName(), registerDto.getNickname(), registerDto.getPassword(), "", 0, 0, 0, MemberRole.USER);
+        //현재 이메일 회원가입이라 socialLogin = null로 처리 oauth 추가시 변경해야 함
+        Member newMember = new Member(registerDto.getEmail(), registerDto.getName(), registerDto.getNickname(), registerDto.getPassword(), "", 0, 0, 0, MemberRole.USER,null);
         newMember.hashPassword(bCryptPasswordEncoder);
 //        log.info("save하려는 멤버 = {}", newMember);
         memberRepository.save(newMember);

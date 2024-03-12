@@ -24,11 +24,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * 나중에 정식 배포하기 전에
- * 컨트롤러 파라미터에 검증해야하는 DTO에 @Valid 추가하기
- */
-
 @Slf4j
 @RestController
 @RequestMapping("/api/member")
@@ -50,7 +45,7 @@ public class LoginController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@Validated @RequestBody RequestWrapperDto<LoginDto> requestDto, HttpServletResponse response) {
         LoginDto loginDto = requestDto.getData();
-        log.info("로그인 요청");
+        log.info("로그인 요청 = {}",loginDto);
         boolean result = loginService.login(loginDto, response);
         //로그인 실패했을 경우 실패 Response 반환
         if(!result) throw new NotFoundException(ResponseMessages.LOGIN_FAILED.getMessage());
