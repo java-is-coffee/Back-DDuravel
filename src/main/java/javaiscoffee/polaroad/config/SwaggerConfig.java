@@ -17,8 +17,8 @@ public class SwaggerConfig {
 
     private Info apiInfo() {
         return new Info()
-                .title("Springdoc API 문서")
-                .description("Springdoc을 사용한 API 문서")
+                .title("PolaRoad API 문서")
+                .description("PolaRoad의 API들을 모아놓은 문서")
                 .version("1.0.0");
     }
 }
