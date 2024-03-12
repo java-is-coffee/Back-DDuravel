@@ -18,6 +18,6 @@ public class RegisterDto {
     @Schema(description = "사용자 닉네임", example = "자바커피")
     private String nickname;
     @PasswordCheck
-    @Schema(description = "## 사용자 비밀번호", example = "AaBb1234%")
+    @Schema(description = "## 사용자 비밀번호", example = "Abcdefgh1!")
     private String password;
 }
