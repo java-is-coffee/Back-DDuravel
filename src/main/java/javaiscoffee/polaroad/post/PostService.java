@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 
 @Slf4j
@@ -86,6 +87,11 @@ public class PostService {
         hashtagService.editPostHashtags(postSaveDto.getHashtags(),oldPost);
 
         //카드 업데이트
+        List<CardSaveDto> updateCards = postSaveDto.getCards();
+        int index = 0;
+        for(CardSaveDto updateCard : updateCards) {
+            updateCard.setIndex(index++);
+        }
         cardService.editCards(postSaveDto.getCards(), oldPost);
 
         return ResponseEntity.ok(oldPost);
