@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import javaiscoffee.polaroad.member.Member;
 import javaiscoffee.polaroad.post.Post;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -26,6 +27,10 @@ public class Card {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
     private Post post;
+    @NotNull @Setter
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")
+    private Member member;
     @Column(columnDefinition = "TINYINT")
     @NotNull @Setter
     private int index;      // index

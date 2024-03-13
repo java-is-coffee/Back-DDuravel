@@ -1,5 +1,6 @@
 package javaiscoffee.polaroad.post.card;
 
+import javaiscoffee.polaroad.member.Member;
 import javaiscoffee.polaroad.post.Post;
 import javaiscoffee.polaroad.post.PostStatus;
 import org.springframework.beans.BeanUtils;
@@ -31,7 +32,7 @@ public class CardService {
     /**
      * 포스트 수정할 때 카드 수정하는 메서드
      */
-    public void editCards(List<CardSaveDto> updateCards, Post post) {
+    public void editCards(List<CardSaveDto> updateCards, Post post, Member member) {
         List<Card> oldCards = cardRepository.findCardsByPostAndStatusOrderByIndexAsc(post, CardStatus.ACTIVE);
 
         // updateCards의 복사본 생성
@@ -60,6 +61,7 @@ public class CardService {
                 Card newCard = new Card();
                 BeanUtils.copyProperties(newCardDto, newCard, "cardId");
                 newCard.setPost(post);
+                newCard.setMember(member);
                 cardRepository.save(newCard); // 새 카드 저장
             }
         }
