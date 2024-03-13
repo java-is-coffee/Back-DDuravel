@@ -2,14 +2,12 @@ package javaiscoffee.polaroad.post.card;
 
 import javaiscoffee.polaroad.member.Member;
 import javaiscoffee.polaroad.post.Post;
-import javaiscoffee.polaroad.post.PostStatus;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,7 +31,7 @@ public class CardService {
      * 포스트 수정할 때 카드 수정하는 메서드
      */
     public void editCards(List<CardSaveDto> updateCards, Post post, Member member) {
-        List<Card> oldCards = cardRepository.findCardsByPostAndStatusOrderByIndexAsc(post, CardStatus.ACTIVE);
+        List<Card> oldCards = cardRepository.findCardsByPostAndStatusOrderByCardIndexAsc(post, CardStatus.ACTIVE);
 
         // updateCards의 복사본 생성
         List<CardSaveDto> remainingNewCards = new ArrayList<>(updateCards);
