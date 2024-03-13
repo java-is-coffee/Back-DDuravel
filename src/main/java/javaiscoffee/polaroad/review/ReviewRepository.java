@@ -1,6 +1,7 @@
 package javaiscoffee.polaroad.review;
 
 import javaiscoffee.polaroad.member.Member;
+import javaiscoffee.polaroad.post.Post;
 
 import java.util.List;
 

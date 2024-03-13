@@ -2,6 +2,9 @@ package javaiscoffee.polaroad.review;
 
 import javaiscoffee.polaroad.member.JpaMemberRepository;
 import javaiscoffee.polaroad.member.Member;
+import javaiscoffee.polaroad.post.Post;
+import javaiscoffee.polaroad.post.PostRepository;
+import javaiscoffee.polaroad.post.PostStatus;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -19,7 +22,7 @@ import java.util.List;
 public class ReviewService {
     private final JpaReviewRepository reviewRepository;
     private final JpaMemberRepository memberRepository;
-    private final JpaPostRepository postRepository;
+    private final PostRepository postRepository;
 
     public ResponseReviewDto createReview(ReviewDto reviewDto, Long memberId) {
         if (!memberId.equals(reviewDto.getMemberId())) {
@@ -28,9 +31,9 @@ public class ReviewService {
         Review newReview = new Review();
         BeanUtils.copyProperties(reviewDto, newReview);
         Member creatorMember = memberRepository.findByMemberId(memberId).get();
-        Post post = postRepository.findByPostId(reviewDto.getPostId()).get();
+        Post post = postRepository.findById(reviewDto.getPostId()).get();
 
-        if (post.getPostStatus() == PostStatus.DELETE) {
+        if (post.getStatus() == PostStatus.DELETED) {
             return null;
         }
 
@@ -43,9 +46,9 @@ public class ReviewService {
 
     public ResponseReviewDto getReviewById(Long reviewId, Long memberId) {
         Review findedReview = reviewRepository.findByReviewId(reviewId);
-        Post post = postRepository.findByPostId(findedReview.getPostId().getPostId()).get();
+        Post post = postRepository.findById(findedReview.getPostId().getPostId()).get();
         // 삭제된 댓글이거나 삭제된 포스트인 경우 null 반환
-        if (findedReview == null || findedReview.getStatus() == ReviewStatus.DELETED || post == null || post.getPostStatus() == PostStatus.DELETED) {
+        if (findedReview == null || findedReview.getStatus() == ReviewStatus.DELETED || post == null || post.getStatus() == PostStatus.DELETED) {
             return null;
         }
         return toResponseReviewDto(findedReview);
@@ -53,10 +56,10 @@ public class ReviewService {
 
     public ResponseReviewDto editReview(ReviewEditRequestDto editReviewDto, Long reviewId, Long memberId) {
         Review originalReview = reviewRepository.findByReviewId(reviewId);
-        Post post = postRepository.findByPostId(originalReview.getPostId().getPostId()).get();
+        Post post = postRepository.findById(originalReview.getPostId().getPostId()).get();
 
         // 원본 댓글 & 포스트가 null 이거나, 삭제된 경우 null 반환
-        if (originalReview == null || originalReview.getStatus() == ReviewStatus.DELETED || post == null || post.getPostStatus() == PostStatus.DELETED) {
+        if (originalReview == null || originalReview.getStatus() == ReviewStatus.DELETED || post == null || post.getStatus() == PostStatus.DELETED) {
             return null;
         }
 
@@ -80,7 +83,7 @@ public class ReviewService {
             return false;
         }
 
-        Post post = postRepository.findByPostId(review.getPostId().getPostId()).get();
+        Post post = postRepository.findById(review.getPostId().getPostId()).get();
         // 포스트가 존재하지 않거나 삭제된 포스트인 경우 false 반환
         if (post == null || post.getStatus() == PostStatus.DELETED) {
             return false;
@@ -96,7 +99,7 @@ public class ReviewService {
     }
 
     public List<ResponseReviewDto> getReviewByPostId(Long postId) {
-        Post getPost = postRepository.findByPostId(postId).get();
+        Post getPost = postRepository.findById(postId).get();
         // 가져온 post에 속한 ACTIVE 상태인 모든 댓글을 가져옴
         List<Review> reviewList = reviewRepository.findReviewByPostId(getPost, ReviewStatus.ACTIVE);
         return toResponseReviewDtoList(reviewList);
@@ -119,7 +122,6 @@ public class ReviewService {
         responseReviewDto.setMemberId(review.getMemberId() != null ? review.getMemberId().getMemberId() : null);
         responseReviewDto.setReviewId(review.getReviewId());
         responseReviewDto.setContent(review.getContent());
-        responseReviewDto.setStatus(review.getStatus());
         responseReviewDto.setCreatedTime(review.getCreatedTime());
 
         return responseReviewDto;

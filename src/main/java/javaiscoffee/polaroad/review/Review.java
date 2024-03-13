@@ -3,6 +3,7 @@ package javaiscoffee.polaroad.review;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import javaiscoffee.polaroad.member.Member;
+import javaiscoffee.polaroad.post.Post;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -18,7 +19,6 @@ import java.time.LocalDateTime;
 public class Review {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @OneToMany(mappedBy = "reviewId")
     @Column(name = "review_id")
     private Long reviewId;
     @ManyToOne(fetch = FetchType.LAZY)

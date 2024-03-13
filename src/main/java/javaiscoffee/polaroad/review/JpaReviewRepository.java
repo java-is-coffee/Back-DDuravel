@@ -3,6 +3,7 @@ package javaiscoffee.polaroad.review;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import javaiscoffee.polaroad.member.Member;
+import javaiscoffee.polaroad.post.Post;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
@@ -22,7 +23,7 @@ public class JpaReviewRepository implements ReviewRepository{
     public Review save(Review review) {
         em.persist(review);
         // 댓글 수 +1 하는 쿼리 생성
-        Post post = review.getPost(); // 댓글이 속한 포스트 가져옴
+        Post post = review.getPostId(); // 댓글이 속한 포스트 가져옴
         Query query = em.createQuery("UPDATE Post p SET p.reviewNumber = p.reviewNumber + 1 WHERE p.postId = :postId");
         query.setParameter("postId", post.getPostId());
         query.executeUpdate(); // DB 댓글 수 업데이트
@@ -46,7 +47,7 @@ public class JpaReviewRepository implements ReviewRepository{
         Review review = em.find(Review.class, reviewId);
         review.setStatus(ReviewStatus.DELETED);
         // 댓글 수 -1
-        Post post = review.getPost();
+        Post post = review.getPostId();
         Query query = em.createQuery("UPDATE Post p SET p.reviewNumber = p.reviewNumber - 1 WHERE p.postId = :postId");
         query.setParameter("postId", post.getPostId());
         query.executeUpdate(); // DB 댓글 수 업데이트

@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import javaiscoffee.polaroad.member.Member;
 import javaiscoffee.polaroad.post.card.Card;
 import javaiscoffee.polaroad.post.hashtag.PostHashtag;
+import javaiscoffee.polaroad.review.Review;
 import lombok.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -60,6 +61,8 @@ public class Post {
     private List<Card> cards = new ArrayList<>();
     @NotNull @OneToMany(mappedBy = "post")
     private List<PostHashtag> postHashtags = new ArrayList<>();
+    @NotNull @OneToMany(mappedBy = "postId")
+    private List<Review> reviews = new ArrayList<>();
 
     @PrePersist
     public void PrePersist() {
