@@ -169,7 +169,7 @@ public class JwtTokenProvider {
     }
 
     //Access Token이 만료되어서 refresh Token을 받았을 때 새로운 access Token을 생성해서 반환
-    public String generateNewAccessToken(String refreshToken, int expirationTime) {
+    public void generateNewAccessToken(String refreshToken, int expirationTime, HttpServletResponse response) {
         // refreshToken에서 클레임 추출
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(key)
@@ -191,13 +191,20 @@ public class JwtTokenProvider {
         long now = (new Date().getTime());
         Date accessTokenExpiresIn = new Date(now + (expirationTime)); // 30분 후 만료
         // 새로운 AccessToken 반환
-        return Jwts.builder()
+        String accessToken = Jwts.builder()
                 .setSubject(member.getUsername())
                 .claim("auth", authorities)
                 .claim("memberId", member.getMemberId())
                 .setExpiration(accessTokenExpiresIn)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
+
+        // 쿠키에 액세스 토큰 저장
+        Cookie accessTokenCookie = new Cookie("accessToken", accessToken);
+        accessTokenCookie.setPath("/");
+        accessTokenCookie.setHttpOnly(true);
+        accessTokenCookie.setMaxAge(30 * 60); // 쿠키 유효 시간을 30분으로 설정
+        response.addCookie(accessTokenCookie);
     }
 
     // JWT 토큰을 복호화하여 토큰에 들어있는 정보를 꺼내는 메서드
