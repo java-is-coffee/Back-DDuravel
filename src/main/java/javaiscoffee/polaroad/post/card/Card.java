@@ -31,7 +31,6 @@ public class Card {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
-    @Column(columnDefinition = "TINYINT")
     @NotNull @Setter
     private int cardIndex;      // index
     @Column(length = 255)
