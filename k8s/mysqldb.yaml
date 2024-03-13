@@ -66,15 +66,3 @@ spec:
     - port: 3306
   selector:
     app: mysqldb
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: mysqldb-external
-spec:
-  type: LoadBalancer
-  ports:
-    - port: 3306
-      targetPort: 3306
-  selector:
-    app: mysqldb
