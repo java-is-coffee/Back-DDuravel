@@ -1,5 +1,6 @@
 package javaiscoffee.polaroad.member;
 
+import javaiscoffee.polaroad.exception.BadRequestException;
 import javaiscoffee.polaroad.response.ResponseMessages;
 import javaiscoffee.polaroad.security.BaseException;
 import lombok.RequiredArgsConstructor;
@@ -53,7 +54,7 @@ public class MemberService {
         //멤버 조회 실패했을 경우 (포스트맨으로 다르게 보내는 경우 등), 멤버가 삭제된 멤버인 경우
         if(!Objects.equals(member.getMemberId(), memberInformationRequestDto.getData().getMemberId())
                 || !member.getEmail().equals(memberInformationRequestDto.getData().getEmail()) || member.getStatus() == MemberStatus.DELETED) {
-            return null;
+            throw new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
         }
 
         //멤버 정보 수정
