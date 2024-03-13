@@ -60,7 +60,7 @@ public class PostService {
         for(CardSaveDto cardInfo : postSaveDto.getCards()) {
             Card newCard = new Card();
             BeanUtils.copyProperties(cardInfo,newCard);
-            newCard.setIndex(cardIndex++);
+            newCard.setCardIndex(cardIndex++);
             newCard.setPost(savedPost);
             newCard.setMember(member);
             cardService.saveCard(newCard);
@@ -100,7 +100,7 @@ public class PostService {
         List<CardSaveDto> updateCards = postSaveDto.getCards();
         int index = 0;
         for(CardSaveDto updateCard : updateCards) {
-            updateCard.setIndex(index++);
+            updateCard.setCardIndex(index++);
         }
         cardService.editCards(postSaveDto.getCards(), oldPost, member);
 

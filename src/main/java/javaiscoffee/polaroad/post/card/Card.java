@@ -33,7 +33,7 @@ public class Card {
     private Member member;
     @Column(columnDefinition = "TINYINT")
     @NotNull @Setter
-    private int index;      // index
+    private int cardIndex;      // index
     @Column(length = 255)
     @NotNull @Setter
     private String latitude;//위도

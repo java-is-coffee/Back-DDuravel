@@ -8,7 +8,7 @@ import lombok.Data;
 @Data
 public class CardSaveDto {
     private Long cardId;
-    private int index;      // 자동으로 지정되는 값
+    private int cardIndex;      // 자동으로 지정되는 값
     private String location;// 사진 세부 위치
     private String latitude;//위도
     private String longtitude;  //경도
