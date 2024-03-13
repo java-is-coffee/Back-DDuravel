@@ -15,7 +15,7 @@ spec:
       containers:
         - name: polaroad-backend
           # 여러분의 polaroad-backend image 주소를 입력해주세요.
-          image: krmp-d2hub-idock.9rum.cc/dev-test/repo_40d2e5b1304c
+          image: krmp-d2hub-idock.9rum.cc/dev-test/repo_725dab63b714
           env:
             - name: TZ
               value: Asia/Seoul
