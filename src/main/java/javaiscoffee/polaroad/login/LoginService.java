@@ -1,6 +1,8 @@
 package javaiscoffee.polaroad.login;
 
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletResponse;
+import javaiscoffee.polaroad.exception.UnAuthorizedException;
 import javaiscoffee.polaroad.login.emailAuthentication.EmailCertificationRepository;
 import javaiscoffee.polaroad.response.ResponseMessages;
 import javaiscoffee.polaroad.exception.NotFoundException;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import jakarta.servlet.http.Cookie;
 
 @Slf4j
 @Service
@@ -85,5 +88,26 @@ public class LoginService {
             return savedMember.get();
         }
         return null;
+    }
+
+    /**
+     * access 토큰 재발급
+     * isTemp = true이면 라이브코딩용 임시 토큰 발급이므로 1분짜리 토큰 발급
+     * isTemp = false이면 일반적인 30분 토큰 발급
+     */
+    public void refresh(String refreshToken, HttpServletResponse response) {
+        try {
+            // refreshToken 유효성 검증
+            if (!jwtTokenProvider.validateToken(refreshToken)) {
+                // 유효하지 않은 경우, 적절한 응답 반환
+                throw new UnAuthorizedException("유효하지 않는 쿠키입니다.");
+            }
+
+            jwtTokenProvider.generateNewAccessToken(refreshToken, 1000 * 60 * 30, response);
+
+        } catch (JwtException | IllegalArgumentException e) {
+            // 토큰 파싱 실패 또는 유효하지 않은 토큰으로 인한 예외 처리
+            log.error("토큰 갱신 실패: {}", e.getMessage());
+        }
     }
 }
