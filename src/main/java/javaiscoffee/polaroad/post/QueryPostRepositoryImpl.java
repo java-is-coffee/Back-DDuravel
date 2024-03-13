@@ -77,7 +77,7 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
         // 포스트를 DTO로 변환하고 카드 이미지 처리
         return posts.stream().map(p -> {
             List<String> images = p.getCards().stream()
-                    .sorted(Comparator.comparingInt(Card::getIndex))
+                    .sorted(Comparator.comparingInt(Card::getCardIndex))
                     .map(Card::getImage)
                     .distinct()
                     .limit(3)

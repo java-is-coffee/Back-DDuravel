@@ -32,7 +32,7 @@ public class Card {
     @JoinColumn(name = "member_id")
     private Member member;
     @NotNull @Setter
-    private int index;      // index
+    private int cardIndex;      // index
     @Column(length = 255)
     @NotNull @Setter
     private String latitude;//위도
