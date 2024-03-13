@@ -145,7 +145,7 @@ public class Member implements UserDetails {
 //        this.setName("삭제된 멤버");
 //        this.setNickname("삭제된 멤버");
         this.setUpdatedTime(LocalDate.now());
-        this.email = "deleted" + this.email;
+        this.email = this.email + this.getUpdatedTime();
     }
 
 
