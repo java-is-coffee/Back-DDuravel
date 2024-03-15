@@ -72,4 +72,10 @@ public class HashtagService {
             postHashtagRepository.save(postHashtag);
         });
     }
+
+    public Long getHashtagIdByName(String tagName) {
+        Hashtag hashtag = hashtagRepository.findByName(tagName).orElse(null);
+        if(hashtag==null) return null;
+        return hashtag.getHashtagId();
+    }
 }

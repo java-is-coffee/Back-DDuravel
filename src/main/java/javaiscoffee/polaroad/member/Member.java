@@ -4,6 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import javaiscoffee.polaroad.post.Post;
+import javaiscoffee.polaroad.post.card.Card;
+import javaiscoffee.polaroad.post.wishlist.WishList;
+import javaiscoffee.polaroad.review.Review;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -70,6 +74,16 @@ public class Member implements UserDetails {
     @Enumerated(EnumType.STRING)
     private SocialLogin socialLogin;
 
+    @NotNull @OneToMany(mappedBy = "member")
+    private List<Post> posts;
+    @NotNull @OneToMany(mappedBy = "member")
+    private List<Card> cards;
+    @NotNull @OneToMany(mappedBy = "memberId")
+    private List<Review> reviews;
+    @NotNull @OneToMany(mappedBy = "member")
+    private List<WishList> wishLists;
+
+
     @PrePersist
     public void PrePersist() {
         this.profileImage = "";
@@ -80,6 +94,10 @@ public class Member implements UserDetails {
         this.createdTime = LocalDate.now();
         this.updatedTime = LocalDate.now();
         this.status = MemberStatus.ACTIVE;
+        this.posts = new ArrayList<>();
+        this.cards = new ArrayList<>();
+        this.reviews = new ArrayList<>();
+        this.wishLists = new ArrayList<>();
     }
 
 
