@@ -38,6 +38,8 @@ public class ReviewService {
         BeanUtils.copyProperties(reviewDto, newReview);
         Member creatorMember = memberRepository.findByMemberId(memberId).get();
         Post post = postRepository.findById(reviewDto.getPostId()).get();
+        //포스트 리뷰 개수 + 1
+        post.setReviewNumber(post.getReviewNumber() + 1);
 
         if (post.getStatus() == PostStatus.DELETED) {
             return null;
@@ -54,7 +56,6 @@ public class ReviewService {
             ReviewPhoto newReviewPhoto = reviewPhotoService.saveReviewPhoto(reviewPhotoUrl, savedReview);   // reviewDto에 리스트로 있는 사진 url들을 하나하나 saveReviewPhoto에 보냄
             savedReviewPhotos.add(newReviewPhoto.getImage());
         } );
-
 
         return toResponseReviewDto(savedReview, savedReviewPhotos);
     }
@@ -122,6 +123,9 @@ public class ReviewService {
             return false;
         }
         Post post = postRepository.findById(review.getPostId().getPostId()).get();
+        //포스트 리뷰 개수 - 1
+        post.setReviewNumber(post.getReviewNumber() - 1);
+
         // 포스트가 존재하지 않거나 삭제된 포스트인 경우 false 반환
         if (post == null || post.getStatus() == PostStatus.DELETED) {
             return false;
