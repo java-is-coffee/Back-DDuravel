@@ -15,6 +15,7 @@ public class ReviewDto {
     private Long memberId;
     @Schema(description = "## 댓글 본문", example = "저도 다녀왔는데 너무 좋았어요.")
     private String content;
-    @Schema(description = "## 사진 리스트"/*, example = "1"*/)
-    private List<ReviewPhoto> reviewPhotoList;
+    @Schema(description = "## 사진 url 리스트", example = "\"https://lh5.googleusercontent.com/p/AF1QipM1QxKKnGOYaD3DadUkr3fJrxTquvyGP2eRhjR2=w1080-h624-n-k-no\",\n" +
+            "            \"https://lh5.googleusercontent.com/p/AF1QipOAkhVKrq3broFnCMCx4sdqm45jxANDfoC2k3bi=w1080-h624-n-k-no\"")
+    private List<String> reviewPhotoList;
 }
