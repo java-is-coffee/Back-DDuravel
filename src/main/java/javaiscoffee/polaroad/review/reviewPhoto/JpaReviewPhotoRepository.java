@@ -41,4 +41,5 @@ public class JpaReviewPhotoRepository implements ReviewPhotoRepository{
         em.remove(reviewPhoto);
         em.flush();
     }
+
 }

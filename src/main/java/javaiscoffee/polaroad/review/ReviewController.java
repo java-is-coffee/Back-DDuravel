@@ -12,10 +12,16 @@ import javaiscoffee.polaroad.security.CustomUserDetails;
 import javaiscoffee.polaroad.wrapper.RequestWrapperDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -32,7 +38,9 @@ public class ReviewController {
     @Parameter(name = "reviewPhotoList", description = "## 댓글 사진 url들", required = true, example = "https://lh5.googleusercontent.com/p/AF1QipM1QxKKnGOYaD3DadUkr3fJrxTquvyGP2eRhjR2=w1080-h624-n-k-no")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "댓글 작성을 성공한 경우"),
-            @ApiResponse(responseCode = "400", description = "댓글 작성을 실패한 경우")
+            @ApiResponse(responseCode = "400", description = "댓글의 입력값이 잘못된 경우"),
+            @ApiResponse(responseCode = "400", description = "포스트가 없거나 삭제되어서 댓글 삭제 실패한 경우"),
+            @ApiResponse(responseCode = "403", description = "권한이 없는 경우")
     })
     @PostMapping("/write/{postId}")
     public ResponseEntity<?> writeReview(@RequestBody RequestWrapperDto<ReviewDto> requestDto, @AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -84,19 +92,16 @@ public class ReviewController {
         }
     }
 
-    //권한이 없는 경우, 댓글이 없는 경우 나누기
     @Operation(summary = "댓글 삭제 API", description = "댓글 삭제할 때 사용하는 API")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "댓글 삭제 성공한 경우"),
-            @ApiResponse(responseCode = "400", description = "댓글 삭제 실패한 경우")
+            @ApiResponse(responseCode = "400", description = "댓글 or 포스트가 없거나 삭제되어서 댓글 삭제 실패한 경우"),
+            @ApiResponse(responseCode = "403", description = "권한이 없는 경우")
     })
     @DeleteMapping("/delete/{reviewId}")
     public ResponseEntity<?> deleteReview(@PathVariable(name = "reviewId") Long reviewId, @AuthenticationPrincipal CustomUserDetails userDetails) {
         Long memberId = userDetails.getMemberId();
-        Boolean deletedReview = reviewService.deleteReview(reviewId, memberId);
-        if (!deletedReview) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Status(ResponseMessages.DELETE_FAILED));
-        }
+        reviewService.deleteReview(reviewId, memberId);
         return ResponseEntity.ok(null);
     }
 
@@ -106,25 +111,35 @@ public class ReviewController {
 //        Long memberId = userDetails.getMemberId();
 //    }
 
-    @Operation(summary = "postId로 댓글 조회 API", description = "포스트로 댓글 조회할 때 사용하는 API")
+    @Operation(summary = "포스트에 딸린 모든 댓글 조회 API", description = "포스트id로 해당 포스트의 모든 댓글 조회할 때 사용하는 API")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "postId로 댓글 조회에 성공한 경우"),
             @ApiResponse(responseCode = "404", description = "postId로 댓글 조회에 실패한 경우")
     })
     @GetMapping("/post/{postId}")
-    public ResponseEntity<?> getReviewByPostId(@PathVariable Long postId) {
+    public ResponseEntity<?> getReviewsByPostId(@PathVariable Long postId) {
+        log.info("해당 포스트의 모든 댓글 조회 요청 = {}", postId);
         if (postId == null) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
         return ResponseEntity.ok(reviewService.getReviewByPostId(postId));
     }
 
-    @Operation(summary = "memberId로 댓글 조회 API", description = "맴버로 댓글 조회할 때 사용하는 API")
+    // 포스트에 딸린 모든 댓글 페이징
+//    @GetMapping("/post/{postId}/reviews")
+//    public ResponseEntity<Page<?>> getReviewsPaged(@PathVariable(name = "postId") Long postId, @RequestParam int page) {
+//        Page<?> reviewPage = reviewService.getReviewsPagedByPostId(postId, page);
+//        return ResponseEntity.ok(reviewPage);
+//    }
+
+
+    @Operation(summary = "맴버가 작성한 모든 댓글 조회 API", description = "맴버id로 해당 맴버가 작성한 모든 댓글 조회할 때 사용하는 API")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "memberId로 댓글 조회에 성공한 경우"),
             @ApiResponse(responseCode = "404", description = "memberId로 댓글 조회에 실패한 경우")
     })
     @GetMapping("/member/{memberId}")
-    public ResponseEntity<?> getReviewByMemberId(@PathVariable Long memberId) {
+    public ResponseEntity<?> getReviewsByMemberId(@PathVariable Long memberId) {
         if (memberId == null) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
         return ResponseEntity.ok(reviewService.getReviewByPostId(memberId));
     }
+
 }

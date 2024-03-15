@@ -15,6 +15,8 @@ public class ResponseReviewDto {
     private Long postId;
     @Schema(description = "## 맴버 Id", example = "1")
     private Long memberId;
+    @Schema(description = "## 프로필 이미지"/*, example = "1"*/)
+    private String profileImage;
     @Schema(description = "## 맴버 닉네임", example = "폴라곰")
     private String nickname;
     @Schema(description = "## 댓글 본문", example = "저도 다녀왔는데 너무 좋았어요.")

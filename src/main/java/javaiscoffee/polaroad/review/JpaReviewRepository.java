@@ -2,9 +2,12 @@ package javaiscoffee.polaroad.review;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
+import jakarta.persistence.TypedQuery;
 import javaiscoffee.polaroad.member.Member;
 import javaiscoffee.polaroad.post.Post;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -33,7 +36,6 @@ public class JpaReviewRepository implements ReviewRepository{
     @Override
     public Review findByReviewId(Long reviewId) {
         Review review = em.find(Review.class, reviewId);
-        log.info("JpaReviewRepository 댓글 조회시 댓글 id = {}", review);
         return review;
     }
 
@@ -62,6 +64,18 @@ public class JpaReviewRepository implements ReviewRepository{
                 .setParameter("status", status)
                 .getResultList();
     }
+
+//    public Page<Review> findReviewPagedByPostId(Long postId, Pageable pageable, ReviewStatus status) {
+//        TypedQuery<Long> countQuery = em.createQuery("SELECT COUNT(r) FROM Review r WHERE r.postId = :postId AND r.status = :status", Long.class)
+//                .setParameter("postId", postId)
+//                .setParameter("status", status)
+//
+////                return em.createQuery("SELECT r FROM Review r WHERE r.postId = :postId AND r.status = :status ORDER BY r.createdTime DESC", Review.class)
+////                .setParameter("postId", postId)
+////                .setParameter("status", status)
+////                .setF
+////                .getResultList();
+//    }
 
     // MemberId로 review들 조회
     @Override

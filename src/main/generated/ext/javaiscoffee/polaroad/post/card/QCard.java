@@ -26,19 +26,21 @@ public class QCard extends EntityPathBase<Card> {
 
     public final NumberPath<Long> cardId = createNumber("cardId", Long.class);
 
+    public final NumberPath<Integer> cardIndex = createNumber("cardIndex", Integer.class);
+
     public final StringPath content = createString("content");
 
     public final DateTimePath<java.time.LocalDateTime> createdTime = createDateTime("createdTime", java.time.LocalDateTime.class);
 
     public final StringPath image = createString("image");
 
-    public final NumberPath<Integer> index = createNumber("index", Integer.class);
-
     public final StringPath latitude = createString("latitude");
 
     public final StringPath location = createString("location");
 
     public final StringPath longtitude = createString("longtitude");
+
+    public final ext.javaiscoffee.polaroad.member.QMember member;
 
     public final ext.javaiscoffee.polaroad.post.QPost post;
 
@@ -64,6 +66,7 @@ public class QCard extends EntityPathBase<Card> {
 
     public QCard(Class<? extends Card> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
+        this.member = inits.isInitialized("member") ? new ext.javaiscoffee.polaroad.member.QMember(forProperty("member")) : null;
         this.post = inits.isInitialized("post") ? new ext.javaiscoffee.polaroad.post.QPost(forProperty("post"), inits.get("post")) : null;
     }
 
