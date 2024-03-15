@@ -133,7 +133,6 @@ public class ReviewService {
         }
 
         // 해당 댓글에 속한 모든 사진
-//        List<ReviewPhoto> reviewPhotos = reviewPhotoRepository.findReviewPhotosByReviewId(review);
         List<ReviewPhoto> reviewPhotos = reviewRepository.findByReviewId(review.getReviewId()).getReviewPhoto();
         // 해당 댓글에 속한 모든 사진 삭제
         for (ReviewPhoto reviewPhoto : reviewPhotos) {
@@ -154,7 +153,6 @@ public class ReviewService {
         // 포스트에 딸린 각 댓글에 해당하는 모든 사진들
         List<ReviewPhoto> reviewPhotos = new ArrayList<>();
         for (Review review : reviewList) {
-//            List<ReviewPhoto> reviewPhotosByReviewId = reviewPhotoRepository.findReviewPhotosByReviewId(review);
             List<ReviewPhoto> reviewPhotosByReviewId = reviewRepository.findByReviewId(review.getReviewId()).getReviewPhoto();
             reviewPhotos.addAll(reviewPhotosByReviewId);
         }
@@ -190,8 +188,7 @@ public class ReviewService {
         responseReviewDto.setUpdatedTime(review.getUpdatedTime());
         responseReviewDto.setReviewPhotoList(reviewPhotos);
         //프로필 이미지
-        //업데이트 시간
-        // => 프론트에 물어보기
+
         return responseReviewDto;
     }
 

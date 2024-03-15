@@ -2,11 +2,9 @@ package javaiscoffee.polaroad.review.reviewPhoto;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
-import javaiscoffee.polaroad.review.Review;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -43,12 +41,4 @@ public class JpaReviewPhotoRepository implements ReviewPhotoRepository{
         em.remove(reviewPhoto);
         em.flush();
     }
-
-//    // reviewId에 속한 모든 사진 조회
-//    public List<ReviewPhoto> findReviewPhotosByReviewId(Review review) {
-//        log.info("findReviewPhotosByReviewId의 reviewId = {}", review);
-//        return em.createQuery("SELECT rp FROM ReviewPhoto rp WHERE rp.reviewId = :review", ReviewPhoto.class)
-//                .setParameter("review", review)
-//                .getResultList();
-//    }
 }

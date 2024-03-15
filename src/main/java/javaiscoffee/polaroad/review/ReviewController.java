@@ -64,7 +64,8 @@ public class ReviewController {
 
     @Operation(summary = "댓글 수정 API", description = "댓글 수정할 때 사용하는 API")
     @Parameter(name = "content", description = "## 댓글 본문", required = true, example = "와 저도 가보고 싶어지네요.")
-    @Parameter(name = "reviewPhotoList", description = "## 댓글 사진 url들", required = true, example = "https://lh5.googleusercontent.com/p/AF1QipM1QxKKnGOYaD3DadUkr3fJrxTquvyGP2eRhjR2=w1080-h624-n-k-no")
+    @Parameter(name = "reviewPhotoList", description = "## 댓글 사진 url들", required = true, example = "\"https://lh5.googleusercontent.com/p/AF1QipM1QxKKnGOYaD3DadUkr3fJrxTquvyGP2eRhjR2=w1080-h624-n-k-no\",\n" +
+            "            \"https://lh5.googleusercontent.com/p/AF1QipOAkhVKrq3broFnCMCx4sdqm45jxANDfoC2k3bi=w1080-h624-n-k-no\"")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "댓글 수정 성공한 경우"),
             @ApiResponse(responseCode = "400", description = "댓글 수정 실패한 경우")

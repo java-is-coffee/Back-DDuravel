@@ -33,7 +33,6 @@ public class ReviewPhotoService {
 
     // 댓글 수정시 사용하는 사진 수정 메서드
     public void editReviewPhoto(List<String> reviewPhotoUrlList, Review review) {
-        log.info("editReviewPhoto 메서드 시작");
         //기존 사진 url 리스트
         List<ReviewPhoto> oldReviewPhotoList = reviewRepository.findByReviewId(review.getReviewId()).getReviewPhoto();
         //새로 수정된 사진 세트
@@ -45,11 +44,9 @@ public class ReviewPhotoService {
             }
             //그대로 있는 사진 업데이트 리스트에서 지우기
             else {
-                log.info("수정된 리스트에 있는 기존 사진 url = {}", reviewPhotoUrlList);
                 reviewPhotoUrlList.remove(reviewPhotoUrl);
             }
         });
-        log.info("기존 사진 remove 후 ={}", reviewPhotoUrlList);
 
         reviewPhotoUrlList.forEach(reviewPhotoUrl ->{
             Optional<ReviewPhoto> reviewPhoto = reviewPhotoRepository.findReviewPhotoIdByReviewPhotoUrl(reviewPhotoUrl);

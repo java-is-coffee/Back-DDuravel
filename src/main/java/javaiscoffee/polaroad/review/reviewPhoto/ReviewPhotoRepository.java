@@ -8,7 +8,5 @@ public interface ReviewPhotoRepository {
 
     public Optional<ReviewPhoto> findReviewPhotoIdByReviewPhotoUrl(String reviewPhotoUrl);
 
-//    public ReviewPhoto update(ReviewPhoto updatedReviewPhoto);
-
     public void delete(Long reviewPhotoId);
 }
