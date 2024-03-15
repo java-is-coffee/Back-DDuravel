@@ -1,13 +1,15 @@
 package javaiscoffee.polaroad.post.wishlist;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import javaiscoffee.polaroad.post.Post;
 import lombok.*;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
 @NoArgsConstructor
-@AllArgsConstructor
 @Table(name = "wish_list_posts")
 public class WishListPost {
 
@@ -25,4 +27,18 @@ public class WishListPost {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
     private Post post;
+
+    @NotNull
+    LocalDateTime createdTime;
+
+    public WishListPost(WishListPostId wishListPostId, WishList wishList, Post post) {
+        this.wishListPostId = wishListPostId;
+        this.wishList = wishList;
+        this.post = post;
+    }
+
+    @PrePersist
+    public void PrePersist() {
+        this.createdTime = LocalDateTime.now();
+    }
 }

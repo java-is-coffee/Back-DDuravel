@@ -169,6 +169,12 @@ public class PostController {
         return postService.getPostInfoById(postId, userDetails.getMemberId());
     }
 
+    @Operation(summary = "포스트 추천", description = "사용자가 포스트 추천하는 API \n ## 추천이 안되어 있으면 추천을 생성하고, 추천이 되어 있으면 추천을 삭제하는 토글 방식")
+    @Parameter(name = "postId", description = "추천할 포스트 ID",required = true, example = "1")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "포스트 추천에 성공했을 경우"),
+            @ApiResponse(responseCode = "404", description = "멤버나 포스트가 삭제되었거나 존재하지 않는 경우")
+    })
     @PatchMapping("/good/{postId}")
     public ResponseEntity<?> postGoodToggle(@PathVariable(name = "postId") Long postId, @AuthenticationPrincipal CustomUserDetails userDetails) {
         Long memberId = userDetails.getMemberId();

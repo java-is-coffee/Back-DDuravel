@@ -9,6 +9,7 @@ import javaiscoffee.polaroad.member.Member;
 import javaiscoffee.polaroad.post.card.Card;
 import javaiscoffee.polaroad.post.good.PostGood;
 import javaiscoffee.polaroad.post.hashtag.PostHashtag;
+import javaiscoffee.polaroad.post.wishlist.WishListPost;
 import javaiscoffee.polaroad.review.Review;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -66,6 +67,8 @@ public class Post {
     private List<Review> reviews;
     @NotNull @OneToMany(mappedBy = "post")
     private List<PostGood> postGoods;
+    @NotNull @OneToMany(mappedBy = "post")
+    private List<WishListPost> wishListPosts;
 
     @PrePersist
     public void PrePersist() {
@@ -78,5 +81,6 @@ public class Post {
         this.postHashtags = new ArrayList<>();
         this.reviews = new ArrayList<>();
         this.postGoods = new ArrayList<>();
+        this.wishListPosts = new ArrayList<>();
     }
 }

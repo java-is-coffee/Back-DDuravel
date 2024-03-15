@@ -9,7 +9,6 @@ import javaiscoffee.polaroad.member.MemberStatus;
 import javaiscoffee.polaroad.post.Post;
 import javaiscoffee.polaroad.post.PostRepository;
 import javaiscoffee.polaroad.post.PostStatus;
-import javaiscoffee.polaroad.post.card.Card;
 import javaiscoffee.polaroad.response.ResponseMessages;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,7 +73,7 @@ public class WishListService {
         WishListPostId wishListPostId = new WishListPostId(wishListId, postId);
         //위시리스트에 포스트 추가
         WishListPost wishListPost = new WishListPost(wishListPostId, wishList, post);
-        wishListRepository.save(wishList);
+        wishListPostRepository.save(wishListPost);
     }
     /**
      * 위시리스트 이름 수정
@@ -113,10 +112,9 @@ public class WishListService {
      * 위시리스트포스트 전부 삭제하고 나서 위시리스트 삭제
      */
     @Transactional
-    public void deleteWishListPost(Long memberId, Long wishListId, Long postId) {
+    public void deleteWishListWithPost(Long memberId, Long wishListId) {
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         if(member.getStatus().equals(MemberStatus.DELETED)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
-        Post post = postRepository.findById(postId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         WishList wishList = wishListRepository.findById(wishListId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         //다른 유저의 위시리스트일 경우
         if(!wishList.getMember().equals(member)) throw new ForbiddenException(ResponseMessages.FORBIDDEN.getMessage());
@@ -170,19 +168,12 @@ public class WishListService {
      * 위시리스트에 있는 포스트 목록 조회
      * 본인의 위시리스트 내용만 볼 수 있게 설정
      */
-    public List<WishListPostDto> getWishListPostsInWishList(Long memberId, Long wishListId) {
+    public List<WishListPostDto> getWishListPostsInWishList(Long memberId, Long wishListId,int paging, int pagingNumber) {
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         WishList wishList = wishListRepository.findById(wishListId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         //다른 유저의 위시리스트일 경우
         if(!wishList.getMember().equals(member)) throw new ForbiddenException(ResponseMessages.FORBIDDEN.getMessage());
         //위시리스트에 있는 포스트 목록 조회
-        List<WishListPost> wishListPosts = wishListPostRepository.findWishListPostsByWishListWishListId(wishListId);
-        return wishListPosts.stream().map(wishListPost -> new WishListPostDto(wishListPost.getPost().getPostId(), wishListPost.getPost().getTitle(),
-                wishListPost.getPost().getCards()
-                        .stream()
-                        .sorted(Comparator.comparingInt(Card::getCardIndex))
-                        .toList()
-                        .get(wishListPost.getPost().getThumbnailIndex()).getImage()))
-                .toList();
+        return wishListRepository.getWishListPostDtos(wishListId, paging, pagingNumber);
     }
 }

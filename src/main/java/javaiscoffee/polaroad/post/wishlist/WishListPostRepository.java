@@ -2,9 +2,11 @@ package javaiscoffee.polaroad.post.wishlist;
 
 import javaiscoffee.polaroad.post.Post;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+@Repository
 public interface WishListPostRepository extends JpaRepository<WishListPost, WishListPostId> {
     void deleteWishListPostByWishListPostId(WishListPostId id);
 

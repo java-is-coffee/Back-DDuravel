@@ -115,6 +115,7 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
 
             return new PostListDto(
                     p.getTitle(),
+                    p.getPostId(),
                     p.getMember().getNickname(),
                     p.getGoodNumber(),
                     p.getConcept(),
@@ -209,6 +210,7 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
 
             return new PostListDto(
                     p.getTitle(),
+                    p.getPostId(),
                     p.getMember().getNickname(),
                     p.getGoodNumber(),
                     p.getConcept(),
