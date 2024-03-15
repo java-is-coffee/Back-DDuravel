@@ -24,38 +24,6 @@ public class PostController {
     private final PostService postService;
 
     @Operation(summary = "포스트 생성", description = "포스트 생성하는 API")
-//    @Parameter(name = "title", description = "게시글 제목",
-//            required = true, example = "벛꽃 놀이 재밌다.")
-//    @Parameter(name = "routePoint", description = "전체 경로 직렬화 좌표", required = true, example = "프론트에서 알아서 정하기")
-//    @Parameter(name = "thumbnailIndex", description = "썸네일 인덱스", required = true, example = "0부터 사진 총 개수 -1까지")
-//    @Parameter(name = "concept", required = true, description = "게시글 카테고리 \n null값이면 나머지 조건으로 검색 \n- FOOD 식도락\n" +
-//            "- NATURE 자연\n" +
-//            "- CITY 도시관광\n" +
-//            "- PHOTO 사진&명소\n" +
-//            "- HOT 인기게시글\n" +
-//            "- WALK 도보여행\n" +
-//            "- CAR 자동차&대중교통 여행\n" +
-//            "- TRAIN 기차여행", example = "FOOD")
-//    @Parameter(name = "region", required = true, description = "게시글 지역 \n null값이면 나머지 조건으로 검색 \n" +
-//            "- SEOUL 서울, INCHEON 인천, BUSAN 부산, DAEGU 대구, \n" +
-//            "- GWANGJU 광주, DAEJEON 대전, ULSAN 울산, GYEONGGIDO 경기도, GANGWONDO 강원도,\n " +
-//            "- CHUNGCHEONGNAMDO 충남, CHUNGCHEONGBUKDO 충북,\n " +
-//            "- JEOLLANAMDO 전남, JEOLLABUKDO 전북,\n " +
-//            "- GYEONGSANGNAMDO 경남, GYEONGSANGBUKDO 경북,\n " +
-//            "- JEJUDO 제주도", example = "SEOUL")
-//    @Parameter(name = "cards", required = true,
-//            description = "게시글 카드 목록 \n ### cardId랑 index는 없어도 됩니다. 자동 생성되기 때문 \n- private String location 사진 세부 위치" +
-//                    "\n- private String latitude 위도" +
-//                    "\n- private String longtitude 경도" +
-//                    "\n- private String image 이미지 주소" +
-//                    "\n- private String content 카드 본문", example = "{\n" +
-//            "        \"location\": \"string\",\n" +
-//            "        \"latitude\": \"string\",\n" +
-//            "        \"longtitude\": \"string\",\n" +
-//            "        \"image\": \"string\",\n" +
-//            "        \"content\": \"string\"\n" +
-//            "      }")
-//    @Parameter(name = "hashtags", description = "게시글 해쉬태그 목록",required = false, example = "벚꽃, 소풍, 축제")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "포스트 생성에 성공했을 경우"),
             @ApiResponse(responseCode = "400", description = "입력값이 잘못된 경우"),
@@ -71,33 +39,6 @@ public class PostController {
     }
 
     @Operation(summary = "포스트 수정", description = "포스트 수정하는 API")
-//    @Parameter(name = "title", description = "게시글 제목",
-//            required = true, example = "누군가 수정한 게시글 제목이다.")
-//    @Parameter(name = "routePoint", description = "전체 경로 직렬화 좌표", required = true, example = "프론트에서 알아서 정하기")
-//    @Parameter(name = "thumbnailIndex", description = "썸네일 인덱스", required = true, example = "0부터 사진 총 개수 -1까지")
-//    @Parameter(name = "concept", description = "게시글 카테고리 \n null값이면 나머지 조건으로 검색 \n- FOOD 식도락\n" +
-//            "- NATURE 자연\n" +
-//            "- CITY 도시관광\n" +
-//            "- PHOTO 사진&명소\n" +
-//            "- HOT 인기게시글\n" +
-//            "- WALK 도보여행\n" +
-//            "- CAR 자동차&대중교통 여행\n" +
-//            "- TRAIN 기차여행", example = "FOOD")
-//    @Parameter(name = "region", description = "게시글 지역 \n null값이면 나머지 조건으로 검색 \n" +
-//            "- SEOUL 서울, INCHEON 인천, BUSAN 부산, DAEGU 대구, \n" +
-//            "- GWANGJU 광주, DAEJEON 대전, ULSAN 울산, GYEONGGIDO 경기도, GANGWONDO 강원도,\n " +
-//            "- CHUNGCHEONGNAMDO 충남, CHUNGCHEONGBUKDO 충북,\n " +
-//            "- JEOLLANAMDO 전남, JEOLLABUKDO 전북,\n " +
-//            "- GYEONGSANGNAMDO 경남, GYEONGSANGBUKDO 경북,\n " +
-//            "- JEJUDO 제주도", example = "SEOUL")
-//    @Parameter(name = "cards", description = "게시글 카드 목록 \n ### 기존에 있던 카드는 cardId 있어야 합니다. \n ### 새로 추가한 카드는 cardId = null로 주시면 됩니다. \n ### index는 없어도 됩니다.", required = true,
-//            example = "\n- private Long cardId = 기존 카드 ID 또는 추가된 카드는 null" +
-//                    "\n- private String location 사진 세부 위치" +
-//                    "\n- private String latitude 위도" +
-//                    "\n- private String longtitude 경도" +
-//                    "\n- private String image 이미지 주소" +
-//                    "\n- private String content 카드 본문")
-//    @Parameter(name = "hashtags", description = "게시글 해쉬태그 목록",required = false, example = "벚꽃, 소풍, 축제")
     @Parameter(name = "postId", description = "Path Variable로 수정할 포스트 ID를 넘겨주면 됩니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "포스트 수정에 성공했을 경우"),
