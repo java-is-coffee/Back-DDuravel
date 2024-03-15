@@ -19,9 +19,9 @@ public class ResponseReviewDto {
     private String nickname;
     @Schema(description = "## 댓글 본문", example = "저도 다녀왔는데 너무 좋았어요.")
     private String content;
-    @Schema(description = "## 사진 리스트"/*, example = "1"*/)
-    private List<ReviewPhoto> reviewPhotoList;
-    @Schema(description = "## 댓글 작성한 시간", example = "2024-03-12T15:11:30.751404")
-    private LocalDateTime createdTime;
+    @Schema(description = "## 사진 url 리스트"/*, example = "1"*/)
+    private List<String> reviewPhotoList;
+    @Schema(description = "## 댓글 업데이트 시간", example = "2024-03-12T15:11:30.751404")
+    private LocalDateTime updatedTime;
 }
 

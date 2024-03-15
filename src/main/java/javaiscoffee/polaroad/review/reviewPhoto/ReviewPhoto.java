@@ -1,13 +1,22 @@
 package javaiscoffee.polaroad.review.reviewPhoto;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import javaiscoffee.polaroad.review.Review;
+import javaiscoffee.polaroad.review.ReviewStatus;
 import lombok.*;
+
+import java.time.LocalDateTime;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString
+@ToString(exclude = "reviewId")
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "reviewPhotoId"
+)
 @Entity
 @Getter
 @Table(name = "review_photo")
@@ -15,14 +24,9 @@ public class ReviewPhoto {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "review_photo_id")
     private Long reviewPhotoId;
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "review_id")
-    private Review reviewId;
-
-    private String image;   // 프론트에서 저장하고 링크 건네줌
-
-    private String imagePath;   // 사진 경로
-
+    @Setter @JoinColumn(name = "review_id")
+    private Review reviewId;    // 리뷰 자체
+    @Setter
+    private String image;   // 사진 url
 }
-// status 추가

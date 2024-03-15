@@ -8,6 +8,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import javaiscoffee.polaroad.exception.NotFoundException;
 import javaiscoffee.polaroad.member.JpaMemberRepository;
 import javaiscoffee.polaroad.member.Member;
+import javaiscoffee.polaroad.member.MemberStatus;
+import javaiscoffee.polaroad.response.ResponseMessages;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -181,6 +183,7 @@ public class JwtTokenProvider {
         log.info("토큰 재발급하는 memberId = {}", memberId);
 
         Member member = memberRepository.findByMemberId(memberId).orElseThrow(() -> new NotFoundException("유저를 찾을 수 없습니다."));
+        if(member.getStatus().equals(MemberStatus.DELETED)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
 
         // 사용자 정보에서 권한 가져오기
         String authorities = member.getAuthorities().stream()

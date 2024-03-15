@@ -33,6 +33,7 @@ public class JpaReviewRepository implements ReviewRepository{
     @Override
     public Review findByReviewId(Long reviewId) {
         Review review = em.find(Review.class, reviewId);
+        log.info("JpaReviewRepository 댓글 조회시 댓글 id = {}", review);
         return review;
     }
 

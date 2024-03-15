@@ -14,6 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 public class PostListDto {
     private String title;
+    private Long postId;
     private String nickname;
     private int goodNumber;
     private PostConcept concept;

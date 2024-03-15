@@ -7,9 +7,15 @@ import javaiscoffee.polaroad.member.Member;
 import javaiscoffee.polaroad.member.MemberRepository;
 import javaiscoffee.polaroad.member.MemberStatus;
 import javaiscoffee.polaroad.post.card.Card;
+import javaiscoffee.polaroad.post.card.CardInfoDto;
 import javaiscoffee.polaroad.post.card.CardSaveDto;
 import javaiscoffee.polaroad.post.card.CardService;
+import javaiscoffee.polaroad.post.good.PostGood;
+import javaiscoffee.polaroad.post.good.PostGoodId;
+import javaiscoffee.polaroad.post.good.PostGoodRepository;
+import javaiscoffee.polaroad.post.hashtag.PostHashtagInfoDto;
 import javaiscoffee.polaroad.post.hashtag.HashtagService;
+import javaiscoffee.polaroad.post.hashtag.PostHashtag;
 import javaiscoffee.polaroad.response.ResponseMessages;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -19,8 +25,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+
+import static java.util.stream.Collectors.toList;
 
 @Slf4j
 @Service
@@ -30,13 +37,15 @@ public class PostService {
     private final MemberRepository memberRepository;
     private final HashtagService hashtagService;
     private final CardService cardService;
+    private final PostGoodRepository postGoodRepository;
 
     @Autowired
-    public PostService(PostRepository postRepository, MemberRepository memberRepository,HashtagService hashtagService, CardService cardService) {
+    public PostService(PostRepository postRepository, MemberRepository memberRepository,HashtagService hashtagService, CardService cardService, PostGoodRepository postGoodRepository) {
         this.postRepository = postRepository;
         this.memberRepository = memberRepository;
         this.hashtagService = hashtagService;
         this.cardService = cardService;
+        this.postGoodRepository = postGoodRepository;
     }
 
     /**
@@ -130,8 +139,132 @@ public class PostService {
     /**
      * 탐색페이지나 검색페이지에서 게시글을 목록으로 조회
      */
-    public ResponseEntity<List<PostListDto>> getPostList (int paging, int pagingNumber, String searchKeyword, PostListSort sortBy, PostConcept concept, PostRegion region) {
-        List<PostListDto> posts = postRepository.searchPost(paging, pagingNumber, searchKeyword, sortBy, concept, region);
+    public ResponseEntity<List<PostListDto>> getPostList (int paging, int pagingNumber,PostSearchType searchType, String searchKeyword, PostListSort sortBy, PostConcept concept, PostRegion region) {
+        //해쉬태그 검색일 경우
+        //검색어가 없으면 키워드 검색으로 넘김
+        if(searchType.equals(PostSearchType.HASHTAG) && searchKeyword != null) {
+            Long hashtagId = hashtagService.getHashtagIdByName(searchKeyword);
+            if(hashtagId == null) return ResponseEntity.ok(new ArrayList<>());
+            return ResponseEntity.ok(postRepository.searchPostByHashtag(paging, pagingNumber, hashtagId, sortBy, concept, region));
+        }
+        //키워드 검색일 경우
+        List<PostListDto> posts = postRepository.searchPostByKeyword(paging, pagingNumber, searchKeyword, sortBy, concept, region);
         return ResponseEntity.ok(posts);
+    }
+
+    /**
+     * 포스트 내용 조회
+     */
+    public ResponseEntity<PostInfoDto> getPostInfoById(Long postId, Long memberId) {
+        Post post = postRepository.findById(postId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
+//        Member member = memberRepository.findById(post.getMember().getMemberId()).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
+        //포스트가 삭제되었으면 에러
+        if(post.getStatus().equals(PostStatus.DELETED)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
+        return ResponseEntity.ok(toPostInfoDto(post,memberId));
+    }
+
+    /**
+     * 포스트 추천 토글
+     */
+    @Transactional
+    public void postGoodToggle(Long memberId, Long postId) {
+        PostGoodId postGoodId = new PostGoodId(memberId, postId);
+
+        Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
+        Post post = postRepository.findById(postId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
+        if(member.getStatus().equals(MemberStatus.DELETED) || post.getStatus().equals(PostStatus.DELETED)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
+        if(post.getMember().getMemberId().equals(memberId)) throw new BadRequestException(ResponseMessages.GOOD_FAILED.getMessage());
+
+        Optional<PostGood> memberGood = postGoodRepository.findById(postGoodId);
+        //추천 삭제
+        if(memberGood.isPresent()) {
+            postGoodRepository.delete(memberGood.get());
+            post.setGoodNumber(post.getGoodNumber() - 1);
+        }
+        //추천 생성
+        else {
+            postGoodRepository.save(new PostGood(postGoodId,member,post));
+            post.setGoodNumber(post.getGoodNumber() + 1);
+        }
+    }
+
+    /**
+     * 포스트랑 멤버를 포스트 내용 조회 ResponseDto로 변환
+     */
+    private PostInfoDto toPostInfoDto(Post post, Long memberId) {
+        List<CardInfoDto> cardDtos = post.getCards().stream()
+                .sorted(Comparator.comparingInt(Card::getCardIndex))
+                .map(this::toCardInfoDto)
+                .collect(toList());
+
+        List<PostHashtagInfoDto> hashtagDtos = post.getPostHashtags().stream()
+                .map(ph -> new PostHashtagInfoDto(ph.getHashtag().getHashtagId(), ph.getHashtag().getName()))
+                .collect(toList());
+
+        PostMemberInfoDto memberDto = toPostMemberInfoDto(post.getMember());
+
+        //멤버가 추천했는지 확인
+        Optional<PostGood> isMemberGood = Optional.empty();
+        if(memberId != null) {
+            isMemberGood = postGoodRepository.findById(new PostGoodId(memberId, post.getPostId()));
+        }
+
+        return new PostInfoDto(
+                post.getTitle(),
+                isMemberGood.isPresent(),
+                memberDto,
+                post.getRoutePoint(),
+                post.getGoodNumber(),
+                post.getThumbnailIndex(),
+                post.getConcept(),
+                post.getRegion(),
+                cardDtos,
+                hashtagDtos
+        );
+    }
+
+    /**
+     * 카드 리스트를 카드 내용 조회 ResponseDto로 변환
+     */
+    private List<CardInfoDto> toCardInfoDtoList(List<Card> cards, Long postId) {
+        //결과값 리스트 생성
+        List<CardInfoDto> cardInfoDtos = new ArrayList<>();
+        //카드 인덱스 값으로 오름차순 정렬
+        List<Card> sortedCards = cards.stream()
+                .sorted(Comparator.comparingInt(Card::getCardIndex))
+                .toList();
+        //응답Dto로 변환
+        for (Card card : sortedCards) {
+            CardInfoDto cardInfoDto = new CardInfoDto();
+            BeanUtils.copyProperties(card, cardInfoDto);
+            cardInfoDtos.add(cardInfoDto);
+        }
+        return cardInfoDtos;
+    }
+    private CardInfoDto toCardInfoDto(Card card) {
+        return new CardInfoDto(card.getCardId(), card.getCardIndex(), card.getLocation(), card.getLatitude(), card.getLongtitude(), card.getImage(), card.getContent());
+    }
+
+    /**
+     * 해쉬태그 리스트를 해쉬 태그 조회 ResponseDto로 변환
+     */
+    private List<PostHashtagInfoDto> toHashtagInfoDto (List<PostHashtag> postHashtags) {
+        List<PostHashtagInfoDto> postHashtagInfoDtos = new ArrayList<>();
+        for(PostHashtag hashtag : postHashtags) {
+            PostHashtagInfoDto postHashtagInfoDto = new PostHashtagInfoDto();
+            postHashtagInfoDto.setHashtagId(hashtag.getHashtag().getHashtagId());
+            postHashtagInfoDto.setTagName(hashtag.getHashtag().getName());
+            postHashtagInfoDtos.add(postHashtagInfoDto);
+        }
+        return postHashtagInfoDtos;
+    }
+
+    /**
+     * 멤버 정보를 게시글 생성 멤버 정보 조회 ResponseDto로 변환
+     */
+    private PostMemberInfoDto toPostMemberInfoDto (Member member) {
+        PostMemberInfoDto postMemberInfoDto = new PostMemberInfoDto();
+        BeanUtils.copyProperties(member,postMemberInfoDto);
+        return postMemberInfoDto;
     }
 }
