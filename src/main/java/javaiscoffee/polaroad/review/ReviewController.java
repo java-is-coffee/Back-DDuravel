@@ -32,10 +32,6 @@ public class ReviewController {
     private final ReviewService reviewService;
 
     @Operation(summary = "댓글 작성 API", description = "댓글 작성할 때 사용하는 API")
-    @Parameter(name = "postId", description = "## 포스트 Id", required = true, example = "1")
-    @Parameter(name = "memberId", description = "## 맴버 Id", required = true, example = "1")
-    @Parameter(name = "content", description = "## 댓글 본문", required = true, example = "저도 다녀왔는데 너무 좋았어요.")
-    @Parameter(name = "reviewPhotoList", description = "## 댓글 사진 url들", required = true, example = "https://lh5.googleusercontent.com/p/AF1QipM1QxKKnGOYaD3DadUkr3fJrxTquvyGP2eRhjR2=w1080-h624-n-k-no")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "댓글 작성을 성공한 경우"),
             @ApiResponse(responseCode = "400", description = "댓글의 입력값이 잘못된 경우"),
@@ -71,9 +67,6 @@ public class ReviewController {
     }
 
     @Operation(summary = "댓글 수정 API", description = "댓글 수정할 때 사용하는 API")
-    @Parameter(name = "content", description = "## 댓글 본문", required = true, example = "와 저도 가보고 싶어지네요.")
-    @Parameter(name = "reviewPhotoList", description = "## 댓글 사진 url들", required = true, example = "\"https://lh5.googleusercontent.com/p/AF1QipM1QxKKnGOYaD3DadUkr3fJrxTquvyGP2eRhjR2=w1080-h624-n-k-no\",\n" +
-            "            \"https://lh5.googleusercontent.com/p/AF1QipOAkhVKrq3broFnCMCx4sdqm45jxANDfoC2k3bi=w1080-h624-n-k-no\"")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "댓글 수정 성공한 경우"),
             @ApiResponse(responseCode = "400", description = "댓글 수정 실패한 경우")
@@ -125,9 +118,10 @@ public class ReviewController {
 
     // 포스트에 딸린 모든 댓글 페이징
     @Operation(summary = "포스트 댓글 페이징 API", description = "포스트의 댓글들을 페이징 할 때 사용하는 API")
-    @Parameter(name = "page", description = "## 댓글 페이지 번호", required = false, example = "1")
     @GetMapping("/post/{postId}/reviews")
-    public ResponseEntity<Page<?>> getPostReviewsPaged(@PathVariable(name = "postId") Long postId, @RequestParam int page) {
+    public ResponseEntity<Page<?>> getPostReviewsPaged(
+            @PathVariable(name = "postId") Long postId,
+            @Parameter(name = "page", description = "## 댓글 페이지 번호", required = false, example = "1") @RequestParam int page) {
         log.info("포스트 댓글 페이징 요청");
         Page<?> reviewPage = reviewService.getReviewsPagedByPostId(postId, page);
         return ResponseEntity.ok(reviewPage);
@@ -146,9 +140,10 @@ public class ReviewController {
     }
 
     @Operation(summary = "유저의 댓글 페이징 API", description = "유저가 작성한 모든 댓글들을 페이징 할 때 사용하는 API")
-    @Parameter(name = "page", description = "## 댓글 페이지 번호", required = false, example = "1")
     @GetMapping("/member/{memberId}/reviews")
-    public ResponseEntity<Page<?>> getMyReviewsPaged(@PathVariable(name = "memberId") Long memberId, @RequestParam int page) {
+    public ResponseEntity<Page<?>> getMyReviewsPaged(
+            @PathVariable(name = "memberId") Long memberId,
+            @Parameter(name = "page", description = "## 댓글 페이지 번호", required = false, example = "1") @RequestParam int page) {
         log.info("맴버가 작성한 모든 댓글들 페이징 요청");
         Page<?> reviewPage = reviewService.getReviewsPagedByPostId(memberId, page);
         return ResponseEntity.ok(reviewPage);
