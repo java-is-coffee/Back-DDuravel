@@ -53,13 +53,15 @@ public class PostService {
      */
     @Transactional
     public ResponseEntity<Post> savePost(PostSaveDto postSaveDto, Long memberId) {
+        //썸네일 번호가 잘못되었을 경우 에러
+        if(postSaveDto.getThumbnailIndex() < 0 || postSaveDto.getThumbnailIndex() >= postSaveDto.getCards().size()) throw new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
+        //게시글 해쉬코드가 10개 넘어가면 에러
+        if(postSaveDto.getHashtags().size() > 10) throw new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         Post post = new Post();
         BeanUtils.copyProperties(postSaveDto, post);
         post.setMember(member);
         Post savedPost = postRepository.save(post);
-        //썸네일 번호가 잘못되었을 경우 에러
-        if(postSaveDto.getThumbnailIndex() < 0 || postSaveDto.getThumbnailIndex() >= postSaveDto.getCards().size()) throw new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
         //해쉬태그 저장
         postSaveDto.getHashtags().forEach(tagName -> {
             hashtagService.savePostHashtag(tagName, savedPost);
@@ -139,16 +141,16 @@ public class PostService {
     /**
      * 탐색페이지나 검색페이지에서 게시글을 목록으로 조회
      */
-    public ResponseEntity<List<PostListDto>> getPostList (int paging, int pagingNumber,PostSearchType searchType, String searchKeyword, PostListSort sortBy, PostConcept concept, PostRegion region) {
+    public ResponseEntity<PostListResponseDto> getPostList (int paging, int pagingNumber,PostSearchType searchType, String searchKeyword, PostListSort sortBy, PostConcept concept, PostRegion region) {
         //해쉬태그 검색일 경우
         //검색어가 없으면 키워드 검색으로 넘김
         if(searchType.equals(PostSearchType.HASHTAG) && searchKeyword != null) {
             Long hashtagId = hashtagService.getHashtagIdByName(searchKeyword);
-            if(hashtagId == null) return ResponseEntity.ok(new ArrayList<>());
+            if(hashtagId == null) return ResponseEntity.ok(new PostListResponseDto(new ArrayList<>(),0));
             return ResponseEntity.ok(postRepository.searchPostByHashtag(paging, pagingNumber, hashtagId, sortBy, concept, region));
         }
         //키워드 검색일 경우
-        List<PostListDto> posts = postRepository.searchPostByKeyword(paging, pagingNumber, searchKeyword, sortBy, concept, region);
+        PostListResponseDto posts = postRepository.searchPostByKeyword(paging, pagingNumber, searchKeyword, sortBy, concept, region);
         return ResponseEntity.ok(posts);
     }
 

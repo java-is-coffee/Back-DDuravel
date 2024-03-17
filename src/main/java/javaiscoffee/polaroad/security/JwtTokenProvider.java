@@ -88,6 +88,7 @@ public class JwtTokenProvider {
         Cookie accessTokenCookie = new Cookie("accessToken", accessToken);
         accessTokenCookie.setPath("/");
         accessTokenCookie.setHttpOnly(true);
+        accessTokenCookie.setDomain("localhost");
         accessTokenCookie.setMaxAge(30 * 60); // 쿠키 유효 시간을 30분으로 설정
         response.addCookie(accessTokenCookie);
 
@@ -95,6 +96,7 @@ public class JwtTokenProvider {
         Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
         refreshTokenCookie.setPath("/");
         refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setDomain("localhost");
         refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60); // 쿠키 유효 시간을 1주일로 설정
         response.addCookie(refreshTokenCookie);
 

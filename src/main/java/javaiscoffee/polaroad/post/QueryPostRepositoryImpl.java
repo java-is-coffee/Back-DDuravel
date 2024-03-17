@@ -36,7 +36,7 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
      * 검색어로 포스트 목록 조회
      */
     @Override
-    public List<PostListDto> searchPostByKeyword(int paging, int pagingNumber, String searchKeyword, PostListSort sortBy, PostConcept concept, PostRegion region) {
+    public PostListResponseDto searchPostByKeyword(int paging, int pagingNumber, String searchKeyword, PostListSort sortBy, PostConcept concept, PostRegion region) {
         QPost post = QPost.post;
         QCard card = QCard.card;
         QMember member = QMember.member; // 멤버와 관련된 쿼리를 위한 QClass
@@ -90,8 +90,17 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
                     .fetch();
         }
 
+        //검색 결과 최대 개수 구하기
+        long totalPostsCount = queryFactory
+                .selectFrom(post)
+                .leftJoin(post.cards, card)
+                .leftJoin(post.member, member)
+                .where(builder)
+                .fetchCount();
+        int maxPage = (int) Math.ceil((double) totalPostsCount / pagingNumber);
+
         // 포스트를 DTO로 변환하고 카드 이미지 처리
-        return posts.stream().map(p -> {
+        return new PostListResponseDto( posts.stream().map(p -> {
             List<String> images = p.getCards().stream()
                     .sorted(Comparator.comparingInt(Card::getCardIndex))
                     .map(Card::getImage)
@@ -122,14 +131,14 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
                     p.getRegion(),
                     images
             );
-        }).collect(Collectors.toList());
+        }).collect(Collectors.toList()),maxPage);
     }
 
     /**
      * 해쉬 태그로 포스트 목록 조회
      */
     @Override
-    public List<PostListDto> searchPostByHashtag(int paging, int pagingNumber, Long hashtagId, PostListSort sortBy, PostConcept concept, PostRegion region) {
+    public PostListResponseDto searchPostByHashtag(int paging, int pagingNumber, Long hashtagId, PostListSort sortBy, PostConcept concept, PostRegion region) {
         QPost post = QPost.post;
         QCard card = QCard.card;
         QMember member = QMember.member; // 멤버와 관련된 쿼리를 위한 QClass
@@ -185,8 +194,19 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
                     .fetch();
         }
 
+        //검색 결과 최대 개수 구하기
+        long totalPostsCount = queryFactory
+                .selectFrom(post)
+                .leftJoin(post.cards, card)
+                .leftJoin(post.member, member)
+                .leftJoin(post.postHashtags, postHashtag)
+                .leftJoin(postHashtag.hashtag, hashtag)
+                .where(builder)
+                .fetchCount();
+        int maxPage = (int) Math.ceil((double) totalPostsCount / pagingNumber);
+
         // 포스트를 DTO로 변환하고 카드 이미지 처리
-        return posts.stream().map(p -> {
+        return new PostListResponseDto(posts.stream().map(p -> {
             List<String> images = p.getCards().stream()
                     .sorted(Comparator.comparingInt(Card::getCardIndex))
                     .map(Card::getImage)
@@ -217,7 +237,7 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
                     p.getRegion(),
                     images
             );
-        }).collect(Collectors.toList());
+        }).collect(Collectors.toList()), maxPage);
     }
 
     @Override

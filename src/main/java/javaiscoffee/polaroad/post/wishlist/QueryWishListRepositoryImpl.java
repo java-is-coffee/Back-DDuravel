@@ -28,7 +28,7 @@ public class QueryWishListRepositoryImpl implements QueryWishListRepository{
      * 위시리스트에 포함되어 있는 포스트들을 반환
      */
     @Override
-    public List<WishListPostDto> getWishListPostDtos(Long wishListId,int paging, int pagingNumber) {
+    public WishListPostListResponseDto getWishListPostDtos(Long wishListId,int paging, int pagingNumber) {
         QPost post = QPost.post;
         QCard card = QCard.card;
         QWishList wishList = QWishList.wishList;
@@ -55,6 +55,15 @@ public class QueryWishListRepositoryImpl implements QueryWishListRepository{
                 .offset(paging * pagingNumber)
                 .limit(pagingNumber);
 
-        return query.fetch();
+        //검색 결과 최대 개수 구하기
+        long totalPostsCount = queryFactory
+                .selectFrom(post)
+                .leftJoin(post.wishListPosts, wishListPost)
+                .leftJoin(wishListPost.wishList, wishList)
+                .where(wishListPost.wishList.wishListId.eq(wishListId))
+                .fetchCount();
+        int maxPage = (int) Math.ceil((double) totalPostsCount / pagingNumber);
+
+        return new WishListPostListResponseDto(query.fetch(), maxPage);
     }
 }
