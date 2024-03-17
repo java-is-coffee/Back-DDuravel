@@ -127,7 +127,7 @@ public class WishListController {
             @ApiResponse(responseCode = "404", description = "멤버나 위시리스트가 존재하지 않는 경우")
     })
     @GetMapping("/content/{wishListId}")
-    public ResponseEntity<List<WishListPostDto>> getWishListPostsInWishList(@AuthenticationPrincipal CustomUserDetails userDetails,
+    public ResponseEntity<WishListPostListResponseDto> getWishListPostsInWishList(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                                             @PathVariable(name = "wishListId") Long wishListId,
                                                                             @RequestParam(name = "paging") int paging,
                                                                             @RequestParam(name = "pagingNumber") int pagingNumber) {

@@ -14,6 +14,6 @@ public class LoginDto {
     @PasswordCheck
     @Schema(description = "사용자 비밀번호" +
             "\n- 8~20자 사이" +
-            "\n- 소문자, 숫자, 특수문자 최소 1글자씩 있어야함", example = "Abcdefgh1!")
+            "\n- 소문자, 숫자, 특수문자 최소 1글자씩 있어야함", example = "a123123!")
     private String password;
 }

@@ -31,12 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class LoginController {
     private final LoginService loginService;
 
-    @Operation(summary = "로그인 API", description = "로그인할 때 사용하는 API")
-    @Parameter(name = "email", description = "## 사용자 이메일" +
-            "\n- 이메일 형식이어야 함", required = true, example = "aaa@naver.com")
-    @Parameter(name = "password", description = "## 사용자 비밀번호" +
-            "\n- 8~20자 사이" +
-            "\n- 소문자, 숫자, 특수문자 최소 1글자씩 있어야함", required = true, example = "Abcdefgh1!")
+    @Operation(summary = "로그인 API", description = "로그인할 때 사용하는 API \n ## 사용자 이메일 \n- 이메일 형식이어야 함 \n ## 사용자 비밀번호 \n- 8~20자 사이 \n- 소문자, 숫자, 특수문자 최소 1글자씩 있어야함")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "로그인 성공했을 경우"),
             @ApiResponse(responseCode = "404", description = "로그인에 실패한 경우")
@@ -59,14 +54,7 @@ public class LoginController {
         return ResponseEntity.ok("토큰 인증 성공");
     }
 
-    @Operation(summary = "회원가입 API", description = "회원가입할 때 사용하는 API")
-    @Parameter(name = "email", description = "## 사용자 이메일" +
-            "\n- 이메일 형식이어야 함", required = true, example = "aaa@naver.com")
-    @Parameter(name = "password", description = "## 사용자 비밀번호" +
-            "\n- 8~20자 사이" +
-            "\n- 소문자, 숫자, 특수문자 최소 1글자씩 있어야함", required = true, example = "Abcdefgh1!")
-    @Parameter(name = "name", description = "## 사용자 이름", required = true, example = "박자바")
-    @Parameter(name = "nickname", description = "## 사용자 닉네임", required = true, example = "자바커피")
+    @Operation(summary = "회원가입 API", description = "회원가입할 때 사용하는 API \n ## 사용자 이메일 \n- 이메일 형식이어야 함 \n ## 사용자 비밀번호 \n- 8~20자 사이 \n- 소문자, 숫자, 특수문자 최소 1글자씩 있어야함")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "회원가입 성공했을 경우"),
             @ApiResponse(responseCode = "400", description = "이메일이 중복되거나 입력값이 형식에 맞지 않아서 회원가입 실패한 경우")

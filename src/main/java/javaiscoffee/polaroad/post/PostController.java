@@ -91,7 +91,7 @@ public class PostController {
             @ApiResponse(responseCode = "200", description = "리스트 조회에 성공한 경우")
     })
     @GetMapping("/list")
-    public ResponseEntity<List<PostListDto>> getPostList(@RequestParam(name = "paging") int paging,
+    public ResponseEntity<PostListResponseDto> getPostList(@RequestParam(name = "paging") int paging,
                                                          @RequestParam(name = "pagingNumber") int pagingNumber,
                                                          @RequestParam(name = "searchType") PostSearchType searchType,
                                                          @RequestParam(name = "keyword",required = false) String keyword,
