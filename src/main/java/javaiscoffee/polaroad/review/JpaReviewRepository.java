@@ -92,7 +92,7 @@ public class JpaReviewRepository implements ReviewRepository{
     @Override
     public List<Review> findReviewByMemberId(Member memberId, ReviewStatus status) {
         return em.createQuery("SELECT r FROM Review r WHERE r.memberId = :memberId AND r.status = :status ORDER BY r.createdTime ASC", Review.class)
-                .setParameter("member", memberId)
+                .setParameter("memberId", memberId)
                 .setParameter("status", status)
                 .getResultList();
     }

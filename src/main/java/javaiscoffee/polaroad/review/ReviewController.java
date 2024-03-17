@@ -135,8 +135,9 @@ public class ReviewController {
     })
     @GetMapping("/member/{memberId}")
     public ResponseEntity<?> getReviewsByMemberId(@PathVariable Long memberId) {
+        log.info("맴버가 작성한 모든 댓글 조회 요청");
         if (memberId == null) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
-        return ResponseEntity.ok(reviewService.getReviewByPostId(memberId));
+        return ResponseEntity.ok(reviewService.getReviewByMemberId(memberId));
     }
 
     @Operation(summary = "유저의 댓글 페이징 API", description = "유저가 작성한 모든 댓글들을 페이징 할 때 사용하는 API")
@@ -145,7 +146,7 @@ public class ReviewController {
             @PathVariable(name = "memberId") Long memberId,
             @Parameter(name = "page", description = "## 댓글 페이지 번호", required = false, example = "1") @RequestParam int page) {
         log.info("맴버가 작성한 모든 댓글들 페이징 요청");
-        Page<?> reviewPage = reviewService.getReviewsPagedByPostId(memberId, page);
+        Page<?> reviewPage = reviewService.getReviewsPagedByMemberId(memberId, page);
         return ResponseEntity.ok(reviewPage);
     }
 
