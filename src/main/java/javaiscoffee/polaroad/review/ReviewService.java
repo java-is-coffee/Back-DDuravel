@@ -15,10 +15,7 @@ import javaiscoffee.polaroad.review.reviewPhoto.ReviewPhotoService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -26,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -163,12 +161,19 @@ public class ReviewService {
         return toResponseReviewDtoList(reviewList);
     }
 
-//    public Page<?> getReviewsPagedByPostId(Long postId, int page) {
-//        Pageable pageable = PageRequest.of(page, 10, Sort.by("createdTime").descending());
-//        reviewRepository.findReviewPagedByPostId(postId, pageable, ReviewStatus.ACTIVE);
-//
-//        return ;
-//    }
+    // 포스트에 딸린 댓글 페이징
+    public Page<ResponseReviewDto> getReviewsPagedByPostId(Long postId, int page) {
+        log.info("포스트 댓글들 페이징 시작 = {}");
+        page = (page == 0) ? 0 : (page - 1); // 페이지 번호 1부터 시작하게
+        Post getPostId = postRepository.findById(postId).get();
+        Pageable pageable = PageRequest.of(page, 10, Sort.by("createdTime").descending());
+        Page<Review> reviewPage = reviewRepository.findReviewPagedByPostId(getPostId, pageable, ReviewStatus.ACTIVE);
+
+        List<Review> reviewList = reviewPage.getContent();
+        List<ResponseReviewDto> responseReviewDtoList = toResponseReviewDtoList(reviewList);
+
+        return new PageImpl<>(responseReviewDtoList, pageable, reviewPage.getTotalElements());
+    }
 
     // 맴버가 작성한 모든 댓글
     public List<ResponseReviewDto> getReviewByMemberId(Long memberId) {
@@ -176,6 +181,20 @@ public class ReviewService {
         // 맴버가 작성한 ACTIVE 댓글 리스트
         List<Review> reviewList = reviewRepository.findReviewByMemberId(getMember, ReviewStatus.ACTIVE);
         return toResponseReviewDtoList(reviewList);
+    }
+
+    // 맴버가 작성한 모든 댓글들 페이징
+    public Page<ResponseReviewDto> getReviewsPagedByMemberId(Long memberId, int page) {
+        log.info("맴버가 작성한 모든 댓글들 페이징 시작 = {}");
+        page = (page == 0) ? 0 : (page - 1); // 페이지 번호 1부터 시작하게
+        Member getMemberId = memberRepository.findById(memberId).get();
+        Pageable pageable = PageRequest.of(page, 10, Sort.by("createdTime").descending());
+        Page<Review> reviewPage = reviewRepository.findReviewPagedByMemberId(getMemberId, pageable, ReviewStatus.ACTIVE);
+
+        List<Review> reviewList = reviewPage.getContent();
+        List<ResponseReviewDto> responseReviewDtoList = toResponseReviewDtoList(reviewList);
+
+        return new PageImpl<>(responseReviewDtoList, pageable, reviewPage.getTotalElements());
     }
 
 
@@ -189,7 +208,6 @@ public class ReviewService {
         responseReviewDto.setPostId(review.getPostId() != null ? review.getPostId().getPostId() : null);
         responseReviewDto.setMemberId(review.getMemberId() != null ? review.getMemberId().getMemberId() : null);
         responseReviewDto.setProfileImage(review.getMemberId().getProfileImage());
-        log.info("프로필 이미지 ={}",review.getMemberId().getProfileImage());
         responseReviewDto.setNickname(review.getMemberId() != null ? review.getMemberId().getNickname() : null);
         responseReviewDto.setReviewId(review.getReviewId());
         responseReviewDto.setContent(review.getContent());
