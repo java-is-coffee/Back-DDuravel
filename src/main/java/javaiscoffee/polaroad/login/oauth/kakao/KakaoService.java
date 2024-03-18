@@ -29,7 +29,7 @@ public class KakaoService {
             //크램폴린 프록시 설정
             Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("krmp-proxy.9rum.cc", 80));
             HttpURLConnection conn = (HttpURLConnection) url.openConnection(proxy);
-            //로컬테스트용 설정
+//            로컬테스트용 설정
 //            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
 
@@ -74,7 +74,7 @@ public class KakaoService {
             //배포용 프록시 설정
             Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("krmp-proxy.9rum.cc", 80));
             HttpURLConnection conn = (HttpURLConnection) url.openConnection(proxy);
-            //로컬 테스트용
+//            로컬 테스트용
 //            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             conn.setRequestProperty("Authorization", "Bearer " + accessToken);
