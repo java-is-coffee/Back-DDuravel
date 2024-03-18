@@ -124,7 +124,7 @@ public class ReviewService {
 
         // 사진 수정
         log.info("댓글 사진 수정 시작");
-        reviewPhotoService.editReviewPhoto(editReviewDto.getReviewPhotoList(), updatedReview);
+        reviewPhotoService.editReviewPhoto(editReviewDto.getReviewPhotoId(),editReviewDto.getReviewPhotoList(), updatedReview);
 
         return toResponseReviewDto(updatedReview, editReviewDto.getReviewPhotoList());
     }

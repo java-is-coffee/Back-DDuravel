@@ -23,18 +23,6 @@ public class JpaReviewPhotoRepository implements ReviewPhotoRepository{
     }
 
     @Override
-    public Optional<ReviewPhoto> findReviewPhotoIdByReviewPhotoUrl(String reviewPhotoUrl) {
-        try {
-            ReviewPhoto photoId = em.createQuery("SELECT rp FROM ReviewPhoto rp WHERE rp.image = :reviewPhotoUrl", ReviewPhoto.class)
-                    .setParameter("reviewPhotoUrl", reviewPhotoUrl)
-                    .getSingleResult();
-            return Optional.of(photoId);
-        } catch (NoResultException e) {
-            return Optional.empty();
-        }
-    }
-
-    @Override
     public void delete(Long reviewPhotoId) {
         ReviewPhoto reviewPhoto = em.find(ReviewPhoto.class, reviewPhotoId);
         em.remove(reviewPhoto);
