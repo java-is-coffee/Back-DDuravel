@@ -8,6 +8,7 @@ import javaiscoffee.polaroad.response.ResponseMessages;
 import javaiscoffee.polaroad.exception.NotFoundException;
 import javaiscoffee.polaroad.security.JwtTokenProvider;
 import javaiscoffee.polaroad.member.*;
+import javaiscoffee.polaroad.security.TokenDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -38,7 +39,7 @@ public class LoginService {
      * 2. authenticate() 메서드를 통해 요청된 Member에 대한 검증이 진행된다.
      * 3. 검증이 정상적으로 통과되었다면 인증된 Authentication 객체를 기반으로 JWT 토큰을 생성한다.
      */
-    public boolean login(LoginDto loginDto, HttpServletResponse response) {
+    public TokenDto login(LoginDto loginDto, HttpServletResponse response) {
         log.info("로그인 검사 시작 loginDto={}",loginDto);
         Member member = memberRepository.findByEmail(loginDto.getEmail()).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         if(member.getStatus() == MemberStatus.DELETED) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
@@ -52,11 +53,10 @@ public class LoginService {
             Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
             log.info("Authentication successful, authentication = {}", authentication);
 
-            jwtTokenProvider.generateToken(authentication, response);
-            return true;
+            return jwtTokenProvider.generateToken(authentication, response);
         } catch (Exception e) {
             log.error("로그인 실패: {}", e.getMessage());
-            return false;
+            return null;
         }
     }
 
@@ -95,7 +95,7 @@ public class LoginService {
      * isTemp = true이면 라이브코딩용 임시 토큰 발급이므로 1분짜리 토큰 발급
      * isTemp = false이면 일반적인 30분 토큰 발급
      */
-    public void refresh(String refreshToken, HttpServletResponse response) {
+    public TokenDto refresh(String refreshToken, HttpServletResponse response) {
         try {
             // refreshToken 유효성 검증
             if (!jwtTokenProvider.validateToken(refreshToken)) {
@@ -103,11 +103,12 @@ public class LoginService {
                 throw new UnAuthorizedException("유효하지 않는 쿠키입니다.");
             }
 
-            jwtTokenProvider.generateNewAccessToken(refreshToken, 1000 * 60 * 30, response);
+            return jwtTokenProvider.generateNewAccessToken(refreshToken, 1000 * 60 * 30, response);
 
         } catch (JwtException | IllegalArgumentException e) {
             // 토큰 파싱 실패 또는 유효하지 않은 토큰으로 인한 예외 처리
             log.error("토큰 갱신 실패: {}", e.getMessage());
+            throw new UnAuthorizedException(ResponseMessages.UNAUTHORIZED.getMessage());
         }
     }
 }
