@@ -32,7 +32,7 @@ public class ReviewController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "댓글 작성을 성공한 경우"),
             @ApiResponse(responseCode = "400", description = "댓글의 입력값이 잘못된 경우"),
-            @ApiResponse(responseCode = "400", description = "포스트가 없거나 삭제되어서 댓글 삭제 실패한 경우"),
+            @ApiResponse(responseCode = "404", description = "포스트가 없거나 삭제되어서 댓글 삭제 실패한 경우"),
             @ApiResponse(responseCode = "403", description = "권한이 없는 경우")
     })
     @PostMapping("/write/{postId}")
@@ -66,7 +66,8 @@ public class ReviewController {
     @Operation(summary = "댓글 수정 API", description = "댓글 수정할 때 사용하는 API")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "댓글 수정 성공한 경우"),
-            @ApiResponse(responseCode = "400", description = "댓글 수정 실패한 경우")
+            @ApiResponse(responseCode = "404", description = "댓글 수정 실패한 경우"),
+            @ApiResponse(responseCode = "403", description = "권한이 없는 경우")
     })
     @PatchMapping("/edit/{reviewId}")
     public ResponseEntity<?> editReview(@RequestBody RequestWrapperDto<ReviewEditRequestDto> requestDto, @PathVariable(name = "reviewId") Long reviewId, @AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -81,7 +82,7 @@ public class ReviewController {
     @Operation(summary = "댓글 삭제 API", description = "댓글 삭제할 때 사용하는 API")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "댓글 삭제 성공한 경우"),
-            @ApiResponse(responseCode = "400", description = "댓글 or 포스트가 없거나 삭제되어서 댓글 삭제 실패한 경우"),
+            @ApiResponse(responseCode = "404", description = "댓글 or 포스트가 없거나 삭제되어서 댓글 삭제 실패한 경우"),
             @ApiResponse(responseCode = "403", description = "권한이 없는 경우")
     })
     @DeleteMapping("/delete/{reviewId}")

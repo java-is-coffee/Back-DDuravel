@@ -48,7 +48,7 @@ public class ReviewService {
         post.setReviewNumber(post.getReviewNumber() + 1);
 
         if (post == null || post.getStatus() == PostStatus.DELETED) {
-            throw new BadRequestException(ResponseMessages.NOT_FOUND.getMessage());
+            throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
         }
 
         // 댓글 저장
