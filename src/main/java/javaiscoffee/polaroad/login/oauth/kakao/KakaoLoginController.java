@@ -41,8 +41,9 @@ public class KakaoLoginController {
 
     @GetMapping("/api/oauth2/login/kakao")
     public void getAccessToken(HttpServletResponse response) {
-        String uri = "https://kauth.kakao.com/oauth/authorize?response_type=code&client_id="+kakaoApiKey+"&redirect_uri="+redirectUri;
         try {
+            String encodedRedirectUri = URLEncoder.encode(redirectUri, "UTF-8");
+            String uri = "https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=" + kakaoApiKey + "&redirect_uri=" + encodedRedirectUri;
             response.sendRedirect(uri);
         } catch (IOException e) {
             log.error("카카오 로그인 redirect 오류");
