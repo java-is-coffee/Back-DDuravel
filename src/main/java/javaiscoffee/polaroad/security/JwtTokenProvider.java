@@ -38,7 +38,7 @@ public class JwtTokenProvider {
     }
 
     //유저 정보를 가지고 있는 AccessToken, RefreshToken을 생성하는 메서드
-    public void generateToken(Authentication authentication, HttpServletResponse response) {
+    public TokenDto generateToken(Authentication authentication, HttpServletResponse response) {
         //권한 가져오기
         String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
@@ -84,29 +84,29 @@ public class JwtTokenProvider {
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
 
-        // 쿠키에 액세스 토큰 저장
-        Cookie accessTokenCookie = new Cookie("accessToken", accessToken);
-        accessTokenCookie.setPath("/");
-        accessTokenCookie.setHttpOnly(true);
-        accessTokenCookie.setMaxAge(30 * 60); // 쿠키 유효 시간을 30분으로 설정
-        response.addCookie(accessTokenCookie);
+//        // 쿠키에 액세스 토큰 저장
+//        Cookie accessTokenCookie = new Cookie("accessToken", accessToken);
+//        accessTokenCookie.setPath("/");
+//        accessTokenCookie.setHttpOnly(true);
+//        accessTokenCookie.setMaxAge(30 * 60); // 쿠키 유효 시간을 30분으로 설정
+//        response.addCookie(accessTokenCookie);
+//
+//        // 쿠키에 리프레시 토큰 저장
+//        Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
+//        refreshTokenCookie.setPath("/");
+//        refreshTokenCookie.setHttpOnly(true);
+//        refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60); // 쿠키 유효 시간을 1주일로 설정
+//        response.addCookie(refreshTokenCookie);
 
-        // 쿠키에 리프레시 토큰 저장
-        Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
-        refreshTokenCookie.setPath("/");
-        refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60); // 쿠키 유효 시간을 1주일로 설정
-        response.addCookie(refreshTokenCookie);
-
-//        return TokenDto.builder()
-//                .grantType("Bearer")
-//                .accessToken(accessToken)
-//                .refreshToken(refreshToken)
-//                .build();
+        return TokenDto.builder()
+                .grantType("Bearer")
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
     }
 
     //OAuth 멤버 정보로 토큰 발급
-    public void generateToken(Authentication authentication, Long memberId, String email,HttpServletResponse response) {
+    public TokenDto generateToken(Authentication authentication, Long memberId, String email,HttpServletResponse response) {
         //권한 가져오기
         String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
@@ -149,29 +149,29 @@ public class JwtTokenProvider {
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
 
-        // 쿠키에 액세스 토큰 저장
-        Cookie accessTokenCookie = new Cookie("accessToken", accessToken);
-        accessTokenCookie.setPath("/");
-        accessTokenCookie.setHttpOnly(true);
-        accessTokenCookie.setMaxAge(30 * 60); // 쿠키 유효 시간을 30분으로 설정
-        response.addCookie(accessTokenCookie);
+//        //쿠키에 액세스 토큰 저장
+//        Cookie accessTokenCookie = new Cookie("accessToken", accessToken);
+//        accessTokenCookie.setPath("/");
+//        accessTokenCookie.setHttpOnly(true);
+//        accessTokenCookie.setMaxAge(30 * 60); // 쿠키 유효 시간을 30분으로 설정
+//        response.addCookie(accessTokenCookie);
 
-        // 쿠키에 리프레시 토큰 저장
-        Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
-        refreshTokenCookie.setPath("/");
-        refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60); // 쿠키 유효 시간을 1주일로 설정
-        response.addCookie(refreshTokenCookie);
+//        //쿠키에 리프레시 토큰 저장
+//        Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
+//        refreshTokenCookie.setPath("/");
+//        refreshTokenCookie.setHttpOnly(true);
+//        refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60); // 쿠키 유효 시간을 1주일로 설정
+//        response.addCookie(refreshTokenCookie);
 
-//        return TokenDto.builder()
-//                .grantType("Bearer")
-//                .accessToken(accessToken)
-//                .refreshToken(refreshToken)
-//                .build();
+        return TokenDto.builder()
+                .grantType("Bearer")
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
     }
 
     //Access Token이 만료되어서 refresh Token을 받았을 때 새로운 access Token을 생성해서 반환
-    public void generateNewAccessToken(String refreshToken, int expirationTime, HttpServletResponse response) {
+    public TokenDto generateNewAccessToken(String refreshToken, int expirationTime, HttpServletResponse response) {
         // refreshToken에서 클레임 추출
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(key)
@@ -202,12 +202,11 @@ public class JwtTokenProvider {
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
 
-        // 쿠키에 액세스 토큰 저장
-        Cookie accessTokenCookie = new Cookie("accessToken", accessToken);
-        accessTokenCookie.setPath("/");
-        accessTokenCookie.setHttpOnly(true);
-        accessTokenCookie.setMaxAge(30 * 60); // 쿠키 유효 시간을 30분으로 설정
-        response.addCookie(accessTokenCookie);
+        return TokenDto.builder()
+                .grantType("Bearer")
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
     }
 
     // JWT 토큰을 복호화하여 토큰에 들어있는 정보를 꺼내는 메서드

@@ -3,6 +3,7 @@ package javaiscoffee.polaroad.member;
 import javaiscoffee.polaroad.response.ResponseMessages;
 import javaiscoffee.polaroad.response.Status;
 import javaiscoffee.polaroad.security.CustomUserDetails;
+import javaiscoffee.polaroad.wrapper.RequestWrapperDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -44,7 +45,8 @@ public class MemberController {
      * 반환 데이터 : 수정된 정보를 포함한 Response
      */
     @PatchMapping("/my/edit")
-    public ResponseEntity<?> editMyProfile(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody MemberInformationRequestDto memberInformationRequestDto) {
+    public ResponseEntity<?> editMyProfile(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody RequestWrapperDto<MemberInformationRequestDto> wrapperDto) {
+        MemberInformationRequestDto memberInformationRequestDto = wrapperDto.getData();
         String email = userDetails.getUsername();
         log.info("내 정보를 확인하려는 email = {}", email);
         log.info("수정하려는 정보 = {}", memberInformationRequestDto);
@@ -59,11 +61,12 @@ public class MemberController {
      * 반환 데이터 : 성공했다는 status만 가지고 있는 Response
      */
     @PatchMapping("/my/edit/reset-password")
-    public ResponseEntity<?> resetPassword(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody PasswordResetRequestDto passwordResetRequestDto) {
+    public ResponseEntity<?> resetPassword(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody RequestWrapperDto<PasswordResetRequestDto> wrapperDto) {
         String email = userDetails.getUsername();
+        PasswordResetRequestDto passwordResetRequestDto = wrapperDto.getData();
         log.info("비밀번호 재설정하려는 email = {}", email);
         // 여기서 email 변수를 사용하여 필요한 로직을 수행
-        String newPassword = passwordResetRequestDto.getData().getPassword();
+        String newPassword = passwordResetRequestDto.getPassword();
         if (!memberService.resetPassword(email, newPassword)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Status(ResponseMessages.NOT_FOUND));
         }

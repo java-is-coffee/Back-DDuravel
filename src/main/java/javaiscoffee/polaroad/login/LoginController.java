@@ -10,9 +10,12 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import javaiscoffee.polaroad.exception.NotFoundException;
+import javaiscoffee.polaroad.exception.UnAuthorizedException;
 import javaiscoffee.polaroad.response.ResponseMessages;
 import javaiscoffee.polaroad.response.Status;
 import javaiscoffee.polaroad.member.Member;
+import javaiscoffee.polaroad.security.RefreshTokenDto;
+import javaiscoffee.polaroad.security.TokenDto;
 import javaiscoffee.polaroad.wrapper.RequestWrapperDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,11 +43,11 @@ public class LoginController {
     public ResponseEntity<?> login(/* @Validated */ @RequestBody RequestWrapperDto<LoginDto> requestDto, HttpServletResponse response) {
         LoginDto loginDto = requestDto.getData();
         log.info("로그인 요청 = {}",loginDto);
-        boolean result = loginService.login(loginDto, response);
+        TokenDto tokenDto = loginService.login(loginDto, response);
         //로그인 실패했을 경우 실패 Response 반환
-        if(!result) throw new NotFoundException(ResponseMessages.LOGIN_FAILED.getMessage());
+        if(tokenDto == null) throw new NotFoundException(ResponseMessages.LOGIN_FAILED.getMessage());
 
-        return ResponseEntity.ok(ResponseMessages.SUCCESS.getMessage());
+        return ResponseEntity.ok(tokenDto);
     }
 
     @Hidden
@@ -74,20 +77,14 @@ public class LoginController {
      * access 토큰 30분짜리 재발급
      */
     @PostMapping("/refresh")
-    public ResponseEntity<?> refreshAccessToken(HttpServletRequest request, HttpServletResponse response) {
-        Cookie[] cookies = request.getCookies();
-        String refreshToken = null;
-        if(cookies != null) {
-            for(Cookie cookie : cookies) {
-                if("refreshToken".equals(cookie.getName())) {
-                    refreshToken = cookie.getValue();
-                }
-            }
-        }
+    public ResponseEntity<TokenDto> refreshAccessToken(HttpServletRequest request, HttpServletResponse response, @RequestBody RefreshTokenDto refreshTokenDto) {
+        String refreshToken = refreshTokenDto.getData().getRefreshToken();
         log.info("refreshToken 받음 = {}", refreshToken);
         //토큰 검증 후 30분짜리 일반 토큰 받아오기
-        loginService.refresh(refreshToken, response);
-
-        return ResponseEntity.ok(ResponseMessages.SUCCESS.getMessage());
+        TokenDto tokenDto = loginService.refresh(refreshToken, response);
+        if(tokenDto==null) {
+            throw new UnAuthorizedException(ResponseMessages.UNAUTHORIZED.getMessage());
+        }
+        return ResponseEntity.ok(tokenDto);
     }
 }
