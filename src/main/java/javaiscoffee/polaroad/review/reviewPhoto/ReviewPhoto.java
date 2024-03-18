@@ -26,7 +26,7 @@ public class ReviewPhoto {
     private Long reviewPhotoId;
     @ManyToOne(fetch = FetchType.LAZY)
     @Setter @JoinColumn(name = "review_id")
-    private Review reviewId;    // 리뷰 자체
+    private Review reviewId;
     @Setter
     private String image;   // 사진 url
 }

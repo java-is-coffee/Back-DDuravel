@@ -21,7 +21,9 @@ public class ReviewPhotoService {
     private final JpaReviewRepository reviewRepository;
     private final JpaReviewPhotoRepository reviewPhotoRepository;
 
-    // 댓글 생성시 사용하는 사진 저장 메서드
+    /**
+     * 댓글 생성시 사용하는 사진 저장 메서드
+     */
     public ReviewPhoto saveReviewPhoto(String image, Review review) {
         ReviewPhoto newReviewPhoto = new ReviewPhoto();
         newReviewPhoto.setImage(image);     // 링크 저장
@@ -31,12 +33,15 @@ public class ReviewPhotoService {
         return newReviewPhoto;
     }
 
-    // 댓글 수정시 사용하는 사진 수정 메서드
+    /**
+     * 댓글 수정시 사용하는 사진 수정 메서드
+     */
     public void editReviewPhoto(List<String> reviewPhotoUrlList, Review review) {
         //기존 사진 url 리스트
         List<ReviewPhoto> oldReviewPhotoList = reviewRepository.findByReviewId(review.getReviewId()).getReviewPhoto();
         //새로 수정된 사진 세트
         Set<String> updatedReviewPhotoSet = new HashSet<>(reviewPhotoUrlList);
+
         oldReviewPhotoList.forEach(reviewPhotoUrl -> {
             //삭제되어야 할 사진 찾기
             if (!updatedReviewPhotoSet.contains(reviewPhotoUrl.getImage())) {   // 수정된 리스트에 기존 사진 url이 없으면
@@ -49,9 +54,9 @@ public class ReviewPhotoService {
         });
 
         reviewPhotoUrlList.forEach(reviewPhotoUrl ->{
-            Optional<ReviewPhoto> reviewPhoto = reviewPhotoRepository.findReviewPhotoIdByReviewPhotoUrl(reviewPhotoUrl);
-            log.info("ReviewPhoto 객체 = {}", reviewPhoto);
-            if (reviewPhoto.isEmpty()) {
+            Optional<ReviewPhoto> reviewPhotoId = reviewPhotoRepository.findReviewPhotoIdByReviewPhotoUrl(reviewPhotoUrl);
+            // 새로 추가된 사진은 사진 id가 null, 새로 생성 후 저장
+            if (reviewPhotoId.isEmpty()) {
                 ReviewPhoto newReviewPhoto = new ReviewPhoto();
                 Review reId = reviewRepository.findByReviewId(review.getReviewId());
                 newReviewPhoto.setImage(reviewPhotoUrl);
