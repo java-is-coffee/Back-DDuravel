@@ -39,8 +39,8 @@ public class SliceResponseDto<T> {
                     "    }\n" +
                     "]")
     private List<ResponseReviewDto> content;
-    @Schema(description = "## 댓글 리스트", example ="true")
-    private boolean hasNext;    // 다음 페이지가 있는지
+    @Schema(description = "## 다음 페이지가 있는지 여부", example ="true")
+    private boolean hasNext;
 
     public SliceResponseDto(List<ResponseReviewDto> content, boolean hasNext) {
         this.content = content;
