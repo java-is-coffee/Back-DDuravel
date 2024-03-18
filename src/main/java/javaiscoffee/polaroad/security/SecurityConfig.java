@@ -43,10 +43,7 @@ public class SecurityConfig {
                 .requestMatchers(new AntPathRequestMatcher("/api/member/register")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/api/member/register/email-check")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/api/member/refresh")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/ws/**")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/YJS/**")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/login/oauth2/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/api/oauth2/**")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/api/email/**")).permitAll()
                 //swagger 인증 예외
                 .requestMatchers(new AntPathRequestMatcher("/swagger-ui/**")).permitAll()

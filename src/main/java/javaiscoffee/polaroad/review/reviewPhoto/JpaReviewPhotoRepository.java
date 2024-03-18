@@ -24,7 +24,6 @@ public class JpaReviewPhotoRepository implements ReviewPhotoRepository{
 
     @Override
     public Optional<ReviewPhoto> findReviewPhotoIdByReviewPhotoUrl(String reviewPhotoUrl) {
-        log.info("사진 url로 사진 id 찾는 쿼리문 시작, reviewPhotoUrl = {}", reviewPhotoUrl);
         try {
             ReviewPhoto photoId = em.createQuery("SELECT rp FROM ReviewPhoto rp WHERE rp.image = :reviewPhotoUrl", ReviewPhoto.class)
                     .setParameter("reviewPhotoUrl", reviewPhotoUrl)
@@ -41,4 +40,5 @@ public class JpaReviewPhotoRepository implements ReviewPhotoRepository{
         em.remove(reviewPhoto);
         em.flush();
     }
+
 }
