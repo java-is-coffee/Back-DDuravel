@@ -6,9 +6,7 @@ import jakarta.persistence.TypedQuery;
 import javaiscoffee.polaroad.member.Member;
 import javaiscoffee.polaroad.post.Post;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -57,7 +55,9 @@ public class JpaReviewRepository implements ReviewRepository{
         query.executeUpdate(); // DB 댓글 수 업데이트
     }
 
-    // PostId로 review들 조회
+    /**
+     * 해당 포스트의 모든 댓글들 조회
+     */
     @Override
     public List<Review> findReviewByPostId(Post postId, ReviewStatus status) {
         return em.createQuery("SELECT r FROM Review r WHERE r.postId = :postId AND r.status = :status ORDER BY r.createdTime ASC", Review.class) //post와 status가 set된 값과 일치하는 review 엔티티 선택하고 오름차순 정렬
@@ -66,8 +66,10 @@ public class JpaReviewRepository implements ReviewRepository{
                 .getResultList();
     }
 
-    // 포스트의 댓글들 페이징
-    public Page<Review> findReviewPagedByPostId(Post postId, Pageable pageable, ReviewStatus status) {
+    /**
+     * 포스트의 댓글들 페이징
+     */
+    public Slice<Review> findReviewSlicedByPostId(Post postId, Pageable pageable, ReviewStatus status) {
         // 페이징된 결과를 가져오는 쿼리
         TypedQuery<Review> query = em.createQuery("SELECT r FROM Review r WHERE r.postId = :postId AND r.status = :status ORDER BY r.createdTime DESC", Review.class)
                 .setParameter("postId", postId)
@@ -77,18 +79,18 @@ public class JpaReviewRepository implements ReviewRepository{
         query.setFirstResult((int) pageable.getOffset());
         query.setMaxResults(pageable.getPageSize());
 
-        // 전체 댓글 수를 가져오는 카운트 쿼리
-        TypedQuery<Long> countQuery = em.createQuery("SELECT COUNT(r) FROM Review r WHERE r.postId = :postId AND r.status = :status", Long.class)
-                .setParameter("postId", postId)
-                .setParameter("status", status);
-        // 전체 댓글 수 조회
-        Long totalReviews = countQuery.getSingleResult();
         List<Review> reviewList = query.getResultList();
-        // 페이징된 결과와 전체 댓글 수를 사용하여 Page 객체 생성
-        return new PageImpl<>(reviewList, pageable, totalReviews);
+
+        // 다음 페이지의 존재 여부 결정. 현재 페이지의 데이터 크기가 페이지 크기와 같다면 다음 페이지가 있을 것으로 간주되고 true 반환, 아니면 false 반환
+        // 해결 필요!!! 다음 페이지가 삭제된 댓글만 있을 때에 true로 나옴!!!
+        boolean hasNextPage = reviewList.size() == pageable.getPageSize();
+        // Slice 객체 생성 후 반환
+        return new SliceImpl<>(reviewList, pageable, hasNextPage);
     }
 
-    // MemberId로 review들 조회
+    /**
+     * 맴버가 작성한 모든 댓글들 조회
+     */
     @Override
     public List<Review> findReviewByMemberId(Member memberId, ReviewStatus status) {
         return em.createQuery("SELECT r FROM Review r WHERE r.memberId = :memberId AND r.status = :status ORDER BY r.createdTime ASC", Review.class)
@@ -97,8 +99,10 @@ public class JpaReviewRepository implements ReviewRepository{
                 .getResultList();
     }
 
-    // 맴버가 작성한 모든 댓글들 페이징
-    public Page<Review> findReviewPagedByMemberId(Member memberId, Pageable pageable, ReviewStatus status) {
+    /**
+     * 맴버가 작성한 모든 댓글들 페이징
+     */
+    public Slice<Review> findReviewSlicedByMemberId(Member memberId, Pageable pageable, ReviewStatus status) {
         // 페이징된 결과를 가져오는 쿼리
         TypedQuery<Review> query = em.createQuery("SELECT r FROM Review r WHERE r.memberId = :memberId AND r.status = :status ORDER BY r.createdTime DESC", Review.class)
                 .setParameter("memberId", memberId)
@@ -108,16 +112,8 @@ public class JpaReviewRepository implements ReviewRepository{
         query.setFirstResult((int) pageable.getOffset());
         query.setMaxResults(pageable.getPageSize());
 
-        // 전체 댓글 수를 가져오는 카운트 쿼리
-        TypedQuery<Long> countQuery = em.createQuery("SELECT COUNT(r) FROM Review r WHERE r.memberId = :memberId AND r.status = :status", Long.class)
-                .setParameter("memberId", memberId)
-                .setParameter("status", status);
-
-        // 전체 댓글 수 조회
-        Long totalReviews = countQuery.getSingleResult();
-
         List<Review> reviewList = query.getResultList();
-        // 페이징된 결과와 전체 댓글 수를 사용하여 Page 객체 생성
-        return new PageImpl<>(reviewList, pageable, totalReviews);
+        boolean hasNextPage = reviewList.size() == pageable.getPageSize();
+        return new SliceImpl<>(reviewList, pageable, hasNextPage);
     }
 }

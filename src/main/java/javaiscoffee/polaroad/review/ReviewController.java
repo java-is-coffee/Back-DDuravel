@@ -12,10 +12,7 @@ import javaiscoffee.polaroad.security.CustomUserDetails;
 import javaiscoffee.polaroad.wrapper.RequestWrapperDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -62,7 +59,7 @@ public class ReviewController {
         log.info("댓글 조회 요청");
         Long memberId = userDetails.getMemberId();
         ResponseReviewDto findedReview = reviewService.getReviewById(reviewId, memberId);
-        if (findedReview == null) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
+        if (findedReview == null) throw new NotFoundException(ResponseMessages.READ_FAILED.getMessage());
         return ResponseEntity.ok(findedReview);
     }
 
@@ -73,16 +70,12 @@ public class ReviewController {
     })
     @PatchMapping("/edit/{reviewId}")
     public ResponseEntity<?> editReview(@RequestBody RequestWrapperDto<ReviewEditRequestDto> requestDto, @PathVariable(name = "reviewId") Long reviewId, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        log.info("댓글 수정 요청");
         Long memberId = userDetails.getMemberId();
         ReviewEditRequestDto editReviewDto = requestDto.getData();
         log.info("수정된 댓글 정보 = {}", editReviewDto);
-        log.info("수정된 댓글의 댓글 ID = {}", reviewId);
         ResponseReviewDto editedReview = reviewService.editReview(editReviewDto, reviewId, memberId);
-        if (editedReview == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Status(ResponseMessages.INPUT_ERROR));
-        } else {
-            return ResponseEntity.ok(editedReview);
-        }
+        return ResponseEntity.ok(editedReview);
     }
 
     @Operation(summary = "댓글 삭제 API", description = "댓글 삭제할 때 사용하는 API")
@@ -112,18 +105,17 @@ public class ReviewController {
     @GetMapping("/post/{postId}")
     public ResponseEntity<?> getReviewsByPostId(@PathVariable Long postId) {
         log.info("해당 포스트의 모든 댓글 조회 요청 = {}", postId);
-        if (postId == null) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
         return ResponseEntity.ok(reviewService.getReviewByPostId(postId));
     }
 
     // 포스트에 딸린 모든 댓글 페이징
     @Operation(summary = "포스트 댓글 페이징 API", description = "포스트의 댓글들을 페이징 할 때 사용하는 API")
-    @GetMapping("/post/{postId}/reviews")
-    public ResponseEntity<Page<?>> getPostReviewsPaged(
+    @GetMapping("/post/{postId}/paging")
+    public ResponseEntity<SliceResponseDto<?>> getPostReviewsPaged(
             @PathVariable(name = "postId") Long postId,
-            @Parameter(name = "page", description = "## 댓글 페이지 번호", required = false, example = "1") @RequestParam int page) {
+            @Parameter(name = "page", description = "## 댓글 페이지 번호", required = true, example = "1") @RequestParam int page) {
         log.info("포스트 댓글 페이징 요청");
-        Page<?> reviewPage = reviewService.getReviewsPagedByPostId(postId, page);
+        SliceResponseDto<?> reviewPage = reviewService.getReviewsPagedByPostId(postId, page);
         return ResponseEntity.ok(reviewPage);
     }
 
@@ -136,17 +128,16 @@ public class ReviewController {
     @GetMapping("/member/{memberId}")
     public ResponseEntity<?> getReviewsByMemberId(@PathVariable Long memberId) {
         log.info("맴버가 작성한 모든 댓글 조회 요청");
-        if (memberId == null) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
         return ResponseEntity.ok(reviewService.getReviewByMemberId(memberId));
     }
 
     @Operation(summary = "유저의 댓글 페이징 API", description = "유저가 작성한 모든 댓글들을 페이징 할 때 사용하는 API")
-    @GetMapping("/member/{memberId}/reviews")
-    public ResponseEntity<Page<?>> getMyReviewsPaged(
+    @GetMapping("/member/{memberId}/paging")
+    public ResponseEntity<SliceResponseDto<?>> getMyReviewsPaged(
             @PathVariable(name = "memberId") Long memberId,
-            @Parameter(name = "page", description = "## 댓글 페이지 번호", required = false, example = "1") @RequestParam int page) {
+            @Parameter(name = "page", description = "## 댓글 페이지 번호", required = true, example = "1") @RequestParam int page) {
         log.info("맴버가 작성한 모든 댓글들 페이징 요청");
-        Page<?> reviewPage = reviewService.getReviewsPagedByMemberId(memberId, page);
+        SliceResponseDto<?> reviewPage = reviewService.getReviewsPagedByMemberId(memberId, page);
         return ResponseEntity.ok(reviewPage);
     }
 

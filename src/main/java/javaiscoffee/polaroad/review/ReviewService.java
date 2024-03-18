@@ -3,6 +3,7 @@ package javaiscoffee.polaroad.review;
 import ext.javaiscoffee.polaroad.review.reviewPhoto.QReviewPhoto;
 import javaiscoffee.polaroad.exception.BadRequestException;
 import javaiscoffee.polaroad.exception.ForbiddenException;
+import javaiscoffee.polaroad.exception.NotFoundException;
 import javaiscoffee.polaroad.member.JpaMemberRepository;
 import javaiscoffee.polaroad.member.Member;
 import javaiscoffee.polaroad.post.Post;
@@ -57,7 +58,8 @@ public class ReviewService {
         List<String> savedReviewPhotos = new ArrayList<>();
         // 사진 저장
         reviewDto.getReviewPhotoList().forEach(reviewPhotoUrl ->{
-            ReviewPhoto newReviewPhoto = reviewPhotoService.saveReviewPhoto(reviewPhotoUrl, savedReview);   // reviewDto에 리스트로 있는 사진 url들을 하나하나 saveReviewPhoto에 보냄
+            // reviewDto에 리스트로 있는 사진 url들을 하나하나 saveReviewPhoto에 보냄
+            ReviewPhoto newReviewPhoto = reviewPhotoService.saveReviewPhoto(reviewPhotoUrl, savedReview);
             savedReviewPhotos.add(newReviewPhoto.getImage());
         } );
 
@@ -68,10 +70,12 @@ public class ReviewService {
     public ResponseReviewDto getReviewById(Long reviewId, Long memberId) {
         log.info("댓글 조회 시작 = {}", reviewId);
         Review findedReview = reviewRepository.findByReviewId(reviewId);
+        if (findedReview == null || findedReview.getStatus() == ReviewStatus.DELETED) {
+            return null;
+        }
         log.info("댓글 id 조회 후 = {}", findedReview);
         Post post = postRepository.findById(findedReview.getPostId().getPostId()).get();
-        // 삭제된 댓글이거나 삭제된 포스트인 경우 null 반환
-        if (findedReview == null || findedReview.getStatus() == ReviewStatus.DELETED || post == null || post.getStatus() == PostStatus.DELETED) {
+        if (post == null || post.getStatus() == PostStatus.DELETED) {
             return null;
         }
 
@@ -93,20 +97,22 @@ public class ReviewService {
     }
 
     public ResponseReviewDto editReview(ReviewEditRequestDto editReviewDto, Long reviewId, Long memberId) {
-        log.info("editReview 메서드에 들어온 reviewId = {}", reviewId);
+        log.info("댓글 수정 시작");
         Review originalReview = reviewRepository.findByReviewId(reviewId);
-        log.info("댓글 id 조회 후 = {}", originalReview);
+        // 원본 댓글이 null 이거나, 삭제된 경우
+        if (originalReview == null || originalReview.getStatus() == ReviewStatus.DELETED) {
+            throw new BadRequestException(ResponseMessages.NOT_FOUND.getMessage());
+        }
+        // 포스트가 null 이거나, 삭제된 경우
         Post post = postRepository.findById(originalReview.getPostId().getPostId()).get();
-
-        // 원본 댓글 & 포스트가 null 이거나, 삭제된 경우 null 반환
-        if (originalReview == null || originalReview.getStatus() == ReviewStatus.DELETED || post == null || post.getStatus() == PostStatus.DELETED) {
-            return null;
+        if (post == null || post.getStatus() == PostStatus.DELETED) {
+            throw new BadRequestException(ResponseMessages.NOT_FOUND.getMessage());
         }
 
         Member member = memberRepository.findByMemberId(memberId).get();
-        // 댓글을 작성한 memberId와 수정을 요청한 맴버의 memberId가 다른 경우 null 반환
+        // 댓글을 작성한 memberId와 수정을 요청한 맴버의 memberId가 다른 경우
         if (!originalReview.getMemberId().getMemberId().equals(member.getMemberId())) {
-            return null;
+            throw new ForbiddenException(ResponseMessages.FORBIDDEN.getMessage());
         }
 
         // 댓글 수정
@@ -124,17 +130,17 @@ public class ReviewService {
 
     public Boolean deleteReview(Long reviewId, Long memberId) {
         Review review = reviewRepository.findByReviewId(reviewId);
-        // 댓글이 존재하지 않거나 삭제된 댓글인 경우 false 반환
+        // 댓글이 존재하지 않거나 삭제된 댓글인 경우
         if (review == null || review.getStatus() == ReviewStatus.DELETED) {
             throw new BadRequestException(ResponseMessages.NOT_FOUND.getMessage());
         }
         Post post = postRepository.findById(review.getPostId().getPostId()).get();
-        // 포스트가 존재하지 않거나 삭제된 포스트인 경우 false 반환
+        // 포스트가 존재하지 않거나 삭제된 포스트인 경우
         if (post == null || post.getStatus() == PostStatus.DELETED) {
             throw new BadRequestException(ResponseMessages.NOT_FOUND.getMessage());
         }
         Member member = memberRepository.findByMemberId(memberId).get();
-        // member가 댓글 작성자가 아닌 경우 false 반환
+        // member가 댓글 작성자가 아닌 경우
         if (!review.getMemberId().getMemberId().equals(member.getMemberId())) {
             throw new ForbiddenException(ResponseMessages.FORBIDDEN.getMessage());
         }
@@ -152,49 +158,74 @@ public class ReviewService {
         return true;
     }
 
-    // 포스트에 딸린 ACTIVE 상태의 모든 댓글
+
+    /**
+     * 포스트에 딸린 ACTIVE 상태의 모든 댓글
+     */
     public List<ResponseReviewDto> getReviewByPostId(Long postId) {
         log.info("해당 포스트의 모든 댓글 조회 시작 ");
-        Post getPost = postRepository.findById(postId).get();
+        Post getPost = postRepository.findById(postId).orElse(null);
+        if (getPost == null || getPost.getStatus() == PostStatus.DELETED) {
+            throw new BadRequestException(ResponseMessages.NOT_FOUND.getMessage());
+        }
         // 가져온 post에 속한 ACTIVE 상태인 모든 댓글을 가져옴
         List<Review> reviewList = reviewRepository.findReviewByPostId(getPost, ReviewStatus.ACTIVE);
         return toResponseReviewDtoList(reviewList);
     }
 
-    // 포스트에 딸린 댓글 페이징
-    public Page<ResponseReviewDto> getReviewsPagedByPostId(Long postId, int page) {
+
+    /**
+     * 포스트에 딸린 댓글 페이징
+     * Slice를 사용하는 이유 => 서버에서는 클라이언트로부터 요청을 받아 해당 페이지에 해당하는 데이터를 조회하여 응답하는 역할을 한다,
+     * 이를 위해 서버에서는 페이지당 데이터의 일부만을 반환하는 것이 아니라, 다음 페이지가 있는지 여부를 알려주는 방식으로 데이터를 전달해야 한다.
+     */
+    public SliceResponseDto<ResponseReviewDto> getReviewsPagedByPostId(Long postId, int page) {
         log.info("포스트 댓글들 페이징 시작 = {}");
-        page = (page == 0) ? 0 : (page - 1); // 페이지 번호 1부터 시작하게
-        Post getPostId = postRepository.findById(postId).get();
+        page = (page == 0) ? 0 : (page - 1);
+        Post getPost = postRepository.findById(postId).orElse(null);
+        if (getPost == null || getPost.getStatus() == PostStatus.DELETED) {
+            throw new BadRequestException(ResponseMessages.NOT_FOUND.getMessage());
+        }
+
+        // 페이지 요청 정보 생성! 실제 데이터를 포함하고 있지 않으며, 단순히 페이지 관련 정보를 포함하고 있음
         Pageable pageable = PageRequest.of(page, 10, Sort.by("createdTime").descending());
-        Page<Review> reviewPage = reviewRepository.findReviewPagedByPostId(getPostId, pageable, ReviewStatus.ACTIVE);
 
-        List<Review> reviewList = reviewPage.getContent();
+        Slice<Review> reviewSlice = reviewRepository.findReviewSlicedByPostId(getPost, pageable, ReviewStatus.ACTIVE);
+        // 조회된 리뷰 페이지에서 실제 데이터 가져옴
+        List<Review> reviewList = reviewSlice.getContent();
+        // 가져온 리뷰 데이터를 ResponseReviewDto로 변환
         List<ResponseReviewDto> responseReviewDtoList = toResponseReviewDtoList(reviewList);
-
-        return new PageImpl<>(responseReviewDtoList, pageable, reviewPage.getTotalElements());
+        // [{리뷰 리스트}, 다음 페이지가 있는지] 반환
+        return new SliceResponseDto<>(responseReviewDtoList, reviewSlice.hasNext());
     }
 
-    // 맴버가 작성한 모든 댓글
+    /**
+     * 맴버가 작성한 모든 댓글
+     */
     public List<ResponseReviewDto> getReviewByMemberId(Long memberId) {
-        Member getMember = memberRepository.findByMemberId(memberId).get();
+        Member getMember = memberRepository.findById(memberId).orElse(null);
+        if (getMember == null) {
+            throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
+        }
         // 맴버가 작성한 ACTIVE 댓글 리스트
         List<Review> reviewList = reviewRepository.findReviewByMemberId(getMember, ReviewStatus.ACTIVE);
         return toResponseReviewDtoList(reviewList);
     }
 
-    // 맴버가 작성한 모든 댓글들 페이징
-    public Page<ResponseReviewDto> getReviewsPagedByMemberId(Long memberId, int page) {
+    /**
+     * 맴버가 작성한 모든 댓글들 페이징
+     */
+    public SliceResponseDto<ResponseReviewDto> getReviewsPagedByMemberId(Long memberId, int page) {
         log.info("맴버가 작성한 모든 댓글들 페이징 시작 = {}");
-        page = (page == 0) ? 0 : (page - 1); // 페이지 번호 1부터 시작하게
-        Member getMemberId = memberRepository.findById(memberId).get();
+        page = (page == 0) ? 0 : (page - 1);
+        Member getMemberId = memberRepository.findById(memberId).orElse(null);
         Pageable pageable = PageRequest.of(page, 10, Sort.by("createdTime").descending());
-        Page<Review> reviewPage = reviewRepository.findReviewPagedByMemberId(getMemberId, pageable, ReviewStatus.ACTIVE);
+        Slice<Review> reviewSlice = reviewRepository.findReviewSlicedByMemberId(getMemberId, pageable, ReviewStatus.ACTIVE);
 
-        List<Review> reviewList = reviewPage.getContent();
+        List<Review> reviewList = reviewSlice.getContent();
         List<ResponseReviewDto> responseReviewDtoList = toResponseReviewDtoList(reviewList);
 
-        return new PageImpl<>(responseReviewDtoList, pageable, reviewPage.getTotalElements());
+        return new SliceResponseDto<>(responseReviewDtoList, reviewSlice.hasNext());
     }
 
 
@@ -238,4 +269,5 @@ public class ReviewService {
 
         return responseReviewDtoList;
     }
+
 }
