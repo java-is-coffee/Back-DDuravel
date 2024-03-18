@@ -29,7 +29,7 @@ import java.util.List;
         property = "memberId"
 )
 @Builder
-@ToString
+@ToString(exclude = {"posts", "cards","reviews","wishLists"})
 public class Member implements UserDetails {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "member_id")
