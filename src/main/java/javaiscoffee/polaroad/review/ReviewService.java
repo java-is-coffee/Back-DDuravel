@@ -1,6 +1,5 @@
 package javaiscoffee.polaroad.review;
 
-import ext.javaiscoffee.polaroad.review.reviewPhoto.QReviewPhoto;
 import javaiscoffee.polaroad.exception.BadRequestException;
 import javaiscoffee.polaroad.exception.ForbiddenException;
 import javaiscoffee.polaroad.exception.NotFoundException;
