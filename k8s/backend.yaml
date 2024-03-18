@@ -36,6 +36,16 @@ spec:
                 secretKeyRef:
                   name: db-secrets
                   key: JWT_SECRET_KEY
+            - name: KAKAO_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: db-secrets
+                  key: KAKAO_API_KEY
+            - name: KAKAO_REDIRECT_URI
+              valueFrom:
+                secretKeyRef:
+                  name: db-secrets
+                  key: KAKAO_REDIRECT_URI
           resources:
             requests:
               memory: 1Gi

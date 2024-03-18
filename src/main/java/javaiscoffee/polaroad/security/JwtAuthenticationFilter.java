@@ -43,7 +43,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 || "/api/member/register/email-check".equals(requestURI)
                 || requestURI.startsWith("/ws")
                 || requestURI.startsWith("/YJS")
-                || requestURI.startsWith("/auth")
+                || requestURI.startsWith("/api/oauth2")
                 || requestURI.startsWith("/api/email")
                 || requestURI.startsWith("/login/oauth2/")
                 || requestURI.startsWith("/swagger-ui")
