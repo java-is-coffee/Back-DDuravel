@@ -70,6 +70,15 @@ public class JpaReviewRepository implements ReviewRepository{
      * 포스트의 댓글들 페이징
      */
     public Slice<Review> findReviewSlicedByPostId(Post postId, Pageable pageable, ReviewStatus status) {
+        // 총 댓글 수를 조회하는 쿼리
+        TypedQuery<Long> countQuery = em.createQuery("SELECT COUNT(r) FROM Review r WHERE r.postId = :postId AND r.status = :status", Long.class)
+                .setParameter("postId", postId)
+                .setParameter("status", status);
+        Long totalReviews = countQuery.getSingleResult();
+
+        // 마지막 페이지에 댓글이 있는지 여부 확인 => 총 댓글 수를 기반으로 전체 페이지 수 계산
+        int totalPages = (int) Math.ceil((double) totalReviews / pageable.getPageSize());
+
         // 페이징된 결과를 가져오는 쿼리
         TypedQuery<Review> query = em.createQuery("SELECT r FROM Review r WHERE r.postId = :postId AND r.status = :status ORDER BY r.createdTime DESC", Review.class)
                 .setParameter("postId", postId)
@@ -78,12 +87,9 @@ public class JpaReviewRepository implements ReviewRepository{
         // 페이징 쿼리 적용
         query.setFirstResult((int) pageable.getOffset());
         query.setMaxResults(pageable.getPageSize());
-
         List<Review> reviewList = query.getResultList();
-
-        // 다음 페이지의 존재 여부 결정. 현재 페이지의 데이터 크기가 페이지 크기와 같다면 다음 페이지가 있을 것으로 간주되고 true 반환, 아니면 false 반환
-        // 해결 필요!!! 다음 페이지가 삭제된 댓글만 있을 때에 true로 나옴!!!
-        boolean hasNextPage = reviewList.size() == pageable.getPageSize();
+        // 다음 페이지의 존재 여부 결정. 현재 페이지가 마지막 페이지인지 확인
+        boolean hasNextPage = pageable.getPageNumber() < totalPages - 1;
         // Slice 객체 생성 후 반환
         return new SliceImpl<>(reviewList, pageable, hasNextPage);
     }
