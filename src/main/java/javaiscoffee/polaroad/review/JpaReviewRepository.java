@@ -76,7 +76,7 @@ public class JpaReviewRepository implements ReviewRepository{
                 .setParameter("status", status);
         Long totalReviews = countQuery.getSingleResult();
 
-        // 마지막 페이지에 댓글이 있는지 여부 확인 => 총 댓글 수를 기반으로 전체 페이지 수 계산
+        // 전체 페이지 수! 총 댓글 수를 기반으로 전체 페이지 수 계산 => 마지막 페이지에 댓글이 있는지 여부 확인을 위해
         int totalPages = (int) Math.ceil((double) totalReviews / pageable.getPageSize());
 
         // 페이징된 결과를 가져오는 쿼리
@@ -87,8 +87,9 @@ public class JpaReviewRepository implements ReviewRepository{
         // 페이징 쿼리 적용
         query.setFirstResult((int) pageable.getOffset());
         query.setMaxResults(pageable.getPageSize());
+        // 현재 페이지의 댓글 리스트
         List<Review> reviewList = query.getResultList();
-        // 다음 페이지의 존재 여부 결정. 현재 페이지가 마지막 페이지인지 확인
+        // 다음 페이지의 존재 여부 결정. 현재 페이지 번호가 전체 페이지 수보다 적으면 다음 페이지가 있다는 것이므로 true가 저장됌
         boolean hasNextPage = pageable.getPageNumber() < totalPages - 1;
         // Slice 객체 생성 후 반환
         return new SliceImpl<>(reviewList, pageable, hasNextPage);
