@@ -14,7 +14,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -63,10 +63,10 @@ public class Member implements UserDetails {
     @Enumerated(EnumType.STRING)
     private MemberRole role;
     @Column(name = "created_time")
-    private LocalDate createdTime;
+    private LocalDateTime createdTime;
     @Setter
     @Column(name = "updated_date")
-    private LocalDate updatedTime;
+    private LocalDateTime updatedTime;
     @Setter @NotNull
     @Enumerated(EnumType.STRING)
     private MemberStatus status;
@@ -91,8 +91,8 @@ public class Member implements UserDetails {
         this.followedNumber = 0;
         this.followingNumber = 0;
         this.role = MemberRole.USER;
-        this.createdTime = LocalDate.now();
-        this.updatedTime = LocalDate.now();
+        this.createdTime = LocalDateTime.now();
+        this.updatedTime = LocalDateTime.now();
         this.status = MemberStatus.ACTIVE;
         this.posts = new ArrayList<>();
         this.cards = new ArrayList<>();
@@ -162,7 +162,7 @@ public class Member implements UserDetails {
         this.status = MemberStatus.DELETED;
 //        this.setName("삭제된 멤버");
 //        this.setNickname("삭제된 멤버");
-        this.setUpdatedTime(LocalDate.now());
+        this.setUpdatedTime(LocalDateTime.now());
         this.email = this.email + this.getUpdatedTime();
     }
 

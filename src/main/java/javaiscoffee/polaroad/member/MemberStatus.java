@@ -1,5 +1,5 @@
 package javaiscoffee.polaroad.member;
 
 public enum MemberStatus {
-    ACTIVE, DELETED;
+    ACTIVE, DELETED, SUSPENDED;
 }

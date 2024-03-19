@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/member")
 @RequiredArgsConstructor
-@Tag(name = "로그인 관련 API", description = "로그인에 관련된 API들 모음")
+@Tag(name = "로그인 관련 API", description = "로그인에 관련된 API들 모음  - 담당자 윤지호")
 public class LoginController {
     private final LoginService loginService;
 
