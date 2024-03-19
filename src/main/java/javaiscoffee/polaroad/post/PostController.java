@@ -5,6 +5,8 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import javaiscoffee.polaroad.post.card.CardListDto;
+import javaiscoffee.polaroad.post.card.CardService;
 import javaiscoffee.polaroad.security.CustomUserDetails;
 import javaiscoffee.polaroad.wrapper.RequestWrapperDto;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ import java.util.List;
 @Tag(name = "포스트 관련 API",description = "포스트, 카드, 해쉬태그 관련 API들 모음")
 public class PostController {
     private final PostService postService;
+    private final CardService cardService;
 
     @Operation(summary = "포스트 생성", description = "포스트 생성하는 API")
     @ApiResponses({
@@ -125,4 +128,18 @@ public class PostController {
         return ResponseEntity.ok(null);
     }
 
+    @Operation(summary = "마이페이지 카드 조회", description = "마이페이지에서 사용자가 업로드한 삭제되지 않은 카드들만 조회")
+    @Parameter(name = "page", description = "현재 페이지 숫자 0부터 시작 1페이지이면 0을 주입", required = true, example = "0")
+    @Parameter(name = "pageSize",description = "페이지 크기, 한 페이지에 표시할 카드 개수", required = true, example = "8")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "포스트 추천에 성공했을 경우"),
+            @ApiResponse(responseCode = "404", description = "멤버가 삭제되었거나 존재하지 않는 경우")
+    })
+    @GetMapping("/mycard")
+    public ResponseEntity<List<CardListDto>> getMyCardList(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                     @RequestParam(name = "page") int page,
+                                                     @RequestParam(name = "pageSize") int pageSize) {
+        Long memberId = userDetails.getMemberId();
+        return ResponseEntity.ok(cardService.getCardListByMember(memberId, page, pageSize));
+    }
 }

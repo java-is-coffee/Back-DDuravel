@@ -1,9 +1,17 @@
 package javaiscoffee.polaroad.post.card;
 
+import javaiscoffee.polaroad.exception.NotFoundException;
 import javaiscoffee.polaroad.member.Member;
+import javaiscoffee.polaroad.member.MemberRepository;
+import javaiscoffee.polaroad.member.MemberStatus;
 import javaiscoffee.polaroad.post.Post;
+import javaiscoffee.polaroad.response.ResponseMessages;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -14,10 +22,12 @@ import java.util.Optional;
 @Service
 public class CardService {
     private final CardRepository cardRepository;
+    private final MemberRepository memberRepository;
 
     @Autowired
-    public CardService(CardRepository cardRepository) {
+    public CardService(CardRepository cardRepository, MemberRepository memberRepository) {
         this.cardRepository = cardRepository;
+        this.memberRepository = memberRepository;
     }
 
     /**
@@ -63,5 +73,17 @@ public class CardService {
                 cardRepository.save(newCard); // 새 카드 저장
             }
         }
+    }
+
+    public List<CardListDto> getCardListByMember(Long memberId,int page, int pageSize) {
+        Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
+        if(member.getStatus() == MemberStatus.DELETED) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.Direction.DESC, "createdTime");
+        Page<Card> cardPage = cardRepository.findCardsByMemberAndStatusOrderByCreatedTimeDesc(member, CardStatus.ACTIVE,pageable);
+
+        List<Card> memberCardList = cardPage.getContent();
+        return memberCardList.stream()
+                .map(card -> new CardListDto(card.getCardId(), card.getLocation(), card.getImage()))
+                .toList();
     }
 }
