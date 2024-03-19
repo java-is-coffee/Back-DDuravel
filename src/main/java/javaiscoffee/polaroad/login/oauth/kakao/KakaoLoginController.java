@@ -54,8 +54,8 @@ public class KakaoLoginController {
     public void callback(@RequestParam(name = "code") String code,HttpServletResponse response) {
         log.info("카카오 로그인 코드 = {}",code);
         String accessToken = kakaoService.getAccessTokenFromKakao(kakaoApiKey, code);
-        HashMap<String, Object> uerInfo = kakaoService.getUerInfo(accessToken);
-        TokenDto tokenDto = loginService.oauthLogin(uerInfo);
+        HashMap<String, Object> userInfo = kakaoService.getUerInfo(accessToken);
+        TokenDto tokenDto = loginService.oauthLogin(userInfo);
         try {
             String redirectUrl = resultUri +
                     "?access_token=" + URLEncoder.encode(tokenDto.getAccessToken(), "UTF-8") +

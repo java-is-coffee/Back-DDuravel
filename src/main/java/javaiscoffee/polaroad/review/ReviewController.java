@@ -32,7 +32,7 @@ public class ReviewController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "댓글 작성을 성공한 경우"),
             @ApiResponse(responseCode = "400", description = "댓글의 입력값이 잘못된 경우"),
-            @ApiResponse(responseCode = "400", description = "포스트가 없거나 삭제되어서 댓글 삭제 실패한 경우"),
+            @ApiResponse(responseCode = "404", description = "포스트가 없거나 삭제되어서 댓글 삭제 실패한 경우"),
             @ApiResponse(responseCode = "403", description = "권한이 없는 경우")
     })
     @PostMapping("/write/{postId}")
@@ -66,7 +66,8 @@ public class ReviewController {
     @Operation(summary = "댓글 수정 API", description = "댓글 수정할 때 사용하는 API")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "댓글 수정 성공한 경우"),
-            @ApiResponse(responseCode = "400", description = "댓글 수정 실패한 경우")
+            @ApiResponse(responseCode = "404", description = "댓글 수정 실패한 경우"),
+            @ApiResponse(responseCode = "403", description = "권한이 없는 경우")
     })
     @PatchMapping("/edit/{reviewId}")
     public ResponseEntity<?> editReview(@RequestBody RequestWrapperDto<ReviewEditRequestDto> requestDto, @PathVariable(name = "reviewId") Long reviewId, @AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -81,7 +82,7 @@ public class ReviewController {
     @Operation(summary = "댓글 삭제 API", description = "댓글 삭제할 때 사용하는 API")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "댓글 삭제 성공한 경우"),
-            @ApiResponse(responseCode = "400", description = "댓글 or 포스트가 없거나 삭제되어서 댓글 삭제 실패한 경우"),
+            @ApiResponse(responseCode = "404", description = "댓글 or 포스트가 없거나 삭제되어서 댓글 삭제 실패한 경우"),
             @ApiResponse(responseCode = "403", description = "권한이 없는 경우")
     })
     @DeleteMapping("/delete/{reviewId}")
@@ -100,7 +101,7 @@ public class ReviewController {
     @Operation(summary = "포스트에 딸린 모든 댓글 조회 API", description = "포스트id로 해당 포스트의 모든 댓글 조회할 때 사용하는 API")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "postId로 댓글 조회에 성공한 경우"),
-            @ApiResponse(responseCode = "404", description = "postId로 댓글 조회에 실패한 경우")
+            @ApiResponse(responseCode = "404", description = "포스트가 null이거나 삭제된 경우")
     })
     @GetMapping("/post/{postId}")
     public ResponseEntity<?> getReviewsByPostId(@PathVariable Long postId) {
@@ -110,6 +111,10 @@ public class ReviewController {
 
     // 포스트에 딸린 모든 댓글 페이징
     @Operation(summary = "포스트 댓글 페이징 API", description = "포스트의 댓글들을 페이징 할 때 사용하는 API")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "postId로 댓글 조회에 성공한 경우"),
+            @ApiResponse(responseCode = "404", description = "포스트가 null이거나 삭제된 경우")
+    })
     @GetMapping("/post/{postId}/paging")
     public ResponseEntity<SliceResponseDto<?>> getPostReviewsPaged(
             @PathVariable(name = "postId") Long postId,
@@ -123,21 +128,28 @@ public class ReviewController {
     @Operation(summary = "맴버가 작성한 모든 댓글 조회 API", description = "맴버id로 해당 맴버가 작성한 모든 댓글 조회할 때 사용하는 API")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "memberId로 댓글 조회에 성공한 경우"),
-            @ApiResponse(responseCode = "404", description = "memberId로 댓글 조회에 실패한 경우")
+            @ApiResponse(responseCode = "403", description = "memberId가 null이거나 권한이 없는 경우")
     })
     @GetMapping("/member/{memberId}")
-    public ResponseEntity<?> getReviewsByMemberId(@PathVariable Long memberId) {
+    public ResponseEntity<?> getReviewsByMemberId(@PathVariable Long memberId, @AuthenticationPrincipal CustomUserDetails userDetails) {
         log.info("맴버가 작성한 모든 댓글 조회 요청");
-        return ResponseEntity.ok(reviewService.getReviewByMemberId(memberId));
+        Long requestedMemberId = userDetails.getMemberId();
+        return ResponseEntity.ok(reviewService.getReviewByMemberId(memberId, requestedMemberId));
     }
 
     @Operation(summary = "유저의 댓글 페이징 API", description = "유저가 작성한 모든 댓글들을 페이징 할 때 사용하는 API")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "memberId로 댓글 조회에 성공한 경우"),
+            @ApiResponse(responseCode = "403", description = "memberId가 null이거나 권한이 없는 경우")
+    })
     @GetMapping("/member/{memberId}/paging")
     public ResponseEntity<SliceResponseDto<?>> getMyReviewsPaged(
             @PathVariable(name = "memberId") Long memberId,
-            @Parameter(name = "page", description = "## 댓글 페이지 번호", required = true, example = "1") @RequestParam int page) {
+            @Parameter(name = "page", description = "## 댓글 페이지 번호", required = true, example = "1") @RequestParam int page,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
         log.info("맴버가 작성한 모든 댓글들 페이징 요청");
-        SliceResponseDto<?> reviewPage = reviewService.getReviewsPagedByMemberId(memberId, page);
+        Long requestedMemberId = userDetails.getMemberId();
+        SliceResponseDto<?> reviewPage = reviewService.getReviewsPagedByMemberId(memberId, page, requestedMemberId);
         return ResponseEntity.ok(reviewPage);
     }
 

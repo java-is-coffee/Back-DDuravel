@@ -1,0 +1,59 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redisdb
+spec:
+  serviceName: redisdb
+  selector:
+    matchLabels:
+      app: redisdb
+  template:
+    metadata:
+      labels:
+        app: redisdb
+    spec:
+      containers:
+        - name: redisdb
+          # 여러분의 redisdb image 주소를 입력해주세요.
+          image: redis:alpine
+          env:
+            - name: TZ
+              value: Asia/Seoul
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secrets
+                  key: REDIS_PASSWORD
+          args: ["--requirepass", "$(REDIS_PASSWORD)"]
+          volumeMounts:
+            - mountPath: /data
+              name: data
+          resources:
+            limits:
+              memory: 1Gi
+          readinessProbe:
+            tcpSocket:
+              port: 6379 #redis 기본 포트
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redisdb
+spec:
+  type: ClusterIP
+  clusterIP: None # Headless
+  ports:
+    - port: 6379 # redis 기본 포트
+      name: redis
+  selector:
+    app: redisdb

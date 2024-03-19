@@ -57,4 +57,32 @@ public class JpaMemberRepository implements MemberRepository {
         query.setParameter("memberId", memberId);
         return Optional.ofNullable(query.getSingleResult());
     }
+
+    @Override
+    public Follow findMemberFollow(FollowId id) {
+        return em.find(Follow.class, id);
+    }
+
+    @Override
+    public Follow saveMemberFollow(Follow follow) {
+        em.persist(follow);
+        em.flush();
+        return follow;
+    }
+
+    @Override
+    public boolean deleteMemberFollow(Follow follow) {
+        try {
+            em.remove(follow);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    @Override
+    public Member updateMember(Member updatedMember) {
+        em.merge(updatedMember);
+        return updatedMember;
+    }
 }

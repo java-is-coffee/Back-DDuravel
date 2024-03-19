@@ -46,6 +46,11 @@ spec:
                 secretKeyRef:
                   name: db-secrets
                   key: KAKAO_REDIRECT_URI
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secrets
+                  key: REDIS_PASSWORD
           resources:
             requests:
               memory: 1Gi

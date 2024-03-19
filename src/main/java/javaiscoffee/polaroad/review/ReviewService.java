@@ -48,7 +48,7 @@ public class ReviewService {
         post.setReviewNumber(post.getReviewNumber() + 1);
 
         if (post == null || post.getStatus() == PostStatus.DELETED) {
-            throw new BadRequestException(ResponseMessages.NOT_FOUND.getMessage());
+            throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
         }
 
         // 댓글 저장
@@ -124,7 +124,7 @@ public class ReviewService {
 
         // 사진 수정
         log.info("댓글 사진 수정 시작");
-        reviewPhotoService.editReviewPhoto(editReviewDto.getReviewPhotoList(), updatedReview);
+        reviewPhotoService.editReviewPhoto(editReviewDto.getReviewPhotoId(),editReviewDto.getReviewPhotoList(), updatedReview);
 
         return toResponseReviewDto(updatedReview, editReviewDto.getReviewPhotoList());
     }
@@ -206,10 +206,12 @@ public class ReviewService {
     /**
      * 맴버가 작성한 모든 댓글
      */
-    public List<ResponseReviewDto> getReviewByMemberId(Long memberId) {
+    public List<ResponseReviewDto> getReviewByMemberId(Long memberId, Long requestedMemberId) {
         Member getMember = memberRepository.findById(memberId).orElse(null);
-        if (getMember == null) {
-            throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
+        log.info("RequestedMemberId = {}",requestedMemberId);
+        log.info("memberId = {}",memberId);
+        if (getMember == null || !memberId.equals(requestedMemberId)) {
+            throw new ForbiddenException(ResponseMessages.FORBIDDEN.getMessage());
         }
         // 맴버가 작성한 ACTIVE 댓글 리스트
         List<Review> reviewList = reviewRepository.findReviewByMemberId(getMember, ReviewStatus.ACTIVE);
@@ -219,12 +221,15 @@ public class ReviewService {
     /**
      * 맴버가 작성한 모든 댓글들 페이징
      */
-    public SliceResponseDto<ResponseReviewDto> getReviewsPagedByMemberId(Long memberId, int page) {
+    public SliceResponseDto<ResponseReviewDto> getReviewsPagedByMemberId(Long memberId, int page, Long requestedMemberId) {
         log.info("맴버가 작성한 모든 댓글들 페이징 시작 = {}");
         page = (page == 0) ? 0 : (page - 1);
-        Member getMemberId = memberRepository.findById(memberId).orElse(null);
+        Member getMember = memberRepository.findById(memberId).orElse(null);
+        if (getMember == null || !memberId.equals(requestedMemberId)) {
+            throw new ForbiddenException(ResponseMessages.FORBIDDEN.getMessage());
+        }
         Pageable pageable = PageRequest.of(page, 10, Sort.by("createdTime").descending());
-        Slice<Review> reviewSlice = reviewRepository.findReviewSlicedByMemberId(getMemberId, pageable, ReviewStatus.ACTIVE);
+        Slice<Review> reviewSlice = reviewRepository.findReviewSlicedByMemberId(getMember, pageable, ReviewStatus.ACTIVE);
 
         List<Review> reviewList = reviewSlice.getContent();
         List<ResponseReviewDto> responseReviewDtoList = toResponseReviewDtoList(reviewList);
