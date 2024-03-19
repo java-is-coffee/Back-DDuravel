@@ -1,11 +1,8 @@
 package javaiscoffee.polaroad.review.reviewPhoto;
 
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.NoResultException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
-
-import java.util.Optional;
 
 @Slf4j
 @Repository

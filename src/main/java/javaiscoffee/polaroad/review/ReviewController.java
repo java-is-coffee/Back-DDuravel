@@ -12,13 +12,10 @@ import javaiscoffee.polaroad.security.CustomUserDetails;
 import javaiscoffee.polaroad.wrapper.RequestWrapperDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Slf4j
 @RestController
@@ -58,7 +55,7 @@ public class ReviewController {
     public ResponseEntity<?> getReviewById(@PathVariable(name = "reviewId") Long reviewId, @AuthenticationPrincipal CustomUserDetails userDetails) {
         log.info("댓글 조회 요청");
         Long memberId = userDetails.getMemberId();
-        ResponseReviewDto findedReview = reviewService.getReviewById(reviewId, memberId);
+        ResponseGetReviewDto findedReview = reviewService.getReviewById(reviewId, memberId);
         if (findedReview == null) throw new NotFoundException(ResponseMessages.READ_FAILED.getMessage());
         return ResponseEntity.ok(findedReview);
     }
@@ -70,10 +67,10 @@ public class ReviewController {
             @ApiResponse(responseCode = "403", description = "권한이 없는 경우")
     })
     @PatchMapping("/edit/{reviewId}")
-    public ResponseEntity<?> editReview(@RequestBody RequestWrapperDto<ReviewEditRequestDto> requestDto, @PathVariable(name = "reviewId") Long reviewId, @AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<?> editReview(@RequestBody RequestWrapperDto<EditeRequestReviewDto> requestDto, @PathVariable(name = "reviewId") Long reviewId, @AuthenticationPrincipal CustomUserDetails userDetails) {
         log.info("댓글 수정 요청");
         Long memberId = userDetails.getMemberId();
-        ReviewEditRequestDto editReviewDto = requestDto.getData();
+        EditeRequestReviewDto editReviewDto = requestDto.getData();
         log.info("수정된 댓글 정보 = {}", editReviewDto);
         ResponseReviewDto editedReview = reviewService.editReview(editReviewDto, reviewId, memberId);
         return ResponseEntity.ok(editedReview);
