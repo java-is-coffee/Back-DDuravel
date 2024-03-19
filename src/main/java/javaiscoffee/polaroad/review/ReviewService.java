@@ -11,6 +11,7 @@ import javaiscoffee.polaroad.post.PostStatus;
 import javaiscoffee.polaroad.response.ResponseMessages;
 import javaiscoffee.polaroad.review.reviewPhoto.JpaReviewPhotoRepository;
 import javaiscoffee.polaroad.review.reviewPhoto.ReviewPhoto;
+import javaiscoffee.polaroad.review.reviewPhoto.ReviewPhotoInfoDto;
 import javaiscoffee.polaroad.review.reviewPhoto.ReviewPhotoService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,12 +19,10 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -68,7 +67,7 @@ public class ReviewService {
         return toResponseReviewDto(savedReview, savedReviewPhotos);
     }
 
-    public ResponseReviewDto getReviewById(Long reviewId, Long memberId) {
+    public ResponseGetReviewDto getReviewById(Long reviewId, Long memberId) {
         log.info("댓글 조회 시작 = {}", reviewId);
         Review findedReview = reviewRepository.findByReviewId(reviewId);
         if (findedReview == null || findedReview.getStatus() == ReviewStatus.DELETED) {
@@ -80,24 +79,17 @@ public class ReviewService {
             return null;
         }
 
-        // 댓글 id로 해당 댓글의 모든 사진 조회
         log.info("해당 댓글의 모든 사진 조회 시작");
-
+        // 댓글 id로 해당 댓글의 모든 사진 조회
         List<ReviewPhoto> reviewPhotosByReviewId = reviewRepository.findByReviewId(findedReview.getReviewId()).getReviewPhoto();
-        log.info("findedReview.getReviewId() = {} ", findedReview.getReviewId());
 
-        List<String> reviewPhotoUrls = new ArrayList<>();
-        for (ReviewPhoto reviewPhotoUrl : reviewPhotosByReviewId) {
-            // get 사진 url
-            String image = reviewPhotoUrl.getImage();
-            reviewPhotoUrls.add(image);
-        }
-        log.info("해당 댓글의 모든 사진 = {}", reviewPhotoUrls);
+        List<ReviewPhotoInfoDto> reviewPhotoDtoList = toReviewPhotoInfoDtoList(reviewPhotosByReviewId);
+
         // 찾은 댓글 + 해당 댓글에 속한 모든 사진 반환
-        return toResponseReviewDto(findedReview, reviewPhotoUrls);
+        return toResponseGetReviewDto(findedReview, reviewPhotoDtoList);
     }
 
-    public ResponseReviewDto editReview(ReviewEditRequestDto editReviewDto, Long reviewId, Long memberId) {
+    public ResponseReviewDto editReview(EditeRequestReviewDto editReviewDto, Long reviewId, Long memberId) {
         log.info("댓글 수정 시작");
         Review originalReview = reviewRepository.findByReviewId(reviewId);
         // 원본 댓글이 null 이거나, 삭제된 경우
@@ -111,8 +103,8 @@ public class ReviewService {
         }
 
         Member member = memberRepository.findByMemberId(memberId).get();
-        // 댓글을 작성한 memberId와 수정을 요청한 맴버의 memberId가 다른 경우
-        if (!originalReview.getMemberId().getMemberId().equals(member.getMemberId())) {
+        // 멤버가 없거나 댓글을 작성한 memberId와 수정을 요청한 맴버의 memberId가 다른 경우
+        if (member == null || !originalReview.getMemberId().getMemberId().equals(member.getMemberId())) {
             throw new ForbiddenException(ResponseMessages.FORBIDDEN.getMessage());
         }
 
@@ -124,9 +116,14 @@ public class ReviewService {
 
         // 사진 수정
         log.info("댓글 사진 수정 시작");
-        reviewPhotoService.editReviewPhoto(editReviewDto.getReviewPhotoId(),editReviewDto.getReviewPhotoList(), updatedReview);
+        reviewPhotoService.editReviewPhoto(editReviewDto.getEditPhotoList(), updatedReview);
+        List<String> images = new ArrayList<>();
+        for (ReviewPhotoInfoDto reviewPhotoUrls : editReviewDto.getEditPhotoList()) {
+            String reviewPhotoUrl = reviewPhotoUrls.getReviewPhotoUrl();
+            images.add(reviewPhotoUrl);
+        }
 
-        return toResponseReviewDto(updatedReview, editReviewDto.getReviewPhotoList());
+        return toResponseReviewDto(updatedReview, images);
     }
 
     public Boolean deleteReview(Long reviewId, Long memberId) {
@@ -253,7 +250,6 @@ public class ReviewService {
         responseReviewDto.setContent(review.getContent());
         responseReviewDto.setUpdatedTime(review.getUpdatedTime());
         responseReviewDto.setReviewPhotoList(reviewPhotos);
-        //프로필 이미지
 
         return responseReviewDto;
     }
@@ -279,5 +275,41 @@ public class ReviewService {
         }
 
         return responseReviewDtoList;
+    }
+
+    // ReviewPhotoInfoDto로 매핑하는 메서드
+    public static List<ReviewPhotoInfoDto> toReviewPhotoInfoDtoList(List<ReviewPhoto> reviewPhotos) {
+
+        List<ReviewPhotoInfoDto> reviewPhotoInfoDtoList = new ArrayList<>();
+
+        for (ReviewPhoto reviewPhoto : reviewPhotos) {
+            ReviewPhotoInfoDto reviewPhotoInfoDto = new ReviewPhotoInfoDto();
+            reviewPhotoInfoDto.setReviewPhotoId(reviewPhoto.getReviewPhotoId());
+            reviewPhotoInfoDto.setReviewPhotoUrl(reviewPhoto.getImage());
+            reviewPhotoInfoDtoList.add(reviewPhotoInfoDto);
+        }
+
+        log.info("InfoDto로 매핑 = {}", reviewPhotoInfoDtoList);
+
+        return reviewPhotoInfoDtoList;
+    }
+
+    // 조회 할 때만 사용
+    public static ResponseGetReviewDto toResponseGetReviewDto(Review review,List<ReviewPhotoInfoDto> reviewPhotoInfoList) {
+        if (review == null) {
+            return  null;
+        }
+        ResponseGetReviewDto responseGetReviewDto = new ResponseGetReviewDto();
+
+        responseGetReviewDto.setPostId(review.getPostId() != null ? review.getPostId().getPostId() : null);
+        responseGetReviewDto.setMemberId(review.getMemberId() != null ? review.getMemberId().getMemberId() : null);
+        responseGetReviewDto.setProfileImage(review.getMemberId().getProfileImage());
+        responseGetReviewDto.setNickname(review.getMemberId() != null ? review.getMemberId().getNickname() : null);
+        responseGetReviewDto.setReviewId(review.getReviewId());
+        responseGetReviewDto.setContent(review.getContent());
+        responseGetReviewDto.setUpdatedTime(review.getUpdatedTime());
+        responseGetReviewDto.setReviewPhotoInfoList(reviewPhotoInfoList);
+
+        return responseGetReviewDto;
     }
 }

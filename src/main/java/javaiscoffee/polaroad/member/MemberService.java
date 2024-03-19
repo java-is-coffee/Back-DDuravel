@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Slf4j
@@ -63,7 +64,7 @@ public class MemberService {
         member.setNickname(memberInformationRequestDto.getNickname());
         member.setProfileImage(memberInformationRequestDto.getProfileImage());
         //수정일 업데이트
-        member.setUpdatedTime(LocalDate.now());
+        member.setUpdatedTime(LocalDateTime.now());
 
         //새로운 멤버로 response 생성
         MemberInformationResponseDto updatedDto = new MemberInformationResponseDto();

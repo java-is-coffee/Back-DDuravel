@@ -19,7 +19,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping("/api/wishlist")
-@Tag(name = "위시리스트 관련 API", description = "위시리스트 관련 API 모음")
+@Tag(name = "위시리스트 관련 API", description = "위시리스트 관련 API 모음 - 담당자 박상현")
 @RequiredArgsConstructor
 public class WishListController {
     private final WishListService wishListService;

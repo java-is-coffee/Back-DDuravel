@@ -1,6 +1,5 @@
 package javaiscoffee.polaroad.review.reviewPhoto;
 
-import java.util.Optional;
 
 public interface ReviewPhotoRepository {
 
