@@ -36,9 +36,10 @@ public class ReviewPhotoService {
     /**
      * 댓글 수정시 사용하는 사진 수정 메서드
      */
-    public void editReviewPhoto(List<String> reviewPhotoUrlList, Review review) {
+    public void editReviewPhoto(Long reviewPhotoId ,List<String> reviewPhotoUrlList, Review review) {
         //기존 사진 url 리스트
         List<ReviewPhoto> oldReviewPhotoList = reviewRepository.findByReviewId(review.getReviewId()).getReviewPhoto();
+        log.info("기존 사진 리스트 = {}", oldReviewPhotoList);
         //새로 수정된 사진 세트
         Set<String> updatedReviewPhotoSet = new HashSet<>(reviewPhotoUrlList);
 
@@ -53,10 +54,11 @@ public class ReviewPhotoService {
             }
         });
 
+        log.info("수정된 사진 리스트 생성, 저장 시작");
         reviewPhotoUrlList.forEach(reviewPhotoUrl ->{
-            Optional<ReviewPhoto> reviewPhotoId = reviewPhotoRepository.findReviewPhotoIdByReviewPhotoUrl(reviewPhotoUrl);
+            log.info("쿼리문 실행 후 사진 id = {}",reviewPhotoId);
             // 새로 추가된 사진은 사진 id가 null, 새로 생성 후 저장
-            if (reviewPhotoId.isEmpty()) {
+            if (reviewPhotoId == null) {
                 ReviewPhoto newReviewPhoto = new ReviewPhoto();
                 Review reId = reviewRepository.findByReviewId(review.getReviewId());
                 newReviewPhoto.setImage(reviewPhotoUrl);
