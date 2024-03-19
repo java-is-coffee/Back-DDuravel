@@ -11,9 +11,14 @@ public interface MemberRepository {
 
     public Optional<Member> findById(Long id);
 
+    public Follow findMemberFollow(FollowId id);
+    public Follow saveMemberFollow(Follow follow);
+    public boolean deleteMemberFollow(Follow follow);
+
     public void save(Member newMember);
 
     public void delete(Member member);
+    public Member updateMember(Member updatedMember);
 
 }
 

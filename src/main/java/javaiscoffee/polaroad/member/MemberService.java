@@ -1,6 +1,7 @@
 package javaiscoffee.polaroad.member;
 
 import javaiscoffee.polaroad.exception.BadRequestException;
+import javaiscoffee.polaroad.exception.NotFoundException;
 import javaiscoffee.polaroad.response.ResponseMessages;
 import javaiscoffee.polaroad.security.BaseException;
 import lombok.RequiredArgsConstructor;
@@ -91,5 +92,41 @@ public class MemberService {
         log.info("변경된 비밀번호를 담은 멤버 = {}",member);
 
         return true;
+    }
+
+    @Transactional
+    public void toggleFollow(Long followingMemberId, Long followedMemberId) {
+        if(!Objects.equals(followingMemberId, followedMemberId)) {
+            Member followingMember = memberRepository.findByMemberId(followingMemberId).get();
+            Member followedMember = memberRepository.findByMemberId(followedMemberId).get();
+            FollowId followId = new FollowId(followingMember.getMemberId(), followedMember.getMemberId());
+            Follow follow = memberRepository.findMemberFollow(followId);
+            
+            if (followingMember != null && followedMember != null && followingMember.getStatus() == MemberStatus.ACTIVE && followedMember.getStatus() == MemberStatus.ACTIVE) {
+                if (follow == null) {
+                    follow = new Follow(followId, followingMember, followedMember);
+                    memberRepository.saveMemberFollow(follow);
+                    followingMember.setFollowingNumber(followingMember.getFollowingNumber() + 1);
+                    followedMember.setFollowedNumber(followedMember.getFollowedNumber() + 1);
+                    log.info("팔로잉 = {}",followingMember.getFollowingNumber());
+                    log.info("팔로워 = {}",followedMember.getFollowedNumber());
+                }
+                else {
+                    if (!(memberRepository.deleteMemberFollow(follow))) {
+                        throw new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
+                    }
+
+                    followingMember.setFollowingNumber(followingMember.getFollowingNumber() - 1);
+                    followedMember.setFollowedNumber(followedMember.getFollowedNumber() - 1);
+                    log.info("팔로잉 = {}",followingMember.getFollowingNumber());
+                    log.info("팔로워 = {}",followedMember.getFollowedNumber());
+                }
+            }
+            else {
+                throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
+            }
+        } else {
+            throw new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
+        }
     }
 }
