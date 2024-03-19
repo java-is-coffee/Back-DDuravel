@@ -69,4 +69,12 @@ public class MemberController {
         }
         return ResponseEntity.ok(null);
     }
+
+    @PostMapping("/my/follow/{followedMemberId}")
+    public ResponseEntity<?> clickFollow(@PathVariable Long followedMemberId, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long followingMemberId = userDetails.getMemberId();
+        memberService.toggleFollow(followingMemberId, followedMemberId);
+
+        return ResponseEntity.ok(ResponseMessages.SUCCESS);
+    }
 }
