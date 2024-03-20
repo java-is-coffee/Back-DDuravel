@@ -251,7 +251,7 @@ public class PostService {
         return cardInfoDtos;
     }
     private CardInfoDto toCardInfoDto(Card card) {
-        return new CardInfoDto(card.getCardId(), card.getCardIndex(), card.getLocation(), card.getLatitude(), card.getLongtitude(), card.getImage(), card.getContent());
+        return new CardInfoDto(card.getCardId(), card.getCardIndex(), card.getLatitude(), card.getLongtitude(), card.getLocation(), card.getImage(), card.getContent());
     }
 
     /**
