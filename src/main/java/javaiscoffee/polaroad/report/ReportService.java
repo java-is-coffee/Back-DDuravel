@@ -1,4 +1,4 @@
-package javaiscoffee.polaroad.admin;
+package javaiscoffee.polaroad.report;
 
 import javaiscoffee.polaroad.exception.BadRequestException;
 import javaiscoffee.polaroad.exception.ForbiddenException;
@@ -6,7 +6,6 @@ import javaiscoffee.polaroad.exception.NotFoundException;
 import javaiscoffee.polaroad.member.Member;
 import javaiscoffee.polaroad.member.MemberRepository;
 import javaiscoffee.polaroad.member.MemberRole;
-import javaiscoffee.polaroad.member.MemberStatus;
 import javaiscoffee.polaroad.post.Post;
 import javaiscoffee.polaroad.post.PostRepository;
 import javaiscoffee.polaroad.post.PostStatus;

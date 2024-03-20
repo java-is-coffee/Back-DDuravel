@@ -6,10 +6,7 @@ import javaiscoffee.polaroad.exception.NotFoundException;
 import javaiscoffee.polaroad.member.Member;
 import javaiscoffee.polaroad.member.MemberRepository;
 import javaiscoffee.polaroad.member.MemberStatus;
-import javaiscoffee.polaroad.post.card.Card;
-import javaiscoffee.polaroad.post.card.CardInfoDto;
-import javaiscoffee.polaroad.post.card.CardSaveDto;
-import javaiscoffee.polaroad.post.card.CardService;
+import javaiscoffee.polaroad.post.card.*;
 import javaiscoffee.polaroad.post.good.PostGood;
 import javaiscoffee.polaroad.post.good.PostGoodId;
 import javaiscoffee.polaroad.post.good.PostGoodRepository;
@@ -204,6 +201,7 @@ public class PostService {
      */
     private PostInfoDto toPostInfoDto(Post post, Long memberId) {
         List<CardInfoDto> cardDtos = post.getCards().stream()
+                .filter(card -> card.getStatus().equals(CardStatus.ACTIVE))
                 .sorted(Comparator.comparingInt(Card::getCardIndex))
                 .map(this::toCardInfoDto)
                 .collect(toList());
