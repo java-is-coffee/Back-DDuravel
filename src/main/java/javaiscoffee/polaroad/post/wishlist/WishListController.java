@@ -119,7 +119,7 @@ public class WishListController {
 
     @Operation(summary = "위시리스트에 들어있는 포스트 목록 조회", description = "위시리스트에 있는 포스트 전체 목록 조회하는 API \n ## 현재 본인의 위시리스트 내용만 볼 수 있게 설정")
     @Parameter(name = "wishListId", description = "포스트 목록 조회할 위시리스트 ID", required = true, example = "1")
-    @Parameter(name = "paging", description = "조회할 페이지 번호 \n ### 0부터 시작합니다.", required = true, example = "0")
+    @Parameter(name = "paging", description = "조회할 페이지 번호 \n ### 1부터 시작합니다.", required = true, example = "1")
     @Parameter(name = "pagingNumber", description = "한 번에 조회할 포스트 개수", required = true, example = "8")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "위시리스트에 포스트 삭제를 성공했을 경우"),
