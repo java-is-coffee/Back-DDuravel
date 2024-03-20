@@ -15,11 +15,11 @@ public class CardInfoDto {
     @Schema(description = "카드 순서 번호", example = "1~20")
     private int cardIndex;
     @Schema(description = "위도", example = "134243.185152")
-    private String latitude;
+    private double latitude;
     @Schema(description = "경도", example = "134243.185152")
     private double longtitude;
     @Schema(description = "상세 위치", example = "인천광역시 연수구")
-    private double location;
+    private String location;
     @Schema(description = "카드 이미지 url", example = "http:")
     private String image;
     @Schema(description = "카드 글 내용", example = "미안하다 이거 보여주려고 어그로 끌었다.")
