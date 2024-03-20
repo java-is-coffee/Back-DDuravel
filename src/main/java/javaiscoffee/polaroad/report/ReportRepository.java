@@ -1,4 +1,4 @@
-package javaiscoffee.polaroad.admin;
+package javaiscoffee.polaroad.report;
 
 import javaiscoffee.polaroad.member.Member;
 import org.springframework.data.domain.Page;

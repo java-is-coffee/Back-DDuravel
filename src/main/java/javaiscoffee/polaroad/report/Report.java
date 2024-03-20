@@ -1,4 +1,4 @@
-package javaiscoffee.polaroad.admin;
+package javaiscoffee.polaroad.report;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;

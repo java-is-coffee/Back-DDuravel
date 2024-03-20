@@ -1,4 +1,4 @@
-package javaiscoffee.polaroad.admin;
+package javaiscoffee.polaroad.report;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
