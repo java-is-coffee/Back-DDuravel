@@ -141,17 +141,26 @@ public class PostService {
     /**
      * 탐색페이지나 검색페이지에서 게시글을 목록으로 조회
      */
-    public ResponseEntity<PostListResponseDto> getPostList (int paging, int pagingNumber,PostSearchType searchType, String searchKeyword, PostListSort sortBy, PostConcept concept, PostRegion region) {
+    public ResponseEntity<PostListResponseDto> getPostList (int paging, int pagingNumber,PostSearchType searchType, String searchKeyword, PostListSort sortBy, PostConcept concept, PostRegion region, PostStatus status) {
         //해쉬태그 검색일 경우
         //검색어가 없으면 키워드 검색으로 넘김
         if(searchType.equals(PostSearchType.HASHTAG) && searchKeyword != null) {
             Long hashtagId = hashtagService.getHashtagIdByName(searchKeyword);
             if(hashtagId == null) return ResponseEntity.ok(new PostListResponseDto(new ArrayList<>(),0));
-            return ResponseEntity.ok(postRepository.searchPostByHashtag(paging, pagingNumber, hashtagId, sortBy, concept, region));
+            return ResponseEntity.ok(postRepository.searchPostByHashtag(paging, pagingNumber, hashtagId, sortBy, concept, region, status));
         }
         //키워드 검색일 경우
-        PostListResponseDto posts = postRepository.searchPostByKeyword(paging, pagingNumber, searchKeyword, sortBy, concept, region);
+        PostListResponseDto posts = postRepository.searchPostByKeyword(paging, pagingNumber, searchKeyword, sortBy, concept, region, status);
         return ResponseEntity.ok(posts);
+    }
+
+    /**
+     * 팔로잉하고 있는 멤버의 게시글을 목록으로 조회
+     */
+    public ResponseEntity<PostListResponseDto> getFollowingMemberPosts (Long memberId,int page, int pageSize, PostStatus status) {
+        Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
+        if(!member.getStatus().equals(MemberStatus.ACTIVE)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
+        return ResponseEntity.ok(postRepository.getFollowingMembersPostByMember(member, page, pageSize, status));
     }
 
     /**
