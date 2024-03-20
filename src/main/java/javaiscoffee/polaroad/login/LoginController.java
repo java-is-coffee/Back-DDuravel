@@ -2,11 +2,9 @@ package javaiscoffee.polaroad.login;
 
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import javaiscoffee.polaroad.exception.NotFoundException;
@@ -21,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,7 +39,7 @@ public class LoginController {
             @ApiResponse(responseCode = "404", description = "로그인에 실패한 경우")
     })
     @PostMapping("/login")
-    public ResponseEntity<?> login(/* @Validated */ @RequestBody RequestWrapperDto<LoginDto> requestDto, HttpServletResponse response) {
+    public ResponseEntity<?> login(@Validated @RequestBody RequestWrapperDto<LoginDto> requestDto, HttpServletResponse response) {
         LoginDto loginDto = requestDto.getData();
         log.info("로그인 요청 = {}",loginDto);
         TokenDto tokenDto = loginService.login(loginDto, response);
@@ -63,7 +62,7 @@ public class LoginController {
             @ApiResponse(responseCode = "400", description = "이메일이 중복되거나 입력값이 형식에 맞지 않아서 회원가입 실패한 경우")
     })
     @PostMapping("/register")
-    public ResponseEntity<?> register(/* @Validated */ @RequestBody RequestWrapperDto<RegisterDto> requestDto) {
+    public ResponseEntity<?> register(@Validated @RequestBody RequestWrapperDto<RegisterDto> requestDto) {
         RegisterDto registerDto = requestDto.getData();
         log.info("registerDto = {}", registerDto);
         Member registerdMember = loginService.register(registerDto);
