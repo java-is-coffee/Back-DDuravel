@@ -17,9 +17,9 @@ public class CardInfoDto {
     @Schema(description = "위도", example = "134243.185152")
     private String latitude;
     @Schema(description = "경도", example = "134243.185152")
-    private String longtitude;
+    private double longtitude;
     @Schema(description = "상세 위치", example = "인천광역시 연수구")
-    private String location;
+    private double location;
     @Schema(description = "카드 이미지 url", example = "http:")
     private String image;
     @Schema(description = "카드 글 내용", example = "미안하다 이거 보여주려고 어그로 끌었다.")

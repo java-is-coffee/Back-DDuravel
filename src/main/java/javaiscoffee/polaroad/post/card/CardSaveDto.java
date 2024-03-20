@@ -16,9 +16,9 @@ public class CardSaveDto {
     @Schema(description = "세부 위치", example = "인천시 남동구")
     private String location;// 사진 세부 위치
     @Schema(description = "위도 좌표", example = "123851.134521")
-    private String latitude;//위도
+    private double latitude;//위도
     @Schema(description = "경도 좌표 \n", example = "543512.874521")
-    private String longtitude;  //경도
+    private double longtitude;  //경도
     @Schema(description = "이미지 url", example = "https://krampolineImage.com/java-is-coffee")
     private String image;
     @Schema(description = "카드 본문", example = "여기가 꽃놀이 명소입니다.")

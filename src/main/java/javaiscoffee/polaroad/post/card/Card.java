@@ -33,12 +33,10 @@ public class Card {
     private Member member;
     @NotNull @Setter
     private int cardIndex;      // index
-    @Column(length = 255)
     @NotNull @Setter
-    private String latitude;//위도
-    @Column(length = 255)
+    private double latitude; // 위도
     @NotNull @Setter
-    private String longtitude;    //경도
+    private double longtitude; // 경도
     @Column(length = 255)
     @NotNull @Setter
     private String location;//상세 위치
