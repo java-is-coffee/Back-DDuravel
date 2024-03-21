@@ -64,7 +64,7 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
             builder.and(post.goodNumber.goe(10));
         }
         //여행지역 조건 추가
-        if(concept != null) {
+        if(region != null) {
             builder.and(post.region.eq(region));
         }
         //게시글 상태 조건 추가
@@ -135,7 +135,7 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
             builder.and(post.goodNumber.goe(10));
         }
         //여행지역 조건 추가
-        if(concept != null) {
+        if(region != null) {
             builder.and(post.region.eq(region));
         }
         //게시글 상태 조건 추가

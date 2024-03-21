@@ -8,9 +8,9 @@ public interface QueryPostRepository {
     //테스트용 메서드
     List<Post> findPostByEmail(String email);
 
-    PostListResponseDto searchPostByKeyword(int paging, int pagingNumber, String searchWords, PostListSort order, PostConcept concept, PostRegion region, PostStatus status);
+    PostListResponseDto searchPostByKeyword(int page, int pageSize, String searchWords, PostListSort order, PostConcept concept, PostRegion region, PostStatus status);
 
-    PostListResponseDto searchPostByHashtag(int paging, int pagingNumber, Long hashtagId, PostListSort order, PostConcept concept, PostRegion region, PostStatus status);
+    PostListResponseDto searchPostByHashtag(int page, int pageSize, Long hashtagId, PostListSort order, PostConcept concept, PostRegion region, PostStatus status);
 
     Post getPostInfoById(Long postId);
 

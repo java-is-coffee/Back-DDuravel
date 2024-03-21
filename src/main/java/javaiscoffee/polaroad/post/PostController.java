@@ -70,8 +70,8 @@ public class PostController {
     }
 
     @Operation(summary = "포스트 검색", description = "키워드, 해쉬태그 검색하는 API")
-    @Parameter(name = "paging", description = "1부터 시작합니다. 몇 번째 페이지를 출력할 것인지",required = true, example = "1")
-    @Parameter(name = "pagingNumber", description = "한 페이지에 몇 개의 결과를 표시할 것인지 정하는 수치", required = true, example = "8")
+    @Parameter(name = "page", description = "1부터 시작합니다. 몇 번째 페이지를 출력할 것인지",required = true, example = "1")
+    @Parameter(name = "pageSize", description = "한 페이지에 몇 개의 결과를 표시할 것인지 정하는 수치", required = true, example = "8")
     @Parameter(name = "searchType", description = "검색 방식을 나타냅니다. \n - KEYWORD = 키워드검색 \n - HASHTAG = 해쉬태그검색", example = "KEYWORD")
     @Parameter(name = "keyword", description = "검색할 키워드나 해쉬태그 \n null값이면 나머지 조건으로 검색", example = "자바")
     @Parameter(name = "sortBy", description = "검색 결과를 정렬할 방식 \n - GOOD = 하트순 \n - RECENT = 최신순",  required = true, example = "RECENT")
@@ -94,14 +94,14 @@ public class PostController {
             @ApiResponse(responseCode = "200", description = "리스트 조회에 성공한 경우")
     })
     @GetMapping("/list")
-    public ResponseEntity<PostListResponseDto> getPostList(@RequestParam(name = "paging") int paging,
-                                                         @RequestParam(name = "pagingNumber") int pagingNumber,
+    public ResponseEntity<PostListResponseDto> getPostList(@RequestParam(name = "page") int page,
+                                                         @RequestParam(name = "pageSize") int pageSize,
                                                          @RequestParam(name = "searchType") PostSearchType searchType,
                                                          @RequestParam(name = "keyword",required = false) String keyword,
                                                          @RequestParam(name = "sortBy") PostListSort sortBy,
                                                          @RequestParam(name = "concept", required = false) PostConcept concept,
                                                          @RequestParam(name = "region", required = false) PostRegion region) {
-        return postService.getPostList(paging,pagingNumber,searchType,keyword,sortBy,concept,region,PostStatus.ACTIVE);
+        return postService.getPostList(page,pageSize,searchType,keyword,sortBy,concept,region,PostStatus.ACTIVE);
     }
 
     @Operation(summary = "포스트 내용 조회", description = "포스트 내용 조회 페이지에서 사용하는 API")

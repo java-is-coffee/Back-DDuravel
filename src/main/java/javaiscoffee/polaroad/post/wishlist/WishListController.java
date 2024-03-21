@@ -119,8 +119,8 @@ public class WishListController {
 
     @Operation(summary = "위시리스트에 들어있는 포스트 목록 조회", description = "위시리스트에 있는 포스트 전체 목록 조회하는 API \n ## 현재 본인의 위시리스트 내용만 볼 수 있게 설정")
     @Parameter(name = "wishListId", description = "포스트 목록 조회할 위시리스트 ID", required = true, example = "1")
-    @Parameter(name = "paging", description = "조회할 페이지 번호 \n ### 1부터 시작합니다.", required = true, example = "1")
-    @Parameter(name = "pagingNumber", description = "한 번에 조회할 포스트 개수", required = true, example = "8")
+    @Parameter(name = "page", description = "조회할 페이지 번호 \n ### 1부터 시작합니다.", required = true, example = "1")
+    @Parameter(name = "pageSize", description = "한 번에 조회할 포스트 개수", required = true, example = "8")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "위시리스트에 포스트 삭제를 성공했을 경우"),
             @ApiResponse(responseCode = "403", description = "남의 위시리스트 조회하려고 할 경우"),
@@ -129,9 +129,9 @@ public class WishListController {
     @GetMapping("/content/{wishListId}")
     public ResponseEntity<WishListPostListResponseDto> getWishListPostsInWishList(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                                             @PathVariable(name = "wishListId") Long wishListId,
-                                                                            @RequestParam(name = "paging") int paging,
-                                                                            @RequestParam(name = "pagingNumber") int pagingNumber) {
-        return ResponseEntity.ok(wishListService.getWishListPostsInWishList(userDetails.getMemberId(), wishListId, paging, pagingNumber));
+                                                                            @RequestParam(name = "page") int page,
+                                                                            @RequestParam(name = "pageSize") int pageSize) {
+        return ResponseEntity.ok(wishListService.getWishListPostsInWishList(userDetails.getMemberId(), wishListId, page, pageSize));
     }
 
 
