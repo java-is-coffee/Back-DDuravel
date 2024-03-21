@@ -157,4 +157,15 @@ public class PostController {
         Long memberId = userDetails.getMemberId();
         return postService.getFollowingMemberPosts(memberId,page,pageSize,PostStatus.ACTIVE);
     }
+
+    @Operation(summary = "시간별 조회수 랭킹으로 포스트 목록 조회", description = "1일,7일,30일 구간별 총 조회수 랭킹으로 포스트 목록을 조회하는 API")
+    @Parameter(name = "page", description = "현재 페이지 숫자 1부터 시작 1페이지이면 1을 주입", required = true, example = "1")
+    @Parameter(name = "pageSize",description = "페이지 크기, 한 페이지에 표시할 카드 개수", required = true, example = "8")
+    @Parameter(name = "range", description = "랭킹 기간 범위 ex) 일간,주간,월간", required = true, example = "DAILY")
+    @GetMapping("/view-rangking")
+    public ResponseEntity<PostListResponseDto> getPostViewRangkingList(@RequestParam(name = "page") int page,
+                                                                       @RequestParam(name = "pageSize") int pageSize,
+                                                                       @RequestParam(name = "range") PostRankingDto range) {
+        return postService.getPostRankingList(page, pageSize, range);
+    }
 }
