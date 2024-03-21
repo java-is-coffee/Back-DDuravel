@@ -34,7 +34,7 @@ public class AdminController {
     })
     @GetMapping("/member/info/{memberId}")
     public ResponseEntity<MemberInformationResponseDto> getMemberInfo (@AuthenticationPrincipal CustomUserDetails userDetails,
-                                                                       @RequestParam(name = "memberId") Long memberId) {
+                                                                       @PathVariable(name = "memberId") Long memberId) {
         return ResponseEntity.ok(adminService.getMemberInfo(userDetails.getMemberId(), memberId));
     }
 
@@ -48,7 +48,7 @@ public class AdminController {
     @PatchMapping("/member/set/{memberId}")
     public ResponseEntity<String> setMemberStatus(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                   @RequestBody RequestWrapperDto<MemberStatusEditDto> wrapperDto,
-                                                  @RequestParam(name = "memberId") Long memberId) {
+                                                  @PathVariable(name = "memberId") Long memberId) {
         MemberStatusEditDto editDto = wrapperDto.getData();
         adminService.setMemberStatus(userDetails.getMemberId(), memberId, editDto.getStatus(), editDto.getReason());
         return ResponseEntity.ok(ResponseMessages.SUCCESS.getMessage());
@@ -63,7 +63,7 @@ public class AdminController {
     })
     @GetMapping("/post/info/{postId}")
     public ResponseEntity<PostInfoDto> getPostInfo (@AuthenticationPrincipal CustomUserDetails userDetails,
-                                                    @RequestParam(name = "postId") Long postId) {
+                                                    @PathVariable(name = "postId") Long postId) {
         return ResponseEntity.ok(adminService.getPostInfoById(userDetails.getMemberId(), postId));
     }
 
@@ -77,7 +77,7 @@ public class AdminController {
     @PatchMapping("/post/set/{postId}")
     public ResponseEntity<String> setPostStatus(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                   @RequestBody RequestWrapperDto<PostStatusEditDto> wrapperDto,
-                                                  @RequestParam(name = "postId") Long postId) {
+                                                  @PathVariable(name = "postId") Long postId) {
         PostStatusEditDto editDto = wrapperDto.getData();
         adminService.setPostStatus(userDetails.getMemberId(), postId, editDto.getStatus(), editDto.getReason());
         return ResponseEntity.ok(ResponseMessages.SUCCESS.getMessage());
@@ -92,7 +92,7 @@ public class AdminController {
     })
     @GetMapping("/post/info/{reviewId}")
     public ResponseEntity<ResponseGetReviewDto> getReviewInfo (@AuthenticationPrincipal CustomUserDetails userDetails,
-                                                               @RequestParam(name = "reviewId") Long reviewId) {
+                                                               @PathVariable(name = "reviewId") Long reviewId) {
         return ResponseEntity.ok(adminService.getReviewById(userDetails.getMemberId(), reviewId));
     }
 
@@ -106,7 +106,7 @@ public class AdminController {
     @PatchMapping("/review/set/{reviewId}")
     public ResponseEntity<String> setReviewStatus(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                 @RequestBody RequestWrapperDto<ReviewStatusEditDto> wrapperDto,
-                                                @RequestParam(name = "reviewId") Long reviewId) {
+                                                @PathVariable(name = "reviewId") Long reviewId) {
         ReviewStatusEditDto editDto = wrapperDto.getData();
         adminService.setReviewStatus(userDetails.getMemberId(), reviewId, editDto.getStatus(), editDto.getReason());
         return ResponseEntity.ok(ResponseMessages.SUCCESS.getMessage());
