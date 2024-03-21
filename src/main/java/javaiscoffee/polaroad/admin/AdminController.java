@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @Tag(name = "관리자 API 모음", description = "관리자 멤버,포스트,리뷰 조회 및 수정 API 모음 - 담당자 박상현")
 public class AdminController {
-    private AdminService adminService;
+    private final AdminService adminService;
 
     @Operation(summary = "사용자 조회", description = "관리자가 사용자 정보 조회 API")
     @Parameter(name = "memberId", description = "조회할 멤버 ID", required = true, example = "1")
