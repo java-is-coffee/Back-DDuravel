@@ -90,7 +90,7 @@ public class AdminController {
             @ApiResponse(responseCode = "403", description = "관리자가 아닌 경우"),
             @ApiResponse(responseCode = "404", description = "리뷰나 관리자가 존재하지 않는 경우")
     })
-    @GetMapping("/post/info/{reviewId}")
+    @GetMapping("/review/info/{reviewId}")
     public ResponseEntity<ResponseGetReviewDto> getReviewInfo (@AuthenticationPrincipal CustomUserDetails userDetails,
                                                                @PathVariable(name = "reviewId") Long reviewId) {
         return ResponseEntity.ok(adminService.getReviewById(userDetails.getMemberId(), reviewId));

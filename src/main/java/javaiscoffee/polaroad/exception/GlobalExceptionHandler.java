@@ -78,10 +78,10 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 
-    @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<Object> handleIllegalStateException(IllegalStateException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseMessages.SEND_FAILED);
-    }
+//    @ExceptionHandler(IllegalStateException.class)
+//    public ResponseEntity<Object> handleIllegalStateException(IllegalStateException ex) {
+//        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseMessages.SEND_FAILED);
+//    }
 
     @ExceptionHandler(EOFException.class)
     public ResponseEntity<Object> handleEOFException(IllegalStateException ex) {
