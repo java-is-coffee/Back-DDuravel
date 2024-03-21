@@ -168,12 +168,12 @@ public class WishListService {
      * 위시리스트에 있는 포스트 목록 조회
      * 본인의 위시리스트 내용만 볼 수 있게 설정
      */
-    public WishListPostListResponseDto getWishListPostsInWishList(Long memberId, Long wishListId,int paging, int pagingNumber) {
+    public WishListPostListResponseDto getWishListPostsInWishList(Long memberId, Long wishListId,int page, int pageSize) {
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         WishList wishList = wishListRepository.findById(wishListId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         //다른 유저의 위시리스트일 경우
         if(!wishList.getMember().equals(member)) throw new ForbiddenException(ResponseMessages.FORBIDDEN.getMessage());
         //위시리스트에 있는 포스트 목록 조회
-        return wishListRepository.getWishListPostDtos(wishListId, paging, pagingNumber);
+        return wishListRepository.getWishListPostDtos(wishListId, page, pageSize);
     }
 }
