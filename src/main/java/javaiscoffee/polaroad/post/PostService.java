@@ -189,7 +189,10 @@ public class PostService {
         //포스트 목록 구해서 정렬하기
         List<Post> unorderedPosts = postRepository.getPostsByPostIdIsIn(rankingList);
         Map<Long, Post> postMap = unorderedPosts.stream().collect(Collectors.toMap(Post::getPostId, Function.identity()));
-        List<Post> orderedPosts = rankingList.stream().map(postMap::get)
+        // 순서 유지를 위해 rankingList에 따라 orderedPosts 구성
+        List<Post> orderedPosts = rankingList.stream()
+                .map(postMap::get)
+                .filter(Objects::nonNull) // null이면 무시
                 .toList();
         //반환값으로 매핑
         return ResponseEntity.ok(toPostListResponseDto(orderedPosts, maxPage));
