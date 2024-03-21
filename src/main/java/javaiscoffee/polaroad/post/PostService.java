@@ -183,7 +183,7 @@ public class PostService {
     public ResponseEntity<PostListResponseDto> getPostRankingList(int page, int pageSize, PostRankingDto range) {
         //랭킹 순위 리스트 조회
         List<String> list = redisService.getViewRankingList(page, pageSize, range);
-        List<Long> rankingList = list.stream().map(Long::getLong).toList();
+        List<Long> rankingList = list.stream().map(Long::valueOf).toList();
         //랭킹 최대 페이지 구하기
         int maxPage = redisService.getViewRankingMaxPageSize(pageSize, range);
         //포스트 목록 구해서 정렬하기
