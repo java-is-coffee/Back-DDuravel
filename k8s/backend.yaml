@@ -51,6 +51,11 @@ spec:
                 secretKeyRef:
                   name: db-secrets
                   key: REDIS_PASSWORD
+            - name: MAIL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secrets
+                  key: MAIL_PASSWORD
           resources:
             requests:
               memory: 1Gi

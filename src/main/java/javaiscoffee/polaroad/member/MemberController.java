@@ -94,6 +94,13 @@ public class MemberController {
         return ResponseEntity.ok(null);
     }
 
+    @Operation(summary = "다른 멤버 팔로우 API", description = "현재 멤버가 다른 멤버를 팔로잉하려고 할 때 사용하는 API")
+    @Parameter(name = "followedMemberId", description = "현재 멤버가 팔로잉하려는 멤버의 ID", required = true, example = "2")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "팔로우에 성공했을 경우"),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청인 경우"),
+            @ApiResponse(responseCode = "404", description = "멤버가 존재하지 않을 경우")
+    })
     @PostMapping("/my/follow/{followedMemberId}")
     public ResponseEntity<?> clickFollow(@PathVariable Long followedMemberId, @AuthenticationPrincipal CustomUserDetails userDetails) {
         Long followingMemberId = userDetails.getMemberId();

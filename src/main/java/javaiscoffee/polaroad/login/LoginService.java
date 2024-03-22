@@ -1,9 +1,13 @@
 package javaiscoffee.polaroad.login;
 
 import io.jsonwebtoken.JwtException;
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletResponse;
+import javaiscoffee.polaroad.exception.BadRequestException;
 import javaiscoffee.polaroad.exception.UnAuthorizedException;
-import javaiscoffee.polaroad.login.emailAuthentication.EmailCertificationRepository;
+import javaiscoffee.polaroad.login.emailAuthentication.CertificationGenerator;
+import javaiscoffee.polaroad.login.emailAuthentication.MailSendService;
+import javaiscoffee.polaroad.redis.RedisService;
 import javaiscoffee.polaroad.response.ResponseMessages;
 import javaiscoffee.polaroad.exception.NotFoundException;
 import javaiscoffee.polaroad.security.JwtTokenProvider;
@@ -11,7 +15,6 @@ import javaiscoffee.polaroad.member.*;
 import javaiscoffee.polaroad.security.TokenDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -19,9 +22,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
-import jakarta.servlet.http.Cookie;
 
 @Slf4j
 @Service
@@ -32,8 +36,9 @@ public class LoginService {
     private final PasswordEncoder bCryptPasswordEncoder;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final JwtTokenProvider jwtTokenProvider;
-//    private final MailVerifyService mailVerifyService;
-    private final EmailCertificationRepository emailCertificationRepository;
+    private final RedisService redisService;
+    private final CertificationGenerator certificationGenerator;
+    private final MailSendService mailSendService;
 
     /**
      * 1. 로그인 요청으로 들어온 memberId, password를 기반으로 Authentication 객체를 생성한다.
@@ -70,10 +75,10 @@ public class LoginService {
         }
 
         //이메일 인증한 적이 없으면 예외처리
-//        if (!mailVerifyService.isVerified(registerDto.getEmail(), registerDto.getCertificationNumber())) {
-//            log.info("이메일 인증을 하지 않았습니다.");
-//            return null;
-//        }
+        if (!redisService.checkEmailVerificationCode(registerDto.getEmail(),registerDto.getCertificationNumber())) {
+            log.info("이메일 인증에 실패했습니다.");
+            throw new BadRequestException(ResponseMessages.REGISTER_FAILED.getMessage());
+        }
 
 
         //중복이 없으면 회원가입 진행
@@ -140,6 +145,36 @@ public class LoginService {
             // 토큰 파싱 실패 또는 유효하지 않은 토큰으로 인한 예외 처리
             log.error("토큰 갱신 실패: {}", e.getMessage());
             throw new UnAuthorizedException(ResponseMessages.UNAUTHORIZED.getMessage());
+        }
+    }
+
+    /**
+     * 로그인 페이지 비밀번호 리셋
+     */
+    @Transactional
+    public void resetPassword(ResetPasswordRequestDto requestDto){
+        Member member = memberRepository.findByEmail(requestDto.getEmail()).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
+        if(!Objects.equals(member.getName(), requestDto.getName())) {
+            log.error("비밀번호 리셋 이름 틀림");
+            throw new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
+        }
+
+        StringBuffer tempPassword = new StringBuffer("!pola");
+        try {
+            tempPassword.append(certificationGenerator.createCertificationNumber(100000,999999));
+        } catch (NoSuchAlgorithmException e) {
+            log.error("임시 비밀번호 발급 실패");
+            throw new BadRequestException(ResponseMessages.ERROR.getMessage());
+        }
+        member.setPassword(tempPassword.toString());
+        member.hashPassword(bCryptPasswordEncoder);
+
+        String mailContent = String.format("%s의 비밀번호 리셋을 위해 발송된 메일입니다.%n임시 비밀번호는   :   %s%n임시 비밀번호를 사용하여 로그인해주세요.%n로그인하고 비밀번호 변경 부탁드립니다.",requestDto.getEmail(),tempPassword);
+
+        try {
+            mailSendService.sendMail(member.getEmail(),mailContent);
+        } catch (MessagingException e) {
+            throw new BadRequestException(ResponseMessages.ERROR.getMessage());
         }
     }
 }

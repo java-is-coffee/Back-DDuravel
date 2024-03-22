@@ -11,7 +11,7 @@ public class RegisterDto {
     @EmailCheck
     @Schema(description = "## 사용자 이메일", example = "aaa@naver.com")
     private String email;
-//    private String certificationNumber;
+    private String certificationNumber;
     @Schema(description = "사용자 이름", example = "박자바")
     private String name;
     @NicknameCheck

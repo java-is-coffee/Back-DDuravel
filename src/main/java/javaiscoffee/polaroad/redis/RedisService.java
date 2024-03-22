@@ -124,5 +124,36 @@ public class RedisService {
         if(total == null) return 0;
         return (int)Math.ceil((double) total / pageSize);
     }
+
+    /**
+     * 이메일과 인증번호 저장, 만료시간 매개변수로 설정
+     */
+    public void saveEmailVerificationCode(String email, String verificationCode, int minutes) {
+        redisTemplate.opsForValue().set(email, verificationCode, minutes, TimeUnit.MINUTES);
+    }
+    /**
+     * 인증 번호 기록이 존재하는지 확인
+     */
+    public boolean checkEmailVerificationExists(String email) {
+        Boolean check = redisTemplate.hasKey(email);
+        if(check == null) return false;
+        return check;
+    }
+    /**
+     * 인증 번호가 맞는지 확인
+     * 인증 번호가 존재하지 않아도 false
+     */
+    public boolean checkEmailVerificationCode(String email, String certificationCode) {
+        String savedCode = redisTemplate.opsForValue().get(email);
+        return certificationCode.equals(savedCode);
+    }
+
+    /**
+     * 이메일 인증 번호 요구 시간이 매개변수 시간이하인지 확인
+     */
+    public boolean checkVerificationTime(String email, int expireMinutes, int seconds) {
+        Long expireTime = redisTemplate.getExpire(email, TimeUnit.SECONDS);
+        return expireTime != null && (int)(expireMinutes * 60) - expireTime <= seconds;
+    }
 }
 
