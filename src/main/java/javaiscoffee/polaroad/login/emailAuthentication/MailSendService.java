@@ -65,13 +65,13 @@ public class MailSendService {
      * 이메일을 보내는 메서드 구현
      * JavaMailSender를 사용하여 MimeMessage 객체 생성 => 이메일을 나타내는 객체로, 이메일의 헤더, 본문, 첨부 파일 등을 포함할 수 있다.
      */
-    public void sendMail(String email, String content) throws jakarta.mail.MessagingException {
+    public void sendMail(String email, String content) throws MessagingException {
         Properties props = new Properties();
         props.put("mail.smtp.host", "smtp.gmail.com");
         props.put("mail.smtp.port", "587");
         props.put("mail.smtp.auth", "true");
         props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+        props.put("mail.smtp.socketFactory.class", "jakarta.net.ssl.SSLSocketFactory");
 
         // SOCKS 프록시 설정 추가
         props.put("mail.smtp.socks.host", "krmp-proxy.9rum.cc");

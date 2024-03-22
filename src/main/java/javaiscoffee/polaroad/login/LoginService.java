@@ -75,10 +75,10 @@ public class LoginService {
         }
 
         //이메일 인증한 적이 없으면 예외처리
-        if (!redisService.checkEmailVerificationCode(registerDto.getEmail(),registerDto.getCertificationNumber())) {
-            log.info("이메일 인증에 실패했습니다.");
-            throw new BadRequestException(ResponseMessages.REGISTER_FAILED.getMessage());
-        }
+//        if (!redisService.checkEmailVerificationCode(registerDto.getEmail(),registerDto.getCertificationNumber())) {
+//            log.info("이메일 인증에 실패했습니다.");
+//            throw new BadRequestException(ResponseMessages.REGISTER_FAILED.getMessage());
+//        }
 
 
         //중복이 없으면 회원가입 진행
