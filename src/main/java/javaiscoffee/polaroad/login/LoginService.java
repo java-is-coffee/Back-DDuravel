@@ -48,7 +48,7 @@ public class LoginService {
     public TokenDto login(LoginDto loginDto, HttpServletResponse response) {
         log.info("로그인 검사 시작 loginDto={}",loginDto);
         Member member = memberRepository.findByEmail(loginDto.getEmail()).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
-        if(member.getStatus() == MemberStatus.DELETED) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
+        if(!member.getStatus().equals(MemberStatus.ACTIVE)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
         // 1. Login ID/PW 를 기반으로 Authentication 객체 생성
         // 이때 authentication 는 인증 여부를 확인하는 authenticated 값이 false
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginDto.getEmail(), loginDto.getPassword());

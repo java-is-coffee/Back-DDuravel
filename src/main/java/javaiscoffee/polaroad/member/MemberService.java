@@ -11,7 +11,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -129,5 +128,15 @@ public class MemberService {
         } else {
             throw new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
         }
+    }
+
+    /**
+     * 회원 탈퇴
+     */
+    @Transactional
+    public void deleteAccount(Long memberId) {
+        Member member = memberRepository.findByMemberId(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
+        if(!member.getStatus().equals(MemberStatus.ACTIVE)) new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
+        member.deleteMember();
     }
 }

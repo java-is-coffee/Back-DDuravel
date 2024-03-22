@@ -160,8 +160,6 @@ public class Member implements UserDetails {
 
     public void deleteMember() {
         this.status = MemberStatus.DELETED;
-//        this.setName("삭제된 멤버");
-//        this.setNickname("삭제된 멤버");
         this.setUpdatedTime(LocalDateTime.now());
         this.email = this.email + this.getUpdatedTime();
     }
