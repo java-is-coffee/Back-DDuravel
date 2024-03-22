@@ -1,6 +1,9 @@
 package javaiscoffee.polaroad.login.emailAuthentication;
 
 import jakarta.mail.MessagingException;
+import jakarta.mail.PasswordAuthentication;
+import jakarta.mail.Session;
+import jakarta.mail.Transport;
 import jakarta.mail.internet.MimeMessage;
 import javaiscoffee.polaroad.exception.BadRequestException;
 import javaiscoffee.polaroad.member.MemberRepository;
@@ -8,13 +11,13 @@ import javaiscoffee.polaroad.redis.RedisService;
 import javaiscoffee.polaroad.response.ResponseMessages;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.validator.routines.EmailValidator;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import java.security.NoSuchAlgorithmException;
-import java.time.LocalDateTime;
+import java.util.Properties;
 
 
 @Slf4j
@@ -26,6 +29,10 @@ public class MailSendService {
     private final RedisService redisService;
     private final MemberRepository memberRepository;
     private static final String MAIL_TITLE_CERTIFICATION = "PolaRoad 인증 번호 발송 메일입니다.";
+    @Value("${spring.mail.username}")
+    private String MAIL_USERNAME;
+    @Value("${spring.mail.password}")
+    private String MAIL_PASSWORD;
 
     public void sendEmailForCertification(String email) throws NoSuchAlgorithmException, MessagingException {
 
@@ -59,11 +66,31 @@ public class MailSendService {
      * JavaMailSender를 사용하여 MimeMessage 객체 생성 => 이메일을 나타내는 객체로, 이메일의 헤더, 본문, 첨부 파일 등을 포함할 수 있다.
      */
     public void sendMail(String email, String content) throws jakarta.mail.MessagingException {
-        MimeMessage mimeMailMessage = mailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(mimeMailMessage);
-        helper.setTo(email);    // 이메일 수신자
-        helper.setSubject(MAIL_TITLE_CERTIFICATION);    // 이메일 제목
-        helper.setText(content);    // 이메일 본문 내용
-        mailSender.send(mimeMailMessage);   // JavaMailSender를 이용하여 이메일 전송. send()를 호출해서 이메일을 전송하면, 이메일이 수신자에게 발송된다.
+        Properties props = new Properties();
+        props.put("mail.smtp.host", "smtp.gmail.com");
+        props.put("mail.smtp.port", "587");
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+
+        // SOCKS 프록시 설정 추가
+        props.put("mail.smtp.socks.host", "krmp-proxy.9rum.cc");
+        props.put("mail.smtp.socks.port", "3128");
+
+        Session session = Session.getInstance(props, new jakarta.mail.Authenticator() {
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(MAIL_USERNAME, MAIL_PASSWORD);
+            }
+        });
+
+        MimeMessage message = new MimeMessage(session);
+        MimeMessageHelper helper = new MimeMessageHelper(message, "UTF-8");
+        helper.setTo(email);
+        helper.setSubject(MAIL_TITLE_CERTIFICATION);
+        helper.setText(content);
+
+        Transport.send(message);
+
+        log.info("메일 전송 완료: {}", email);
     }
 }
