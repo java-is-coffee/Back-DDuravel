@@ -4,10 +4,12 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import javaiscoffee.polaroad.album.albumCard.AlbumCard;
 import javaiscoffee.polaroad.member.Member;
 import javaiscoffee.polaroad.post.Post;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Getter
@@ -54,6 +56,9 @@ public class Card {
     private LocalDateTime createdTime;
     @Setter
     private LocalDateTime updatedTime;
+
+    @OneToMany(mappedBy = "card")
+    private List<AlbumCard> albumCards;
 
     @PrePersist
     public void PrePersist() {
