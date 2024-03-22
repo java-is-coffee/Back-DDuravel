@@ -39,16 +39,18 @@ public class MailSendService {
         // 이메일 인증을 위한 랜덤 인증 번호 생성 => 사용자가 인증 링크를 클릭할 때 확인하는 용도로 사용
         String certificationNumber = generator.createCertificationNumber(10000000,99999999);
 
+        log.info("이메일 = {}, 인증번호 = {}",email,certificationNumber);
+
         // String.format() 사용해서 인증 번호를 포함한 본문 생성.
         String content = String.format("%s의 이메일 인증을 위해 발송된 메일입니다.%n인증 번호는   :   %s%n인증 번호를 입력칸에 입력해주세요.%n 인증 번호는 30분 후 만료됩니다.",email,certificationNumber);
 
         // 레디스에 인증번호 저장
         redisService.saveEmailVerificationCode(email,certificationNumber,30);
 
+        log.info("이메일 인증번호 저장 완료");
+
         // 사용자에게 위에서 생성한 이메일 내용 전송
         sendMail(email, content);
-
-        log.info("이메일 = {}, 인증번호 = {}",email,certificationNumber);
     }
     //키 값 오류로 막히면 이메일 안 보내게 수정할 것
 
