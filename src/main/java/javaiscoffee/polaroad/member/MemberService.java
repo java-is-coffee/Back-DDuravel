@@ -11,7 +11,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -98,12 +97,12 @@ public class MemberService {
     @Transactional
     public void toggleFollow(Long followingMemberId, Long followedMemberId) {
         if(!Objects.equals(followingMemberId, followedMemberId)) {
-            Member followingMember = memberRepository.findByMemberId(followingMemberId).get();
-            Member followedMember = memberRepository.findByMemberId(followedMemberId).get();
+            Member followingMember = memberRepository.findByMemberId(followingMemberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
+            Member followedMember = memberRepository.findByMemberId(followedMemberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
             FollowId followId = new FollowId(followingMember.getMemberId(), followedMember.getMemberId());
             Follow follow = memberRepository.findMemberFollow(followId);
             
-            if (followingMember != null && followedMember != null && followingMember.getStatus() == MemberStatus.ACTIVE && followedMember.getStatus() == MemberStatus.ACTIVE) {
+            if (followingMember.getStatus() == MemberStatus.ACTIVE && followedMember.getStatus() == MemberStatus.ACTIVE && !Objects.equals(followedMemberId, followingMemberId)) {
                 if (follow == null) {
                     follow = new Follow(followId, followingMember, followedMember);
                     memberRepository.saveMemberFollow(follow);
@@ -129,5 +128,15 @@ public class MemberService {
         } else {
             throw new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
         }
+    }
+
+    /**
+     * 회원 탈퇴
+     */
+    @Transactional
+    public void deleteAccount(Long memberId) {
+        Member member = memberRepository.findByMemberId(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
+        if(!member.getStatus().equals(MemberStatus.ACTIVE)) new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
+        member.deleteMember();
     }
 }

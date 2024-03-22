@@ -26,7 +26,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                         member.getUsername(),
                         member.getPassword(),
                         member.getMemberId(),
-                        AuthorityUtils.createAuthorityList("ROLE_USER") // 예시, 실제 권한은 Member 엔티티에 따라 다를 수 있음
+                        AuthorityUtils.createAuthorityList(member.getRole().getKey()) // 예시, 실제 권한은 Member 엔티티에 따라 다를 수 있음
                 ))
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
     }
