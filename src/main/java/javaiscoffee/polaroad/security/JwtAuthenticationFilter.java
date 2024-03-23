@@ -45,7 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 || requestURI.startsWith("/YJS")
                 || requestURI.startsWith("/api/oauth2")
                 || requestURI.startsWith("/api/email")
-                || requestURI.startsWith("/login/oauth2/")
+                || requestURI.startsWith("/api/login/oauth2")
                 || requestURI.startsWith("/swagger-ui")
                 || requestURI.startsWith("/swagger-resources")
                 || requestURI.startsWith("/webjars/")
