@@ -44,8 +44,10 @@ public class GoogleService {
             }
 
             BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            StringBuilder result = new StringBuilder();
+
             String line;
+            StringBuilder result = new StringBuilder();
+
             while ((line = br.readLine()) != null) {
                 result.append(line);
             }
