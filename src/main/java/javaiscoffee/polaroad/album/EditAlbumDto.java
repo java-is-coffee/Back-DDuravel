@@ -7,6 +7,9 @@ import java.util.List;
 
 @Data
 @Schema(description = "앨범 수정 정보 받는 requestDto")
+/**
+ * 필요 없어짐. 삭제 예정
+ */
 public class EditAlbumDto {
     @Schema(description = "앨범 이름", example = "제주도")
     private String name;

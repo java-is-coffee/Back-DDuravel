@@ -8,8 +8,9 @@ import java.util.List;
 @Data
 @Schema(description = "앨범 생성 정보 받는 requestDto")
 public class AlbumDto {
-    @Schema(description = "멤버 id", example = "1")
-    private Long memberId;
+    // 멤버 Id 빼고 토큰 값에서 빼와서 사용하면 될 것 , 보내줄 때는 넣어주고 받을 때는 토큰 값에서 빼기
+//    @Schema(description = "멤버 id", example = "1")
+//    private Long memberId;
     @Schema(description = "앨범 이름", example = "제주도")
     private String name;
     @Schema(description = "앨범 간단한 설명", example = "제주도 맛집 여행 앨범")

@@ -1,12 +1,11 @@
 package javaiscoffee.polaroad.album;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import javaiscoffee.polaroad.album.albumCard.AlbumCardInfoDto;
-import javaiscoffee.polaroad.album.albumCard.RequestToAddAlbumCardDto;
-import javaiscoffee.polaroad.member.Member;
+import javaiscoffee.polaroad.album.albumCard.RequestAlbumCardDto;
 import javaiscoffee.polaroad.response.ResponseMessages;
 import javaiscoffee.polaroad.response.Status;
 import javaiscoffee.polaroad.security.CustomUserDetails;
@@ -61,9 +60,9 @@ public class AlbumController {
 
     @Operation(summary = "앨범 수정 API", description = "앨범 수정할 때 사용하는 API")
     @PatchMapping("/edit/{albumId}")
-    public ResponseEntity<?> editAlbum(@RequestBody RequestWrapperDto<EditAlbumDto> requestWrapperDto, @AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable(name = "albumId") Long albumId) {
+    public ResponseEntity<?> editAlbum(@RequestBody RequestWrapperDto<AlbumDto> requestWrapperDto, @AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable(name = "albumId") Long albumId) {
         Long memberId = userDetails.getMemberId();
-        EditAlbumDto editAlbumDto = requestWrapperDto.getData();
+        AlbumDto editAlbumDto = requestWrapperDto.getData();
         log.info("앨범 수정 요청 = {}", editAlbumDto);
         ResponseAlbumDto responseAlbumDto = albumService.editAlbum(editAlbumDto, albumId, memberId);
         return ResponseEntity.ok(responseAlbumDto);
@@ -78,14 +77,41 @@ public class AlbumController {
         return albumService.deleteAlbum(memberId, albumId);
     }
 
-    // 미완성!!
-    @Operation(summary = "앨범 카드 추가 API", description = "앨범에 카드 추가할 때 사용하는 API")
+
+    @Operation(summary = "앨범 카드 추가 API", description = "앨범에 앨범 카드 추가할 때 사용하는 API")
     @PostMapping("/add-card/{albumId}")
-    public ResponseEntity<?> addCardToAlbum(@RequestBody RequestWrapperDto<RequestToAddAlbumCardDto> requestWrapperDto, @AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable(name = "albumId") Long albumId) {
+    public ResponseEntity<?> addCardToAlbum(@RequestBody RequestWrapperDto<RequestAlbumCardDto> requestWrapperDto, @AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable(name = "albumId") Long albumId) {
         Long memberId = userDetails.getMemberId();
-        RequestToAddAlbumCardDto addAlbumCardDto = requestWrapperDto.getData();
+        RequestAlbumCardDto addAlbumCardDto = requestWrapperDto.getData();
         log.info("앨범 사진 추가 요청 = {}", addAlbumCardDto);
         ResponseAlbumDto responseAlbumDto = albumService.addCard(addAlbumCardDto, albumId, memberId);
         return ResponseEntity.ok(responseAlbumDto);
+    }
+
+    @Operation(summary = "앨범 카드 삭제 API", description = "앨범에서 앨범 카드를 삭제할 때 사용하는 API")
+    @DeleteMapping("/delete-card/{albumId}")
+    public ResponseEntity<?> deleteCardToAlbum(@RequestBody RequestWrapperDto<RequestAlbumCardDto> requestWrapperDto, @AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable(name = "albumId") Long albumId) {
+        Long memberId = userDetails.getMemberId();
+        RequestAlbumCardDto deleteAlbumCardDto = requestWrapperDto.getData();
+        log.info("앨범 사진 삭제 요청 = {}", deleteAlbumCardDto);
+        ResponseAlbumDto responseAlbumDto = albumService.deleteCard(deleteAlbumCardDto, albumId, memberId);
+        return ResponseEntity.ok(responseAlbumDto);
+    }
+
+    @Operation(summary = "앨범 목록 조회 API", description = "페이징 처리 된 앨범 목록을 조회할 때 사용하는 API")
+    @GetMapping("/list/paging")
+    public ResponseEntity<?> getAlbumList(@Parameter(name = "page", description = "## 앨범 페이지 번호", required = true, example = "1") @RequestParam int page,
+                                          @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        return null;
+    }
+
+    @Operation(summary = "앨범 내용 조회 API", description = "페이징 처리 된 앨범 내용을 조회할 때 사용하는 API")
+    @GetMapping("/{albumId}/content/paging")
+    public ResponseEntity<?> getAlbumCardList(@Parameter(name = "page", description = "## 앨범 페이지 번호", required = true, example = "1") @RequestParam int page,
+                                              @AuthenticationPrincipal CustomUserDetails userDetails,
+                                              @PathVariable(name = "albumId") Long albumId) {
+
+        return null;
     }
 }

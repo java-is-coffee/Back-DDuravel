@@ -11,7 +11,7 @@ import lombok.*;
 @Builder
 @Getter
 @Setter
-@ToString(exclude = {"album", "card","id"})
+@ToString(exclude = {"album", "card"})
 @Table(name = "albumsCards")
 public class AlbumCard {
 

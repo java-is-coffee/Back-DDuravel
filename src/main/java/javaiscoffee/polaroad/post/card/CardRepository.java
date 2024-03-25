@@ -16,6 +16,4 @@ public interface CardRepository extends JpaRepository<Card, Long> {
 
     //마이페이지에서 자기가 업로드한 카도 조회
     public Page<Card> findCardsByMemberAndStatusOrderByCreatedTimeDesc(Member member, CardStatus status, Pageable pageable);
-
-    public Card findCardByCardId(Long cardId);
 }

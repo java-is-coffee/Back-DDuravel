@@ -52,7 +52,7 @@ public class AlbumCardService {
                                 .collect(Collectors.toSet());
         oldAlbumCards.forEach(oldAlbumCard -> {
             if (!updatedAlbumCardSet.contains(oldAlbumCard.getId().getCardId())) {    // 수정된 리스트에 기존 앨범카드id가 없으면
-                albumCardRepository.delete(oldAlbumCard);     // 수정된 리스트에 없는 기존 앨범카드id 삭제
+                albumCardRepository.delete(oldAlbumCard);     // 수정된 리스트에 없는 기존 앨범카드 삭제
             }
             // 수정된 리스트에 있는 기존 앨범카드id 지우기
             else {
@@ -63,7 +63,7 @@ public class AlbumCardService {
         // 추가된 앨범 카드 저장
         for (Long cardId : cardIdList) {
             // 추가된 카드 id로 카드 객체 조회
-            Card newCard = cardRepository.findCardByCardId(cardId);
+            Card newCard = cardRepository.findById(cardId).get();
 
             // 생성 후 저장
             AlbumCardId albumCardId = new AlbumCardId();
@@ -78,4 +78,35 @@ public class AlbumCardService {
         }
     }
 
+    public void addCard(List<Long> cardIdList, Album album) {
+        for (Long cardId : cardIdList) {
+            // 카드Id에 해당하는 카드 객체 조회
+            Card addedCard = cardRepository.findById(cardId).get();
+
+            // 생성 후 저장
+            AlbumCardId albumCardId = new AlbumCardId();
+            albumCardId.setAlbumId(album.getAlbumId());
+            albumCardId.setCardId(addedCard.getCardId());
+
+            AlbumCard newAlbumCard = new AlbumCard();
+            newAlbumCard.setId(albumCardId);
+            newAlbumCard.setCard(addedCard);
+            newAlbumCard.setAlbum(album);
+            albumCardRepository.save(newAlbumCard);
+        }
+    }
+
+    //TODO
+    // 앨범 카드 삭제 어떻게 할지 생각해보기
+//    public void deleteCard(List<Long> cardIdList, Album album) {
+////        List<AlbumCard> oldAlbumCards = albumRepository.findById(album.getAlbumId()).get().getAlbumCards();
+//
+//        for (Long cardId : cardIdList) {
+//
+//            Card card = cardRepository.findById(cardId).get();
+//            // 해당 앨범카드에 있는 카드id인지 확인하고 포함하고있는 cardid이면 삭제?
+//            albumCardRepository.delete();
+//
+//        }
+//    }
 }
