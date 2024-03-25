@@ -116,7 +116,7 @@ public class AlbumService {
         return ResponseEntity.ok(ResponseMessages.SUCCESS.getMessage());
     }
 
-    public ResponseAlbumDto addCard(RequestAlbumCardDto addAlbumCardDto, Long albumId, Long memberId) {
+    public ResponseAlbumDto addAlbumCard(RequestAlbumCardDto addAlbumCardDto, Long albumId, Long memberId) {
         Album album = albumRepository.findById(albumId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         //  멤버가 없는 경우, 멤버가 삭제된 경우
@@ -131,7 +131,7 @@ public class AlbumService {
         return toResponseAlbumDto(album, albumCardInfoDto);
     }
 
-    public ResponseAlbumDto deleteCard(RequestAlbumCardDto deleteAlbumCardDto, Long albumId, Long memberId) {
+    public ResponseAlbumDto deleteAlbumCard(RequestAlbumCardDto deleteAlbumCardDto, Long albumId, Long memberId) {
         Album album = albumRepository.findById(albumId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         //  멤버가 없는 경우, 멤버가 삭제된 경우
@@ -146,7 +146,7 @@ public class AlbumService {
         return toResponseAlbumDto(album, albumCardInfoDto);
     }
 
-    public SliceAlbumListDto<AlbumInfoDto> getAlbumListPaged(int page, Long memberId) {
+    public SliceAlbumListDto<AlbumInfoDto> getPagedAlbumList(int page, Long memberId) {
         page = (page == 0) ? 0 : (page - 1);
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         //  멤버가 없는 경우, 멤버가 삭제된 경우
@@ -161,7 +161,7 @@ public class AlbumService {
     }
 
     //NOTE: 매핑하는 메서드 사용 하기 위해서 AlbumCardService가 아닌 AlbumService 작성함
-    public SliceAlbumCardInfoDto<AlbumCardInfoDto> getAlbumCardListPaged(Long memberId, Long albumId, int page) {
+    public SliceAlbumCardInfoDto<AlbumCardInfoDto> getPagedAlbumCardList(Long memberId, Long albumId, int page) {
         page = (page == 0) ? 0 : (page - 1);
         Album album = albumRepository.findById(albumId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
@@ -175,7 +175,7 @@ public class AlbumService {
         List<AlbumCard> albumCardList = albumCardSlice.getContent();
         List<AlbumCardInfoDto> albumCardInfoDtoList = toAlbumCardInfoDto(albumCardList);
 
-        return new SliceAlbumCardInfoDto<>(albumCardInfoDtoList, albumCardSlice.hasNext());
+        return new SliceAlbumCardInfoDto<>(albumId, albumCardInfoDtoList, albumCardSlice.hasNext());
     }
 
 

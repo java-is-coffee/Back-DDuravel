@@ -3,8 +3,10 @@ package javaiscoffee.polaroad.album.albumCard;
 import javaiscoffee.polaroad.album.Album;
 import javaiscoffee.polaroad.album.AlbumRepository;
 import javaiscoffee.polaroad.album.AlbumService;
+import javaiscoffee.polaroad.exception.NotFoundException;
 import javaiscoffee.polaroad.post.card.Card;
 import javaiscoffee.polaroad.post.card.CardRepository;
+import javaiscoffee.polaroad.response.ResponseMessages;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -99,14 +101,20 @@ public class AlbumCardService {
     //TODO
     // 앨범 카드 삭제 어떻게 할지 생각해보기
     public void deleteCard(List<Long> cardIdList, Album album) {
-//        List<AlbumCard> oldAlbumCards = albumRepository.findById(album.getAlbumId()).get().getAlbumCards();
+        List<AlbumCard> albumCards = albumRepository.findById(album.getAlbumId()).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage())).getAlbumCards();
+//        List<>
+//        for (Long id : cardIdList) {
+//            Card card = cardRepository.findById(id).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
+//
+//        }
+        // 삭제할 앨범카드 리스트
+        List<AlbumCard> cardsToDelete = albumCards.stream()
+                .filter(albumCard -> cardIdList.contains(albumCard.getId().getCardId()))
+                .toList();
 
-        for (Long cardId : cardIdList) {
-
-            Card card = cardRepository.findById(cardId).get();
-            // 해당 앨범카드에 있는 카드id인지 확인하고 포함하고있는 cardid이면 삭제?
-//            albumCardRepository.delete();
-
+        for (AlbumCard cardToDelete : cardsToDelete) {
+            albumCardRepository.delete(cardToDelete);
         }
+
     }
 }

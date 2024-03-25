@@ -10,12 +10,10 @@ import javaiscoffee.polaroad.album.albumCard.RequestAlbumCardDto;
 import javaiscoffee.polaroad.album.albumCard.SliceAlbumCardInfoDto;
 import javaiscoffee.polaroad.exception.BadRequestException;
 import javaiscoffee.polaroad.response.ResponseMessages;
-import javaiscoffee.polaroad.response.Status;
 import javaiscoffee.polaroad.security.CustomUserDetails;
 import javaiscoffee.polaroad.wrapper.RequestWrapperDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -71,7 +69,6 @@ public class AlbumController {
         return ResponseEntity.ok(responseAlbumDto);
     }
 
-    // 삭제 성공시 response body에 " can't parse JSON.  Raw result: 성공 " 이라고 나옴
     @Operation(summary = "앨범 삭제 API", description = "앨범 삭제할 때 사용하는 API")
     @DeleteMapping("/delete/{albumId}")
     public ResponseEntity<String> deleteAlbum(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable(name = "albumId") Long albumId) {
@@ -87,7 +84,7 @@ public class AlbumController {
         Long memberId = userDetails.getMemberId();
         RequestAlbumCardDto addAlbumCardDto = requestWrapperDto.getData();
         log.info("앨범 사진 추가 요청 = {}", addAlbumCardDto);
-        ResponseAlbumDto responseAlbumDto = albumService.addCard(addAlbumCardDto, albumId, memberId);
+        ResponseAlbumDto responseAlbumDto = albumService.addAlbumCard(addAlbumCardDto, albumId, memberId);
         return ResponseEntity.ok(responseAlbumDto);
     }
 
@@ -99,7 +96,7 @@ public class AlbumController {
         Long memberId = userDetails.getMemberId();
         RequestAlbumCardDto deleteAlbumCardDto = requestWrapperDto.getData();
         log.info("앨범 사진 삭제 요청 = {}", deleteAlbumCardDto);
-        ResponseAlbumDto responseAlbumDto = albumService.deleteCard(deleteAlbumCardDto, albumId, memberId);
+        ResponseAlbumDto responseAlbumDto = albumService.deleteAlbumCard(deleteAlbumCardDto, albumId, memberId);
         return ResponseEntity.ok(responseAlbumDto);
     }
 
@@ -112,7 +109,7 @@ public class AlbumController {
     {
         log.info("앨범 목록 조회 요청");
         Long memberId = userDetails.getMemberId();
-        SliceAlbumListDto<AlbumInfoDto> albumPage = albumService.getAlbumListPaged(page, memberId);
+        SliceAlbumListDto<AlbumInfoDto> albumPage = albumService.getPagedAlbumList(page, memberId);
         return ResponseEntity.ok(albumPage);
     }
 
@@ -125,7 +122,7 @@ public class AlbumController {
     {
         log.info("앨범 내용 조회 요청");
         Long memberId = userDetails.getMemberId();
-        SliceAlbumCardInfoDto<AlbumCardInfoDto> albumCardPage = albumService.getAlbumCardListPaged(memberId, albumId, page);
+        SliceAlbumCardInfoDto<AlbumCardInfoDto> albumCardPage = albumService.getPagedAlbumCardList(memberId, albumId, page);
         return ResponseEntity.ok(albumCardPage);
     }
 }
