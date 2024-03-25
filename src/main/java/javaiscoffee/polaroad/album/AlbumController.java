@@ -88,8 +88,6 @@ public class AlbumController {
         return ResponseEntity.ok(responseAlbumDto);
     }
 
-    //TODO
-    // - 미완성 : AlbumCardService 삭제 부분 구현 마무리 필요
     @Operation(summary = "앨범 카드 삭제 API", description = "앨범에서 앨범 카드를 삭제할 때 사용하는 API")
     @DeleteMapping("/delete-card/{albumId}")
     public ResponseEntity<ResponseAlbumDto> deleteCardToAlbum(@RequestBody RequestWrapperDto<RequestAlbumCardDto> requestWrapperDto, @AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable(name = "albumId") Long albumId) {
