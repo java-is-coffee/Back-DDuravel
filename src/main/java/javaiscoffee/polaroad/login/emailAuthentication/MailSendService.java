@@ -19,6 +19,9 @@ import org.springframework.stereotype.Service;
 import java.security.NoSuchAlgorithmException;
 import java.util.Properties;
 
+/**
+ * todo: aws에 배포해서 메일인증 활성화하기
+ */
 
 @Slf4j
 @Service

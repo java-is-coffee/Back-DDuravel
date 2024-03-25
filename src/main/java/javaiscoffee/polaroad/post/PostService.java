@@ -29,6 +29,10 @@ import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
+/**
+ * todo 동시에 많은 요청이 들어왔을 때 어떻게 처리할 것인지 대처법 생각해보기
+ */
+
 @Slf4j
 @Service
 @Transactional(readOnly = true)
@@ -59,6 +63,7 @@ public class PostService {
         if(postSaveDto.getThumbnailIndex() < 0 || postSaveDto.getThumbnailIndex() >= postSaveDto.getCards().size()) throw new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
         //게시글 해쉬코드가 10개 넘어가면 에러
         if(postSaveDto.getHashtags().size() > 10) throw new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
+        if(postSaveDto.getCards().size() > 10) throw new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         Post post = new Post();
         BeanUtils.copyProperties(postSaveDto, post);
