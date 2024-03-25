@@ -33,14 +33,14 @@ public class ReviewController {
             @ApiResponse(responseCode = "403", description = "권한이 없는 경우")
     })
     @PostMapping("/write/{postId}")
-    public ResponseEntity<?> writeReview(@RequestBody RequestWrapperDto<ReviewDto> requestDto, @AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<ResponseReviewDto> writeReview(@RequestBody RequestWrapperDto<ReviewDto> requestDto, @AuthenticationPrincipal CustomUserDetails userDetails) {
         Long memberId = userDetails.getMemberId();
         ReviewDto reviewDto = requestDto.getData();
         log.info("입력 받은 댓글 정보 = {}", reviewDto);
         ResponseReviewDto savedReview = reviewService.createReview(reviewDto, memberId);
         // 댓글 = null 에러 반환
         if (savedReview == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Status(ResponseMessages.INPUT_ERROR));
+            throw new NotFoundException(ResponseMessages.INPUT_ERROR.getMessage());
         } else {
             return ResponseEntity.ok(savedReview);
         }
@@ -52,7 +52,7 @@ public class ReviewController {
             @ApiResponse(responseCode = "404", description = "댓글 조회 실패한 경우")
     })
     @GetMapping("/{reviewId}")
-    public ResponseEntity<?> getReviewById(@PathVariable(name = "reviewId") Long reviewId, @AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<ResponseGetReviewDto> getReviewById(@PathVariable(name = "reviewId") Long reviewId, @AuthenticationPrincipal CustomUserDetails userDetails) {
         log.info("댓글 조회 요청");
         Long memberId = userDetails.getMemberId();
         ResponseGetReviewDto findedReview = reviewService.getReviewById(reviewId, memberId);
@@ -67,7 +67,7 @@ public class ReviewController {
             @ApiResponse(responseCode = "403", description = "권한이 없는 경우")
     })
     @PatchMapping("/edit/{reviewId}")
-    public ResponseEntity<?> editReview(@RequestBody RequestWrapperDto<EditeRequestReviewDto> requestDto, @PathVariable(name = "reviewId") Long reviewId, @AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<ResponseReviewDto> editReview(@RequestBody RequestWrapperDto<EditeRequestReviewDto> requestDto, @PathVariable(name = "reviewId") Long reviewId, @AuthenticationPrincipal CustomUserDetails userDetails) {
         log.info("댓글 수정 요청");
         Long memberId = userDetails.getMemberId();
         EditeRequestReviewDto editReviewDto = requestDto.getData();
@@ -83,10 +83,10 @@ public class ReviewController {
             @ApiResponse(responseCode = "403", description = "권한이 없는 경우")
     })
     @DeleteMapping("/delete/{reviewId}")
-    public ResponseEntity<?> deleteReview(@PathVariable(name = "reviewId") Long reviewId, @AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<String> deleteReview(@PathVariable(name = "reviewId") Long reviewId, @AuthenticationPrincipal CustomUserDetails userDetails) {
         Long memberId = userDetails.getMemberId();
         reviewService.deleteReview(reviewId, memberId);
-        return ResponseEntity.ok(null);
+        return ResponseEntity.ok(ResponseMessages.SUCCESS.getMessage());
     }
 
     // 신고
@@ -95,16 +95,16 @@ public class ReviewController {
 //        Long memberId = userDetails.getMemberId();
 //    }
 
-    @Operation(summary = "포스트에 딸린 모든 댓글 조회 API", description = "포스트id로 해당 포스트의 모든 댓글 조회할 때 사용하는 API")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "postId로 댓글 조회에 성공한 경우"),
-            @ApiResponse(responseCode = "404", description = "포스트가 null이거나 삭제된 경우")
-    })
-    @GetMapping("/post/{postId}")
-    public ResponseEntity<?> getReviewsByPostId(@PathVariable Long postId) {
-        log.info("해당 포스트의 모든 댓글 조회 요청 = {}", postId);
-        return ResponseEntity.ok(reviewService.getReviewByPostId(postId));
-    }
+//    @Operation(summary = "포스트에 딸린 모든 댓글 조회 API", description = "포스트id로 해당 포스트의 모든 댓글 조회할 때 사용하는 API")
+//    @ApiResponses({
+//            @ApiResponse(responseCode = "200", description = "postId로 댓글 조회에 성공한 경우"),
+//            @ApiResponse(responseCode = "404", description = "포스트가 null이거나 삭제된 경우")
+//    })
+//    @GetMapping("/post/{postId}")
+//    public ResponseEntity<?> getReviewsByPostId(@PathVariable Long postId) {
+//        log.info("해당 포스트의 모든 댓글 조회 요청 = {}", postId);
+//        return ResponseEntity.ok(reviewService.getReviewByPostId(postId));
+//    }
 
     // 포스트에 딸린 모든 댓글 페이징
     @Operation(summary = "포스트 댓글 페이징 API", description = "포스트의 댓글들을 페이징 할 때 사용하는 API")
@@ -117,22 +117,22 @@ public class ReviewController {
             @PathVariable(name = "postId") Long postId,
             @Parameter(name = "page", description = "## 댓글 페이지 번호", required = true, example = "1") @RequestParam int page) {
         log.info("포스트 댓글 페이징 요청");
-        SliceResponseDto<?> reviewPage = reviewService.getReviewsPagedByPostId(postId, page);
+        SliceResponseDto<ResponseReviewDto> reviewPage = reviewService.getReviewsPagedByPostId(postId, page);
         return ResponseEntity.ok(reviewPage);
     }
 
 
-    @Operation(summary = "맴버가 작성한 모든 댓글 조회 API", description = "맴버id로 해당 맴버가 작성한 모든 댓글 조회할 때 사용하는 API")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "memberId로 댓글 조회에 성공한 경우"),
-            @ApiResponse(responseCode = "403", description = "memberId가 null이거나 권한이 없는 경우")
-    })
-    @GetMapping("/member/{memberId}")
-    public ResponseEntity<?> getReviewsByMemberId(@PathVariable Long memberId, @AuthenticationPrincipal CustomUserDetails userDetails) {
-        log.info("맴버가 작성한 모든 댓글 조회 요청");
-        Long requestedMemberId = userDetails.getMemberId();
-        return ResponseEntity.ok(reviewService.getReviewByMemberId(memberId, requestedMemberId));
-    }
+//    @Operation(summary = "맴버가 작성한 모든 댓글 조회 API", description = "맴버id로 해당 맴버가 작성한 모든 댓글 조회할 때 사용하는 API")
+//    @ApiResponses({
+//            @ApiResponse(responseCode = "200", description = "memberId로 댓글 조회에 성공한 경우"),
+//            @ApiResponse(responseCode = "403", description = "memberId가 null이거나 권한이 없는 경우")
+//    })
+//    @GetMapping("/member/{memberId}")
+//    public ResponseEntity<?> getReviewsByMemberId(@PathVariable Long memberId, @AuthenticationPrincipal CustomUserDetails userDetails) {
+//        log.info("맴버가 작성한 모든 댓글 조회 요청");
+//        Long requestedMemberId = userDetails.getMemberId();
+//        return ResponseEntity.ok(reviewService.getReviewByMemberId(memberId, requestedMemberId));
+//    }
 
     @Operation(summary = "유저의 댓글 페이징 API", description = "유저가 작성한 모든 댓글들을 페이징 할 때 사용하는 API")
     @ApiResponses({
@@ -146,7 +146,7 @@ public class ReviewController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         log.info("맴버가 작성한 모든 댓글들 페이징 요청");
         Long requestedMemberId = userDetails.getMemberId();
-        SliceResponseDto<?> reviewPage = reviewService.getReviewsPagedByMemberId(memberId, page, requestedMemberId);
+        SliceResponseDto<ResponseReviewDto> reviewPage = reviewService.getReviewsPagedByMemberId(memberId, page, requestedMemberId);
         return ResponseEntity.ok(reviewPage);
     }
 
