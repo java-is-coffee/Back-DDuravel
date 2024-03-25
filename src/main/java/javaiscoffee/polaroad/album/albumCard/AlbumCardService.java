@@ -98,15 +98,15 @@ public class AlbumCardService {
 
     //TODO
     // 앨범 카드 삭제 어떻게 할지 생각해보기
-//    public void deleteCard(List<Long> cardIdList, Album album) {
-////        List<AlbumCard> oldAlbumCards = albumRepository.findById(album.getAlbumId()).get().getAlbumCards();
-//
-//        for (Long cardId : cardIdList) {
-//
-//            Card card = cardRepository.findById(cardId).get();
-//            // 해당 앨범카드에 있는 카드id인지 확인하고 포함하고있는 cardid이면 삭제?
+    public void deleteCard(List<Long> cardIdList, Album album) {
+//        List<AlbumCard> oldAlbumCards = albumRepository.findById(album.getAlbumId()).get().getAlbumCards();
+
+        for (Long cardId : cardIdList) {
+
+            Card card = cardRepository.findById(cardId).get();
+            // 해당 앨범카드에 있는 카드id인지 확인하고 포함하고있는 cardid이면 삭제?
 //            albumCardRepository.delete();
-//
-//        }
-//    }
+
+        }
+    }
 }

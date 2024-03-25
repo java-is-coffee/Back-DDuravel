@@ -5,7 +5,10 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import javaiscoffee.polaroad.album.albumCard.AlbumCardInfoDto;
 import javaiscoffee.polaroad.album.albumCard.RequestAlbumCardDto;
+import javaiscoffee.polaroad.album.albumCard.SliceAlbumCardInfoDto;
+import javaiscoffee.polaroad.exception.BadRequestException;
 import javaiscoffee.polaroad.response.ResponseMessages;
 import javaiscoffee.polaroad.response.Status;
 import javaiscoffee.polaroad.security.CustomUserDetails;
@@ -37,20 +40,20 @@ public class AlbumController {
             @ApiResponse(responseCode = "404", description = "멤버가 존재하지 않는 경우")
     })
     @PostMapping("/create")
-    public ResponseEntity<?> createAlbum(@RequestBody RequestWrapperDto<AlbumDto> requestWrapperDto, @AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<ResponseAlbumDto> createAlbum(@RequestBody RequestWrapperDto<AlbumDto> requestWrapperDto, @AuthenticationPrincipal CustomUserDetails userDetails) {
         Long memberId = userDetails.getMemberId();
         AlbumDto albumDto = requestWrapperDto.getData();
         log.info("앨범 생성 요청 = {}", albumDto);
         ResponseAlbumDto responseAlbumDto = albumService.createAlbum(albumDto, memberId);
         if (responseAlbumDto == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Status(ResponseMessages.INPUT_ERROR));
+            throw new BadRequestException(ResponseMessages.INPUT_ERROR.getMessage());
         }
         return ResponseEntity.ok(responseAlbumDto);
     }
 
     @Operation(summary = "앨범 1개 조회 API", description = "앨범 1개 조회할 때 사용하는 API")
     @GetMapping("/{albumId}")
-    public ResponseEntity<?> getAlbum(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable(name = "albumId") Long albumId) {
+    public ResponseEntity<ResponseAlbumDto> getAlbum(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable(name = "albumId") Long albumId) {
         log.info("댓글 조회 요청");
         Long memberId = userDetails.getMemberId();
         ResponseAlbumDto responseAlbumDto = albumService.getAlbum(memberId, albumId);
@@ -60,7 +63,7 @@ public class AlbumController {
 
     @Operation(summary = "앨범 수정 API", description = "앨범 수정할 때 사용하는 API")
     @PatchMapping("/edit/{albumId}")
-    public ResponseEntity<?> editAlbum(@RequestBody RequestWrapperDto<AlbumDto> requestWrapperDto, @AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable(name = "albumId") Long albumId) {
+    public ResponseEntity<ResponseAlbumDto> editAlbum(@RequestBody RequestWrapperDto<AlbumDto> requestWrapperDto, @AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable(name = "albumId") Long albumId) {
         Long memberId = userDetails.getMemberId();
         AlbumDto editAlbumDto = requestWrapperDto.getData();
         log.info("앨범 수정 요청 = {}", editAlbumDto);
@@ -80,7 +83,7 @@ public class AlbumController {
 
     @Operation(summary = "앨범 카드 추가 API", description = "앨범에 앨범 카드 추가할 때 사용하는 API")
     @PostMapping("/add-card/{albumId}")
-    public ResponseEntity<?> addCardToAlbum(@RequestBody RequestWrapperDto<RequestAlbumCardDto> requestWrapperDto, @AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable(name = "albumId") Long albumId) {
+    public ResponseEntity<ResponseAlbumDto> addCardToAlbum(@RequestBody RequestWrapperDto<RequestAlbumCardDto> requestWrapperDto, @AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable(name = "albumId") Long albumId) {
         Long memberId = userDetails.getMemberId();
         RequestAlbumCardDto addAlbumCardDto = requestWrapperDto.getData();
         log.info("앨범 사진 추가 요청 = {}", addAlbumCardDto);
@@ -88,9 +91,11 @@ public class AlbumController {
         return ResponseEntity.ok(responseAlbumDto);
     }
 
+    //TODO
+    // - 미완성 : AlbumCardService 삭제 부분 구현 마무리 필요
     @Operation(summary = "앨범 카드 삭제 API", description = "앨범에서 앨범 카드를 삭제할 때 사용하는 API")
     @DeleteMapping("/delete-card/{albumId}")
-    public ResponseEntity<?> deleteCardToAlbum(@RequestBody RequestWrapperDto<RequestAlbumCardDto> requestWrapperDto, @AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable(name = "albumId") Long albumId) {
+    public ResponseEntity<ResponseAlbumDto> deleteCardToAlbum(@RequestBody RequestWrapperDto<RequestAlbumCardDto> requestWrapperDto, @AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable(name = "albumId") Long albumId) {
         Long memberId = userDetails.getMemberId();
         RequestAlbumCardDto deleteAlbumCardDto = requestWrapperDto.getData();
         log.info("앨범 사진 삭제 요청 = {}", deleteAlbumCardDto);
@@ -98,20 +103,29 @@ public class AlbumController {
         return ResponseEntity.ok(responseAlbumDto);
     }
 
+    //TODO: 앨범 목록 조회시 각 앨범에 있는 앨범카드 개수도 보낼지?
     @Operation(summary = "앨범 목록 조회 API", description = "페이징 처리 된 앨범 목록을 조회할 때 사용하는 API")
     @GetMapping("/list/paging")
-    public ResponseEntity<?> getAlbumList(@Parameter(name = "page", description = "## 앨범 페이지 번호", required = true, example = "1") @RequestParam int page,
-                                          @AuthenticationPrincipal CustomUserDetails userDetails) {
-
-        return null;
+    public ResponseEntity<SliceAlbumListDto<AlbumInfoDto>> getAlbumList(
+            @Parameter(name = "page", description = "## 앨범 페이지 번호", required = true, example = "1") @RequestParam int page,
+            @AuthenticationPrincipal CustomUserDetails userDetails)
+    {
+        log.info("앨범 목록 조회 요청");
+        Long memberId = userDetails.getMemberId();
+        SliceAlbumListDto<AlbumInfoDto> albumPage = albumService.getAlbumListPaged(page, memberId);
+        return ResponseEntity.ok(albumPage);
     }
 
     @Operation(summary = "앨범 내용 조회 API", description = "페이징 처리 된 앨범 내용을 조회할 때 사용하는 API")
     @GetMapping("/{albumId}/content/paging")
-    public ResponseEntity<?> getAlbumCardList(@Parameter(name = "page", description = "## 앨범 페이지 번호", required = true, example = "1") @RequestParam int page,
-                                              @AuthenticationPrincipal CustomUserDetails userDetails,
-                                              @PathVariable(name = "albumId") Long albumId) {
-
-        return null;
+    public ResponseEntity<SliceAlbumCardInfoDto<AlbumCardInfoDto>> getAlbumCardList(
+            @Parameter(name = "page", description = "## 앨범 페이지 번호", required = true, example = "1") @RequestParam int page,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable(name = "albumId") Long albumId)
+    {
+        log.info("앨범 내용 조회 요청");
+        Long memberId = userDetails.getMemberId();
+        SliceAlbumCardInfoDto<AlbumCardInfoDto> albumCardPage = albumService.getAlbumCardListPaged(memberId, albumId, page);
+        return ResponseEntity.ok(albumCardPage);
     }
 }
