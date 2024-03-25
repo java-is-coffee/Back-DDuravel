@@ -18,7 +18,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
+
 class PostTest {
     @Mock private Member member;
     @Mock private List<Card> cards;
