@@ -1,6 +1,7 @@
 package javaiscoffee.polaroad.album;
 
 import javaiscoffee.polaroad.album.albumCard.*;
+import javaiscoffee.polaroad.exception.BadRequestException;
 import javaiscoffee.polaroad.exception.ForbiddenException;
 import javaiscoffee.polaroad.exception.NotFoundException;
 import javaiscoffee.polaroad.member.JpaMemberRepository;
@@ -13,6 +14,10 @@ import javaiscoffee.polaroad.response.ResponseMessages;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,13 +37,7 @@ public class AlbumService {
     private final CardRepository cardRepository;
     private final AlbumCardRepository albumCardRepository;
 
-    /**
-     * 앨범 생성
-     */
     public ResponseAlbumDto createAlbum(AlbumDto albumDto, Long memberId) {
-//        if (!memberId.equals(albumDto.getMemberId())) {
-//            throw new ForbiddenException(ResponseMessages.FORBIDDEN.getMessage());
-//        }
         Album newAlbum = new Album();
         BeanUtils.copyProperties(albumDto, newAlbum);
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
@@ -47,7 +46,7 @@ public class AlbumService {
 
         List<AlbumCard> albumCards = new ArrayList<>();
         albumDto.getCardIdList().forEach(albumCard -> {
-            Card card = cardRepository.findById(albumCard).get();
+            Card card = cardRepository.findById(albumCard).orElseThrow(() -> new BadRequestException(ResponseMessages.INPUT_ERROR.getMessage()));
             // 작성 요청한 멤버 id와 카드의 멤버 id가 다른 경우
             if (!memberId.equals(card.getMember().getMemberId())) {
                 throw new ForbiddenException(ResponseMessages.FORBIDDEN.getMessage());
@@ -76,9 +75,6 @@ public class AlbumService {
         return toResponseAlbumDto(findedAlbum, albumCardInfoDto);
     }
 
-    /**
-     * 앨범 수정
-     */
     public ResponseAlbumDto editAlbum(AlbumDto editAlbumDto, Long albumId, Long memberId) {
         Album oldAlbum = albumRepository.findById(albumId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
@@ -101,9 +97,6 @@ public class AlbumService {
         return toResponseAlbumDto(oldAlbum,albumCardInfoDtos);
     }
 
-    /**
-     * 앨범 삭제
-     */
     public ResponseEntity<String> deleteAlbum(Long memberId, Long albumId) {
         // 삭제 요청한 앨범이 없는 경우
         Album album = albumRepository.findById(albumId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
@@ -123,9 +116,6 @@ public class AlbumService {
         return ResponseEntity.ok(ResponseMessages.SUCCESS.getMessage());
     }
 
-    /**
-     * 앨범에 앨범 카드 추가 => 추가된 카드들만 보내주기
-     */
     public ResponseAlbumDto addCard(RequestAlbumCardDto addAlbumCardDto, Long albumId, Long memberId) {
         Album album = albumRepository.findById(albumId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
@@ -141,10 +131,6 @@ public class AlbumService {
         return toResponseAlbumDto(album, albumCardInfoDto);
     }
 
-
-    /**
-     * 앨범에서 앨범 카드 삭제
-     */
     public ResponseAlbumDto deleteCard(RequestAlbumCardDto deleteAlbumCardDto, Long albumId, Long memberId) {
         Album album = albumRepository.findById(albumId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
@@ -160,11 +146,39 @@ public class AlbumService {
         return toResponseAlbumDto(album, albumCardInfoDto);
     }
 
+    public SliceAlbumListDto<AlbumInfoDto> getAlbumListPaged(int page, Long memberId) {
+        page = (page == 0) ? 0 : (page - 1);
+        Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
+        //  멤버가 없는 경우, 멤버가 삭제된 경우
+        if (!member.getStatus().equals(MemberStatus.ACTIVE)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
+        //HACK: 요청한 멤버가 앨범 생성자가 아닌 경우는 어떻게 할 것인지
+
+        Pageable pageable = PageRequest.of(page, 10, Sort.by("createdTime").ascending());
+        Slice<Album> albumSlice = albumRepository.findAlbumSlicedByMemberId(memberId, pageable);
+        List<Album> albumList = albumSlice.getContent();
+        List<AlbumInfoDto> albumInfoDtoList = toAlbumInfoDtoList(albumList);
+        return new SliceAlbumListDto<>(albumInfoDtoList, albumSlice.hasNext());
+    }
+
+    //NOTE: 매핑하는 메서드 사용 하기 위해서 AlbumCardService가 아닌 AlbumService 작성함
+    public SliceAlbumCardInfoDto<AlbumCardInfoDto> getAlbumCardListPaged(Long memberId, Long albumId, int page) {
+        page = (page == 0) ? 0 : (page - 1);
+        Album album = albumRepository.findById(albumId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
+        Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
+        //  멤버가 없는 경우, 멤버가 삭제된 경우
+        if (!member.getStatus().equals(MemberStatus.ACTIVE)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
+        // 요청한 멤버가 앨범 생성자가 아닌 경우
+        if (!memberId.equals(album.getMember().getMemberId())) throw new ForbiddenException(ResponseMessages.FORBIDDEN.getMessage());
+
+        Pageable pageable =  PageRequest.of(page, 10, Sort.by("createdTime").ascending());
+        Slice<AlbumCard> albumCardSlice = albumRepository.findAlbumCardSlicedByAlbum(album, pageable);
+        List<AlbumCard> albumCardList = albumCardSlice.getContent();
+        List<AlbumCardInfoDto> albumCardInfoDtoList = toAlbumCardInfoDto(albumCardList);
+
+        return new SliceAlbumCardInfoDto<>(albumCardInfoDtoList, albumCardSlice.hasNext());
+    }
 
 
-    /**
-     * Album, AlbumCardInfo 리스트를 ResponseAlbumDto로 매핑
-     */
     public static ResponseAlbumDto toResponseAlbumDto(Album album, List<AlbumCardInfoDto> albumCardInfoDto) {
         if (album == null) {
             return null;
@@ -182,9 +196,30 @@ public class AlbumService {
         return responseAlbumDto;
     }
 
-    /**
-     * AlbumCard 객체 리스트를 AlbumCardInfoDto 객체 리스트로 매핑
-     */
+    public static List<AlbumInfoDto> toAlbumInfoDtoList(List<Album> albums) {
+        if (albums == null) {
+            return null;
+        }
+
+        List<AlbumInfoDto> albumInfoDtoList = new ArrayList<>();
+        for (Album album : albums) {
+            AlbumInfoDto albumInfoDto = toAlbumInfoDto(album);
+            albumInfoDtoList.add(albumInfoDto);
+        }
+
+        return albumInfoDtoList;
+    }
+
+    public static AlbumInfoDto toAlbumInfoDto(Album album) {
+        AlbumInfoDto albumInfoDto = new AlbumInfoDto();
+        albumInfoDto.setAlbumId(album.getAlbumId());
+        albumInfoDto.setMemberId(album.getMember().getMemberId());
+        albumInfoDto.setName(album.getName());
+        albumInfoDto.setDescription(album.getDescription());
+        albumInfoDto.setUpdatedTime(LocalDateTime.now());
+        return albumInfoDto;
+    }
+
     public static List<AlbumCardInfoDto> toAlbumCardInfoDto(List<AlbumCard> albumCard) {
 
         List<AlbumCardInfoDto> albumCardInfoDtoList = new ArrayList<>();
@@ -199,9 +234,6 @@ public class AlbumService {
         return albumCardInfoDtoList;
     }
 
-    /**
-     * Card 객체를 CardInfo 객체로 매핑
-     */
     public static CardInfoDto toCardInfoDto(Card card) {
         CardInfoDto cardInfoDto = new CardInfoDto();
 
