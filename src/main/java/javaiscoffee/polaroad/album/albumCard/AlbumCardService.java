@@ -102,11 +102,7 @@ public class AlbumCardService {
     // 앨범 카드 삭제 어떻게 할지 생각해보기
     public void deleteCard(List<Long> cardIdList, Album album) {
         List<AlbumCard> albumCards = albumRepository.findById(album.getAlbumId()).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage())).getAlbumCards();
-//        List<>
-//        for (Long id : cardIdList) {
-//            Card card = cardRepository.findById(id).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
-//
-//        }
+
         // 삭제할 앨범카드 리스트
         List<AlbumCard> cardsToDelete = albumCards.stream()
                 .filter(albumCard -> cardIdList.contains(albumCard.getId().getCardId()))
