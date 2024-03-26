@@ -63,7 +63,7 @@ public class GoogleLoginController {
         log.info("구글 로그인 코드 = {}",code);
         String accessToken = googleService.getAccessTokenFromGoogle(googleClientId, googleClientSecret, redirectUri, code);
         HashMap<String, Object> userInfo = googleService.getUerInfo(accessToken);
-        TokenDto tokenDto = loginService.oauthLogin(userInfo);
+        TokenDto tokenDto = loginService.oauthGoogleLogin(userInfo);
         try {
             String redirectUrl = resultUri +
                     "?access_token=" + URLEncoder.encode(tokenDto.getAccessToken(), "UTF-8") +

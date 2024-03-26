@@ -89,22 +89,21 @@ public class GoogleService {
                 result.append(line);
             }
 
-            log.info("구글로부터 얻은 Body 정보 = {}", result.toString());
+            log.info("구글로부터 얻은 Body 정보 = {}", result);
 
             ObjectMapper objectMapper = new ObjectMapper();
             Map<String, Object> jsonMap = objectMapper.readValue(result.toString(), new TypeReference<Map<String, Object>>() {
             });
 
             String id = (String) jsonMap.get("id");
-            String email = (String) jsonMap.get("email");
             String name = (String) jsonMap.get("name");
             String picture = (String) jsonMap.get("picture");
+            String email = (String) jsonMap.get("email");
 
             userInfo.put("id", id);
-            userInfo.put("email", email);
             userInfo.put("name", name);
-            userInfo.put("nickname", "폴라");
             userInfo.put("picture", picture);
+            userInfo.put("email", email);
             userInfo.put("socialLogin", SocialLogin.GOOGLE);
 
             return userInfo;
