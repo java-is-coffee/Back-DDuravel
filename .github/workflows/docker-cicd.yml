@@ -51,6 +51,8 @@ jobs:
           docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} -p ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/text-in-the-road-server:0.1 . 
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/text-in-the-road-server:0.1
+        env:
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
 
       - name: Prepare Docker Compose
         run: |
