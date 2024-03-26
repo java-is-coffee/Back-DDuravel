@@ -61,16 +61,16 @@ jobs:
           build-args: |
             JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
 
-      - name: Prepare Docker Compose
+      - name: Update docker-compose.yml
         run: |
-          sed -i 's/\${DATABASE_URL}/"${{ secrets.DATABASE_URL }}"/g' docker-compose.yml
-          sed -i 's/\${DATABASE_USERNAME}/"${{ secrets.DATABASE_USERNAME }}"/g' docker-compose.yml
-          sed -i 's/\${DATABASE_PASSWORD}/"${{ secrets.DATABASE_PASSWORD }}"/g' docker-compose.yml
-          sed -i 's/\${JWT_SECRET_KEY}/"${{ secrets.JWT_SECRET_KEY }}"/g' docker-compose.yml
-          sed -i 's/\${KAKAO_API_KEY}/"${{ secrets.KAKAO_API_KEY }}"/g' docker-compose.yml
-          sed -i 's/\${KAKAO_REDIRECT_URI}/"${{ secrets.KAKAO_REDIRECT_URI }}"/g' docker-compose.yml
-          sed -i 's/\${MAIL_PASSWORD}/"${{ secrets.MAIL_PASSWORD }}"/g' docker-compose.yml
-          sed -i 's/\${REDIS_PASSWORD}/"${{ secrets.REDIS_PASSWORD }}"/g' docker-compose.yml
+          sed -i 's|\${DATABASE_URL}|"${{ secrets.DATABASE_URL }}"|g' docker-compose.yml
+          sed -i 's|\${DATABASE_USERNAME}|"${{ secrets.DATABASE_USERNAME }}"|g' docker-compose.yml
+          sed -i 's|\${DATABASE_PASSWORD}|"${{ secrets.DATABASE_PASSWORD }}"|g' docker-compose.yml
+          sed -i 's|\${JWT_SECRET_KEY}|"${{ secrets.JWT_SECRET_KEY }}"|g' docker-compose.yml
+          sed -i 's|\${KAKAO_API_KEY}|"${{ secrets.KAKAO_API_KEY }}"|g' docker-compose.yml
+          sed -i 's|\${KAKAO_REDIRECT_URI}|"${{ secrets.KAKAO_REDIRECT_URI }}"|g' docker-compose.yml
+          sed -i 's|\${MAIL_PASSWORD}|"${{ secrets.MAIL_PASSWORD }}"|g' docker-compose.yml
+          sed -i 's|\${REDIS_PASSWORD}|"${{ secrets.REDIS_PASSWORD }}"|g' docker-compose.yml
 
       ## 3) Docker Hub에 Push한 이미지를 리눅스 서버에 받아와서 run
       - name: Deploy
