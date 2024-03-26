@@ -83,4 +83,9 @@ public class Post {
         this.postGoods = new ArrayList<>();
         this.wishListPosts = new ArrayList<>();
     }
+
+    @PreUpdate
+    public void PreUpdate() {
+        this.updatedTime = LocalDateTime.now();
+    }
 }

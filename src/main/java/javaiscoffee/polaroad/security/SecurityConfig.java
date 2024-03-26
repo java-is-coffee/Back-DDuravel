@@ -42,6 +42,7 @@ public class SecurityConfig {
                 .requestMatchers(new AntPathRequestMatcher("/api/member/login/reset-password")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/api/member/register")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/api/member/register/email-check")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/api/member/register/send-certification")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/api/member/refresh")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/api/oauth2/**")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/api/login/oauth2/**")).permitAll()

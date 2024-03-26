@@ -1,6 +1,7 @@
 package javaiscoffee.polaroad.member;
 
 import javaiscoffee.polaroad.exception.BadRequestException;
+import javaiscoffee.polaroad.exception.NotFoundException;
 import javaiscoffee.polaroad.response.ResponseMessages;
 import javaiscoffee.polaroad.security.BaseException;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Slf4j
@@ -62,7 +63,7 @@ public class MemberService {
         member.setNickname(memberInformationRequestDto.getNickname());
         member.setProfileImage(memberInformationRequestDto.getProfileImage());
         //수정일 업데이트
-        member.setUpdatedTime(LocalDate.now());
+        member.setUpdatedTime(LocalDateTime.now());
 
         //새로운 멤버로 response 생성
         MemberInformationResponseDto updatedDto = new MemberInformationResponseDto();
@@ -91,5 +92,51 @@ public class MemberService {
         log.info("변경된 비밀번호를 담은 멤버 = {}",member);
 
         return true;
+    }
+
+    @Transactional
+    public void toggleFollow(Long followingMemberId, Long followedMemberId) {
+        if(!Objects.equals(followingMemberId, followedMemberId)) {
+            Member followingMember = memberRepository.findByMemberId(followingMemberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
+            Member followedMember = memberRepository.findByMemberId(followedMemberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
+            FollowId followId = new FollowId(followingMember.getMemberId(), followedMember.getMemberId());
+            Follow follow = memberRepository.findMemberFollow(followId);
+            
+            if (followingMember.getStatus() == MemberStatus.ACTIVE && followedMember.getStatus() == MemberStatus.ACTIVE && !Objects.equals(followedMemberId, followingMemberId)) {
+                if (follow == null) {
+                    follow = new Follow(followId, followingMember, followedMember);
+                    memberRepository.saveMemberFollow(follow);
+                    followingMember.setFollowingNumber(followingMember.getFollowingNumber() + 1);
+                    followedMember.setFollowedNumber(followedMember.getFollowedNumber() + 1);
+                    log.info("팔로잉 = {}",followingMember.getFollowingNumber());
+                    log.info("팔로워 = {}",followedMember.getFollowedNumber());
+                }
+                else {
+                    if (!(memberRepository.deleteMemberFollow(follow))) {
+                        throw new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
+                    }
+
+                    followingMember.setFollowingNumber(followingMember.getFollowingNumber() - 1);
+                    followedMember.setFollowedNumber(followedMember.getFollowedNumber() - 1);
+                    log.info("팔로잉 = {}",followingMember.getFollowingNumber());
+                    log.info("팔로워 = {}",followedMember.getFollowedNumber());
+                }
+            }
+            else {
+                throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
+            }
+        } else {
+            throw new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
+        }
+    }
+
+    /**
+     * 회원 탈퇴
+     */
+    @Transactional
+    public void deleteAccount(Long memberId) {
+        Member member = memberRepository.findByMemberId(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
+        if(!member.getStatus().equals(MemberStatus.ACTIVE)) new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
+        member.deleteMember();
     }
 }

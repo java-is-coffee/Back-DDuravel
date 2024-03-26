@@ -6,16 +6,14 @@ import javaiscoffee.polaroad.exception.NotFoundException;
 import javaiscoffee.polaroad.member.Member;
 import javaiscoffee.polaroad.member.MemberRepository;
 import javaiscoffee.polaroad.member.MemberStatus;
-import javaiscoffee.polaroad.post.card.Card;
-import javaiscoffee.polaroad.post.card.CardInfoDto;
-import javaiscoffee.polaroad.post.card.CardSaveDto;
-import javaiscoffee.polaroad.post.card.CardService;
+import javaiscoffee.polaroad.post.card.*;
 import javaiscoffee.polaroad.post.good.PostGood;
 import javaiscoffee.polaroad.post.good.PostGoodId;
 import javaiscoffee.polaroad.post.good.PostGoodRepository;
 import javaiscoffee.polaroad.post.hashtag.PostHashtagInfoDto;
 import javaiscoffee.polaroad.post.hashtag.HashtagService;
 import javaiscoffee.polaroad.post.hashtag.PostHashtag;
+import javaiscoffee.polaroad.redis.RedisService;
 import javaiscoffee.polaroad.response.ResponseMessages;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -26,8 +24,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
+
+/**
+ * todo 동시에 많은 요청이 들어왔을 때 어떻게 처리할 것인지 대처법 생각해보기
+ */
 
 @Slf4j
 @Service
@@ -38,14 +42,16 @@ public class PostService {
     private final HashtagService hashtagService;
     private final CardService cardService;
     private final PostGoodRepository postGoodRepository;
+    private final RedisService redisService;
 
     @Autowired
-    public PostService(PostRepository postRepository, MemberRepository memberRepository,HashtagService hashtagService, CardService cardService, PostGoodRepository postGoodRepository) {
+    public PostService(PostRepository postRepository, MemberRepository memberRepository,HashtagService hashtagService, CardService cardService, PostGoodRepository postGoodRepository, RedisService redisService) {
         this.postRepository = postRepository;
         this.memberRepository = memberRepository;
         this.hashtagService = hashtagService;
         this.cardService = cardService;
         this.postGoodRepository = postGoodRepository;
+        this.redisService = redisService;
     }
 
     /**
@@ -57,6 +63,7 @@ public class PostService {
         if(postSaveDto.getThumbnailIndex() < 0 || postSaveDto.getThumbnailIndex() >= postSaveDto.getCards().size()) throw new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
         //게시글 해쉬코드가 10개 넘어가면 에러
         if(postSaveDto.getHashtags().size() > 10) throw new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
+        if(postSaveDto.getCards().size() > 10) throw new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         Post post = new Post();
         BeanUtils.copyProperties(postSaveDto, post);
@@ -141,17 +148,26 @@ public class PostService {
     /**
      * 탐색페이지나 검색페이지에서 게시글을 목록으로 조회
      */
-    public ResponseEntity<PostListResponseDto> getPostList (int paging, int pagingNumber,PostSearchType searchType, String searchKeyword, PostListSort sortBy, PostConcept concept, PostRegion region) {
+    public ResponseEntity<PostListResponseDto> getPostList (int page, int pageSize,PostSearchType searchType, String searchKeyword, PostListSort sortBy, PostConcept concept, PostRegion region, PostStatus status) {
         //해쉬태그 검색일 경우
         //검색어가 없으면 키워드 검색으로 넘김
         if(searchType.equals(PostSearchType.HASHTAG) && searchKeyword != null) {
             Long hashtagId = hashtagService.getHashtagIdByName(searchKeyword);
             if(hashtagId == null) return ResponseEntity.ok(new PostListResponseDto(new ArrayList<>(),0));
-            return ResponseEntity.ok(postRepository.searchPostByHashtag(paging, pagingNumber, hashtagId, sortBy, concept, region));
+            return ResponseEntity.ok(postRepository.searchPostByHashtag(page, pageSize, hashtagId, sortBy, concept, region, status));
         }
         //키워드 검색일 경우
-        PostListResponseDto posts = postRepository.searchPostByKeyword(paging, pagingNumber, searchKeyword, sortBy, concept, region);
+        PostListResponseDto posts = postRepository.searchPostByKeyword(page, pageSize, searchKeyword, sortBy, concept, region, status);
         return ResponseEntity.ok(posts);
+    }
+
+    /**
+     * 팔로잉하고 있는 멤버의 게시글을 목록으로 조회
+     */
+    public ResponseEntity<PostListResponseDto> getFollowingMemberPosts (Long memberId,int page, int pageSize, PostStatus status) {
+        Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
+        if(!member.getStatus().equals(MemberStatus.ACTIVE)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
+        return ResponseEntity.ok(postRepository.getFollowingMembersPostByMember(member, page, pageSize, status));
     }
 
     /**
@@ -162,7 +178,29 @@ public class PostService {
 //        Member member = memberRepository.findById(post.getMember().getMemberId()).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         //포스트가 삭제되었으면 에러
         if(post.getStatus().equals(PostStatus.DELETED)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
+        redisService.addPostView(postId, memberId);
         return ResponseEntity.ok(toPostInfoDto(post,memberId));
+    }
+
+    /**
+     * 조회수 랭킹으로 조회
+     */
+    public ResponseEntity<PostListResponseDto> getPostRankingList(int page, int pageSize, PostRankingDto range) {
+        //랭킹 순위 리스트 조회
+        List<String> list = redisService.getViewRankingList(page, pageSize, range);
+        List<Long> rankingList = list.stream().map(Long::valueOf).toList();
+        //랭킹 최대 페이지 구하기
+        int maxPage = redisService.getViewRankingMaxPageSize(pageSize, range);
+        //포스트 목록 구해서 정렬하기
+        List<Post> unorderedPosts = postRepository.getPostsByPostIdIsIn(rankingList);
+        Map<Long, Post> postMap = unorderedPosts.stream().collect(Collectors.toMap(Post::getPostId, Function.identity()));
+        // 순서 유지를 위해 rankingList에 따라 orderedPosts 구성
+        List<Post> orderedPosts = rankingList.stream()
+                .map(postMap::get)
+                .filter(Objects::nonNull) // null이면 무시
+                .toList();
+        //반환값으로 매핑
+        return ResponseEntity.ok(toPostListResponseDto(orderedPosts, maxPage));
     }
 
     /**
@@ -195,6 +233,7 @@ public class PostService {
      */
     private PostInfoDto toPostInfoDto(Post post, Long memberId) {
         List<CardInfoDto> cardDtos = post.getCards().stream()
+                .filter(card -> card.getStatus().equals(CardStatus.ACTIVE))
                 .sorted(Comparator.comparingInt(Card::getCardIndex))
                 .map(this::toCardInfoDto)
                 .collect(toList());
@@ -244,7 +283,7 @@ public class PostService {
         return cardInfoDtos;
     }
     private CardInfoDto toCardInfoDto(Card card) {
-        return new CardInfoDto(card.getCardId(), card.getCardIndex(), card.getLocation(), card.getLatitude(), card.getLongtitude(), card.getImage(), card.getContent());
+        return new CardInfoDto(card.getCardId(), card.getCardIndex(), card.getLatitude(), card.getLongtitude(), card.getLocation(), card.getImage(), card.getContent());
     }
 
     /**
@@ -268,5 +307,41 @@ public class PostService {
         PostMemberInfoDto postMemberInfoDto = new PostMemberInfoDto();
         BeanUtils.copyProperties(member,postMemberInfoDto);
         return postMemberInfoDto;
+    }
+
+    //포스트 리스트를 DTO로 변환하고 카드 이미지에서 썸네일을 제일 앞으로 설정
+    private static PostListResponseDto toPostListResponseDto(List<Post> posts, int maxPage) {
+        return new PostListResponseDto(posts.stream().map(p -> {
+            List<String> images = p.getCards().stream()
+                    .sorted(Comparator.comparingInt(Card::getCardIndex))
+                    .map(Card::getImage)
+                    .distinct()
+                    .limit(3)
+                    .collect(Collectors.toList());
+
+            // 썸네일 이미지가 없으면 맨 앞에 추가
+            String thumbnailImage = p.getCards().get(p.getThumbnailIndex()).getImage();
+            if (!images.contains(thumbnailImage)) {
+                images.add(0, thumbnailImage); // 맨 앞에 썸네일 이미지 추가
+                if (images.size() > 3) {
+                    images = images.subList(0, 3); // 최대 3개 이미지 유지
+                }
+            }
+            //썸네일 이미지가 있으면 맨 앞으로 옮기기
+            else {
+                images.remove(thumbnailImage);
+                images.add(0, thumbnailImage);
+            }
+
+            return new PostListDto(
+                    p.getTitle(),
+                    p.getPostId(),
+                    p.getMember().getNickname(),
+                    p.getGoodNumber(),
+                    p.getConcept(),
+                    p.getRegion(),
+                    images
+            );
+        }).collect(Collectors.toList()), maxPage);
     }
 }

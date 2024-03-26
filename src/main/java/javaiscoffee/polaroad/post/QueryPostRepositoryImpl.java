@@ -1,7 +1,10 @@
 package javaiscoffee.polaroad.post;
 
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.QueryResults;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import ext.javaiscoffee.polaroad.member.QFollow;
+import ext.javaiscoffee.polaroad.member.QFollowId;
 import ext.javaiscoffee.polaroad.member.QMember;
 import ext.javaiscoffee.polaroad.post.QPost;
 import ext.javaiscoffee.polaroad.post.card.QCard;
@@ -9,6 +12,7 @@ import ext.javaiscoffee.polaroad.post.hashtag.QHashtag;
 import ext.javaiscoffee.polaroad.post.hashtag.QPostHashtag;
 import jakarta.persistence.EntityManager;
 import javaiscoffee.polaroad.exception.NotFoundException;
+import javaiscoffee.polaroad.member.Member;
 import javaiscoffee.polaroad.post.card.Card;
 import javaiscoffee.polaroad.response.ResponseMessages;
 
@@ -36,7 +40,7 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
      * 검색어로 포스트 목록 조회
      */
     @Override
-    public PostListResponseDto searchPostByKeyword(int paging, int pagingNumber, String searchKeyword, PostListSort sortBy, PostConcept concept, PostRegion region) {
+    public PostListResponseDto searchPostByKeyword(int page, int pageSize, String searchKeyword, PostListSort sortBy, PostConcept concept, PostRegion region, PostStatus status) {
         QPost post = QPost.post;
         QCard card = QCard.card;
         QMember member = QMember.member; // 멤버와 관련된 쿼리를 위한 QClass
@@ -60,9 +64,11 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
             builder.and(post.goodNumber.goe(10));
         }
         //여행지역 조건 추가
-        if(concept != null) {
+        if(region != null) {
             builder.and(post.region.eq(region));
         }
+        //게시글 상태 조건 추가
+        builder.and(post.status.eq(status));
 
         List<Post> posts;
         //최신순 정렬
@@ -73,8 +79,8 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
                     .where(builder)
                     .groupBy(post.postId)
                     .orderBy(post.createdTime.desc())
-                    .offset(paging * pagingNumber)
-                    .limit(pagingNumber)
+                    .offset(getOffset(page, pageSize))
+                    .limit(pageSize)
                     .fetch();
         }
         //인기순 정렬
@@ -85,8 +91,8 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
                     .where(builder)
                     .groupBy(post.postId)
                     .orderBy(post.goodNumber.desc())
-                    .offset(paging * pagingNumber)
-                    .limit(pagingNumber)
+                    .offset(getOffset(page, pageSize))
+                    .limit(pageSize)
                     .fetch();
         }
 
@@ -97,48 +103,17 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
                 .leftJoin(post.member, member)
                 .where(builder)
                 .fetchCount();
-        int maxPage = (int) Math.ceil((double) totalPostsCount / pagingNumber);
+        int maxPage = (int) Math.ceil((double) totalPostsCount / pageSize);
 
         // 포스트를 DTO로 변환하고 카드 이미지 처리
-        return new PostListResponseDto( posts.stream().map(p -> {
-            List<String> images = p.getCards().stream()
-                    .sorted(Comparator.comparingInt(Card::getCardIndex))
-                    .map(Card::getImage)
-                    .distinct()
-                    .limit(3)
-                    .collect(Collectors.toList());
-
-            // 썸네일 이미지가 없으면 맨 앞에 추가
-            String thumbnailImage = p.getCards().get(p.getThumbnailIndex()).getImage();
-            if (!images.contains(thumbnailImage)) {
-                images.add(0, thumbnailImage); // 맨 앞에 썸네일 이미지 추가
-                if (images.size() > 3) {
-                    images = images.subList(0, 3); // 최대 3개 이미지 유지
-                }
-            }
-            //썸네일 이미지가 있으면 맨 앞으로 옮기기
-            else {
-                images.remove(thumbnailImage);
-                images.add(0, thumbnailImage);
-            }
-
-            return new PostListDto(
-                    p.getTitle(),
-                    p.getPostId(),
-                    p.getMember().getNickname(),
-                    p.getGoodNumber(),
-                    p.getConcept(),
-                    p.getRegion(),
-                    images
-            );
-        }).collect(Collectors.toList()),maxPage);
+        return getPostListResponseDto(posts, maxPage);
     }
 
     /**
      * 해쉬 태그로 포스트 목록 조회
      */
     @Override
-    public PostListResponseDto searchPostByHashtag(int paging, int pagingNumber, Long hashtagId, PostListSort sortBy, PostConcept concept, PostRegion region) {
+    public PostListResponseDto searchPostByHashtag(int page, int pageSize, Long hashtagId, PostListSort sortBy, PostConcept concept, PostRegion region, PostStatus status) {
         QPost post = QPost.post;
         QCard card = QCard.card;
         QMember member = QMember.member; // 멤버와 관련된 쿼리를 위한 QClass
@@ -160,9 +135,11 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
             builder.and(post.goodNumber.goe(10));
         }
         //여행지역 조건 추가
-        if(concept != null) {
+        if(region != null) {
             builder.and(post.region.eq(region));
         }
+        //게시글 상태 조건 추가
+        builder.and(post.status.eq(status));
 
         List<Post> posts;
         //최신순 정렬
@@ -175,8 +152,8 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
                     .where(builder)
                     .groupBy(post.postId)
                     .orderBy(post.createdTime.desc())
-                    .offset(paging * pagingNumber)
-                    .limit(pagingNumber)
+                    .offset(getOffset(page, pageSize))
+                    .limit(pageSize)
                     .fetch();
         }
         //인기순 정렬
@@ -189,8 +166,8 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
                     .where(builder)
                     .groupBy(post.postId)
                     .orderBy(post.goodNumber.desc())
-                    .offset(paging * pagingNumber)
-                    .limit(pagingNumber)
+                    .offset(getOffset(page, pageSize))
+                    .limit(pageSize)
                     .fetch();
         }
 
@@ -203,9 +180,70 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
                 .leftJoin(postHashtag.hashtag, hashtag)
                 .where(builder)
                 .fetchCount();
-        int maxPage = (int) Math.ceil((double) totalPostsCount / pagingNumber);
+        int maxPage = (int) Math.ceil((double) totalPostsCount / pageSize);
 
         // 포스트를 DTO로 변환하고 카드 이미지 처리
+        return getPostListResponseDto(posts, maxPage);
+    }
+
+    @Override
+    public Post getPostInfoById(Long postId) {
+        QPost post = QPost.post;
+        QMember member = QMember.member;
+        QCard card = QCard.card;
+        QPostHashtag postHashtag = QPostHashtag.postHashtag;
+        QHashtag hashtag = QHashtag.hashtag;
+
+        Post findPost = queryFactory
+                .selectFrom(post)
+                .leftJoin(post.member, member).fetchJoin()
+                .leftJoin(post.cards, card).fetchJoin()
+                .leftJoin(post.postHashtags, postHashtag).fetchJoin()
+                .leftJoin(postHashtag.hashtag, hashtag).fetchJoin()
+                .where(post.postId.eq(postId))
+                .fetchOne();
+        if(findPost==null) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
+        return findPost;
+    }
+
+    //팔로잉하고 있는 멤버 포스트 목록 조회
+    @Override
+    public PostListResponseDto getFollowingMembersPostByMember(Member member,int page, int pageSize, PostStatus status) {
+        QPost qPost = QPost.post;
+        QFollow qFollow = QFollow.follow;
+
+        // 팔로잉하는 멤버의 포스트를 조회
+        List<Post> posts = queryFactory
+                .selectFrom(qPost)
+                .join(qPost.member, qFollow.followedMember)
+                .where(
+                        qFollow.followingMember.eq(member),
+                        qPost.status.eq(status) // 두 where 조건을 하나의 where 절로 결합
+                )
+                .offset(getOffset(page, pageSize))
+                .limit(pageSize)
+                .fetch();
+
+        // 검색 결과의 총 개수 구하기
+        Long countResult  = queryFactory
+                .select(qPost.count())
+                .from(qPost)
+                .join(qPost.member, qFollow.followedMember)
+                .where(
+                        qFollow.followingMember.eq(member),
+                        qPost.status.eq(status)
+                )
+                .fetchOne();
+        // null 체크를 수행
+        long totalPostsCount = countResult != null ? countResult : 0;
+        int maxPage = (int) Math.ceil((double) totalPostsCount / pageSize);
+
+        // 포스트를 DTO로 변환하고 카드 이미지 처리
+        return getPostListResponseDto(posts, maxPage);
+    }
+
+    //포스트 리스트를 DTO로 변환하고 카드 이미지에서 썸네일을 제일 앞으로 설정
+    private static PostListResponseDto getPostListResponseDto(List<Post> posts, int maxPage) {
         return new PostListResponseDto(posts.stream().map(p -> {
             List<String> images = p.getCards().stream()
                     .sorted(Comparator.comparingInt(Card::getCardIndex))
@@ -240,23 +278,7 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
         }).collect(Collectors.toList()), maxPage);
     }
 
-    @Override
-    public Post getPostInfoById(Long postId) {
-        QPost post = QPost.post;
-        QMember member = QMember.member;
-        QCard card = QCard.card;
-        QPostHashtag postHashtag = QPostHashtag.postHashtag;
-        QHashtag hashtag = QHashtag.hashtag;
-
-        Post findPost = queryFactory
-                .selectFrom(post)
-                .leftJoin(post.member, member).fetchJoin()
-                .leftJoin(post.cards, card).fetchJoin()
-                .leftJoin(post.postHashtags, postHashtag).fetchJoin()
-                .leftJoin(postHashtag.hashtag, hashtag).fetchJoin()
-                .where(post.postId.eq(postId))
-                .fetchOne();
-        if(findPost==null) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
-        return findPost;
+    private int getOffset(int page, int pageSize) {
+        return (page - 1) * pageSize;
     }
 }

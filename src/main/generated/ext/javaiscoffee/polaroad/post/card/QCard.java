@@ -34,11 +34,11 @@ public class QCard extends EntityPathBase<Card> {
 
     public final StringPath image = createString("image");
 
-    public final StringPath latitude = createString("latitude");
+    public final NumberPath<Double> latitude = createNumber("latitude", Double.class);
 
     public final StringPath location = createString("location");
 
-    public final StringPath longtitude = createString("longtitude");
+    public final NumberPath<Double> longtitude = createNumber("longtitude", Double.class);
 
     public final ext.javaiscoffee.polaroad.member.QMember member;
 
