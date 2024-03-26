@@ -49,10 +49,14 @@ jobs:
       - name: Docker build
         run: |
           echo ${{ secrets.DOCKER_HUB_PASSWORD }} | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
-          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/text-in-the-road-server:0.1 . --build-arg JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
+          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/text-in-the-road-server:0.1 . 
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/text-in-the-road-server:0.1
         env:
           JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          KAKAO_API_KEY: ${{ secrets.KAKAO_API_KEY }}
+          KAKAO_REDIRECT_URI: ${{ secrets.KAKAO_REDIRECT_URI }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+          REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
 
       - name: Prepare Docker Compose
         run: |
