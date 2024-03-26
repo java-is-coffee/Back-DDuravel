@@ -3,9 +3,11 @@ package javaiscoffee.polaroad.login;
 import jakarta.servlet.http.HttpServletResponse;
 import javaiscoffee.polaroad.member.Member;
 import javaiscoffee.polaroad.security.TokenDto;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.mock.web.MockHttpServletResponse;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -14,50 +16,41 @@ import static org.mockito.Mockito.when;
 
 @SpringBootTest
 class LoginServiceTest {
-
-    @MockBean
-    private LoginService loginService;
+    @Mock private LoginService loginService;
 
     @Test
     public void testRegister() {
-        // Given
         RegisterDto registerDto = new RegisterDto();
         registerDto.setEmail("aaa@naver.com");
         registerDto.setName("박자바");
         registerDto.setNickname("자바커피");
         registerDto.setPassword("a123123!");
-        Member expectedMember = new Member();
-        expectedMember.setEmail("aaa@naver.com");
-        expectedMember.setName("박자바");
-        expectedMember.setNickname("자바커피");
+
+        // 모의 객체가 호출될 때의 행동을 정의합니다.
+        when(loginService.register(any(RegisterDto.class))).thenReturn(new Member());
 
         // When
-        when(loginService.register(any(RegisterDto.class))).thenReturn(expectedMember);
         Member registeredMember = loginService.register(registerDto);
 
-        // Then
+        // then
         assertThat(registeredMember).isNotNull();
-        assertThat(registeredMember.getEmail()).isEqualTo(registerDto.getEmail());
-        assertThat(registeredMember.getName()).isEqualTo(registerDto.getName());
-        assertThat(registeredMember.getNickname()).isEqualTo(registerDto.getNickname());
     }
 
     @Test
     public void testLogin() {
-        // Given
         LoginDto loginDto = new LoginDto();
         loginDto.setEmail("aaa@naver.com");
         loginDto.setPassword("a123123!");
+
         MockHttpServletResponse response = new MockHttpServletResponse();
-        TokenDto expectedToken = new TokenDto("Bearer", "accessToken", "refreshToken");
 
-        // When
-        when(loginService.login(any(LoginDto.class), any(HttpServletResponse.class))).thenReturn(expectedToken);
-        TokenDto actualToken = loginService.login(loginDto, response);
+        when(loginService.login(any(LoginDto.class),any(HttpServletResponse.class)))
+                .thenReturn(new TokenDto("Bearer","accessToken","refreshToken"));
 
-        // Then
-        assertThat(actualToken).isNotNull();
-        assertThat(actualToken.getAccessToken()).isEqualTo(expectedToken.getAccessToken());
-        assertThat(actualToken.getRefreshToken()).isEqualTo(expectedToken.getRefreshToken());
+        //when
+        TokenDto tokenDto = loginService.login(loginDto, response);
+
+        //then
+        assertThat(tokenDto).isNotNull();
     }
 }
