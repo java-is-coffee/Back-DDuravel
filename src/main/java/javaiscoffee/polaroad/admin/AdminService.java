@@ -46,11 +46,11 @@ public class AdminService {
 
     //관리자가 사용자 지정한 상태로 변화시키기
     @Transactional
-    public void setMemberStatus(Long adminId, Long memberId, MemberStatus status, String reason) {
+    public void setMemberStatus(Long adminId, Long memberId, AdminMemberStatus status, String reason) {
         Member admin = checkAdmin(adminId);
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         if(!member.getStatus().equals(MemberStatus.ACTIVE)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
-        member.setStatus(status);
+        member.setStatus(MemberStatus.valueOf(status.toString()));
         //관리자 기록 저장
         saveAdminLog(admin, memberId, AdminTargetType.MEMBER, AdminActionType.UPDATE, status.toString(), reason);
     }
