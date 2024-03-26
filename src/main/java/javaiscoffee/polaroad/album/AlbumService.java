@@ -14,6 +14,7 @@ import javaiscoffee.polaroad.response.ResponseMessages;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -28,7 +29,6 @@ import java.util.List;
 
 @Service
 @Slf4j
-@AllArgsConstructor
 @Transactional
 public class AlbumService {
     private final JpaMemberRepository memberRepository;
@@ -36,6 +36,15 @@ public class AlbumService {
     private final AlbumCardService albumCardService;
     private final CardRepository cardRepository;
     private final AlbumCardRepository albumCardRepository;
+
+    @Autowired
+    public AlbumService(JpaMemberRepository memberRepository, AlbumRepository albumRepository, AlbumCardService albumCardService, CardRepository cardRepository, AlbumCardRepository albumCardRepository) {
+        this.memberRepository = memberRepository;
+        this.albumRepository = albumRepository;
+        this.albumCardService = albumCardService;
+        this.cardRepository = cardRepository;
+        this.albumCardRepository = albumCardRepository;
+    }
 
     public ResponseAlbumDto createAlbum(AlbumDto albumDto, Long memberId) {
         Album newAlbum = new Album();

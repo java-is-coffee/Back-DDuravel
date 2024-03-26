@@ -36,7 +36,6 @@ public class Album {
     @Setter
     private LocalDateTime updatedTime;
     @NotNull
-    @Setter
     private LocalDateTime createdTime;
 
     @OneToMany(mappedBy = "album")

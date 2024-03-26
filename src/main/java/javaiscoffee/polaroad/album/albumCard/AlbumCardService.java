@@ -10,6 +10,7 @@ import javaiscoffee.polaroad.response.ResponseMessages;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +25,7 @@ public class AlbumCardService {
     private final AlbumRepository albumRepository;
     private final CardRepository cardRepository;
 
+    @Autowired
     public AlbumCardService(AlbumCardRepository albumCardRepository, AlbumRepository albumRepository, CardRepository cardRepository) {
         this.albumCardRepository = albumCardRepository;
         this.albumRepository = albumRepository;
@@ -98,8 +100,6 @@ public class AlbumCardService {
         }
     }
 
-    //TODO
-    // 앨범 카드 삭제 어떻게 할지 생각해보기
     public void deleteCard(List<Long> cardIdList, Album album) {
         List<AlbumCard> albumCards = albumRepository.findById(album.getAlbumId()).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage())).getAlbumCards();
 
