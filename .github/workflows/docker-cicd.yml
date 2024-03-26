@@ -48,8 +48,8 @@ jobs:
       ## 2) Docker Hub에 이미지 push 하기
       - name: Docker build
         run: |
-          docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} -p ${{ secrets.DOCKER_HUB_PASSWORD }}
-          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/text-in-the-road-server:0.1 . 
+          echo ${{ secrets.DOCKER_HUB_PASSWORD }} | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/text-in-the-road-server:0.1 . --build-arg JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/text-in-the-road-server:0.1
         env:
           JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
