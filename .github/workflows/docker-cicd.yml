@@ -69,22 +69,23 @@ jobs:
             sudo systemctl start docker
             sudo systemctl enable docker
 
-      - name: Update docker-compose.yml on EC2
+      - name: Set Environment Variables on EC2
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_KEY }}
-          port: ${{ secrets.EC2_PORT }}
           script: |
-            sed -i 's|\${DATABASE_URL}|"${{ secrets.DATABASE_URL }}"|g' /home/ubuntu/docker-compose.yml
-            sed -i 's|\${DATABASE_USERNAME}|"${{ secrets.DATABASE_USERNAME }}"|g' /home/ubuntu/docker-compose.yml
-            sed -i 's|\${DATABASE_PASSWORD}|"${{ secrets.DATABASE_PASSWORD }}"|g' /home/ubuntu/docker-compose.yml
-            sed -i 's|\${JWT_SECRET_KEY}|"${{ secrets.JWT_SECRET_KEY }}"|g' /home/ubuntu/docker-compose.yml
-            sed -i 's|\${KAKAO_API_KEY}|"${{ secrets.KAKAO_API_KEY }}"|g' /home/ubuntu/docker-compose.yml
-            sed -i 's|\${KAKAO_REDIRECT_URI}|"${{ secrets.KAKAO_REDIRECT_URI }}"|g' /home/ubuntu/docker-compose.yml
-            sed -i 's|\${MAIL_PASSWORD}|"${{ secrets.MAIL_PASSWORD }}"|g' /home/ubuntu/docker-compose.yml
-            sed -i 's|\${REDIS_PASSWORD}|"${{ secrets.REDIS_PASSWORD }}"|g' /home/ubuntu/docker-compose.yml
+            echo 'export DATABASE_URL="${{ secrets.DATABASE_URL }}"' | sudo tee -a /etc/environment
+            echo 'export DATABASE_USERNAME="${{ secrets.DATABASE_USERNAME }}"' | sudo tee -a /etc/environment
+            echo 'export DATABASE_PASSWORD="${{ secrets.DATABASE_PASSWORD }}"' | sudo tee -a /etc/environment
+            echo 'export JWT_SECRET_KEY="${{ secrets.JWT_SECRET_KEY }}"' | sudo tee -a /etc/environment
+            echo 'export KAKAO_API_KEY="${{ secrets.KAKAO_API_KEY }}"' | sudo tee -a /etc/environment
+            echo 'export KAKAO_REDIRECT_URI="${{ secrets.KAKAO_REDIRECT_URI }}"' | sudo tee -a /etc/environment
+            echo 'export MAIL_PASSWORD="${{ secrets.MAIL_PASSWORD }}"' | sudo tee -a /etc/environment
+            echo 'export REDIS_PASSWORD="${{ secrets.REDIS_PASSWORD }}"' | sudo tee -a /etc/environment
+            # 적용을 위해 SSH 세션 내에서 환경 변수 로드
+            source /etc/environment
 
       ## 3) Docker Hub에 Push한 이미지를 리눅스 서버에 받아와서 run
       - name: Deploy
