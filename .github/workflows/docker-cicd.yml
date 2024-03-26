@@ -36,7 +36,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build with Gradle
-        run: ./gradlew clean build -x test --no-daemon
+        run: ./gradlew clean build --no-daemon
         env:
           JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
 
@@ -55,7 +55,7 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/polaroad:latest
           build-args: |
-            JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
+            JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
 
       - name: Login to EC2 instance
         uses: appleboy/ssh-action@master
