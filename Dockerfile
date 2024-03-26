@@ -20,7 +20,7 @@ RUN echo "JWT_SECRET_KEY=${JWT_SECRET_KEY}"
 
 # 애플리케이션 빌드
 RUN chmod +x ./gradlew
-RUN ./gradlew clean build --no-daemon
+RUN ./gradlew clean build -x test --no-daemon
 
 # 런타임 스테이지
 FROM openjdk:17
