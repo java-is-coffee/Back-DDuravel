@@ -69,30 +69,12 @@ public class MailSendService {
      * JavaMailSender를 사용하여 MimeMessage 객체 생성 => 이메일을 나타내는 객체로, 이메일의 헤더, 본문, 첨부 파일 등을 포함할 수 있다.
      */
     public void sendMail(String email, String content) throws MessagingException {
-        Properties props = new Properties();
-        props.put("mail.smtp.host", "smtp.gmail.com");
-        props.put("mail.smtp.port", "587");
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.socketFactory.class", "jakarta.net.ssl.SSLSocketFactory");
-
-        // SOCKS 프록시 설정 추가
-        props.put("mail.smtp.socks.host", "krmp-proxy.9rum.cc");
-        props.put("mail.smtp.socks.port", "3128");
-
-        Session session = Session.getInstance(props, new jakarta.mail.Authenticator() {
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(MAIL_USERNAME, MAIL_PASSWORD);
-            }
-        });
-
-        MimeMessage message = new MimeMessage(session);
-        MimeMessageHelper helper = new MimeMessageHelper(message, "UTF-8");
-        helper.setTo(email);
-        helper.setSubject(MAIL_TITLE_CERTIFICATION);
-        helper.setText(content);
-
-        Transport.send(message);
+        MimeMessage mimeMailMessage = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(mimeMailMessage);
+        helper.setTo(email);    // 이메일 수신자
+        helper.setSubject(MAIL_TITLE_CERTIFICATION);    // 이메일 제목
+        helper.setText(content);    // 이메일 본문 내용
+        mailSender.send(mimeMailMessage);   // JavaMailSender를 이용하여 이메일 전송. send()를 호출해서 이메일을 전송하면, 이메일이 수신자에게 발송된다.
 
         log.info("메일 전송 완료: {}", email);
     }

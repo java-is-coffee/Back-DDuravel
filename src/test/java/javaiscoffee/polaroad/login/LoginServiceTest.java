@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.mock.web.MockHttpServletResponse;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -16,7 +17,8 @@ import static org.mockito.Mockito.when;
 
 @SpringBootTest
 class LoginServiceTest {
-    @Mock private LoginService loginService;
+    @MockBean
+    private LoginService loginService;
 
     @Test
     public void testRegister() {

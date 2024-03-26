@@ -9,6 +9,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -19,8 +20,9 @@ import static org.mockito.Mockito.when;
 
 @SpringBootTest
 class PostServiceTest {
-    @Mock private LoginService loginService;
-    @Mock private PostService postService;
+    @MockBean
+    private LoginService loginService;
+    @MockBean private PostService postService;
 
     @BeforeEach
     void setup() {

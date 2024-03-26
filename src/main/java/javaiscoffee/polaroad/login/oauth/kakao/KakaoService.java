@@ -27,10 +27,10 @@ public class KakaoService {
         try {
             URL url = new URL(requestURL);
             //크램폴린 프록시 설정
-            Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("krmp-proxy.9rum.cc", 3128));
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection(proxy);
+//            Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("krmp-proxy.9rum.cc", 3128));
+//            HttpURLConnection conn = (HttpURLConnection) url.openConnection(proxy);
 //            로컬테스트용 설정
-//            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
 
             BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
@@ -72,10 +72,10 @@ public class KakaoService {
             String reqeustURL = "https://kapi.kakao.com/v2/user/me";
             URL url = new URL(reqeustURL);
             //배포용 프록시 설정
-            Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("krmp-proxy.9rum.cc", 3128));
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection(proxy);
+//            Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("krmp-proxy.9rum.cc", 3128));
+//            HttpURLConnection conn = (HttpURLConnection) url.openConnection(proxy);
 //            로컬 테스트용
-//            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             conn.setRequestProperty("Authorization", "Bearer " + accessToken);
 

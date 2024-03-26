@@ -11,6 +11,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -20,12 +21,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 
 class PostTest {
-    @Mock private Member member;
-    @Mock private List<Card> cards;
-    @Mock private List<PostHashtag> postHashtags;
-    @Mock private List<Review> reviews;
-    @Mock private List<PostGood> postGoods;
-    @Mock private List<WishListPost> wishListPosts;
+    @MockBean
+    private Member member;
+    @MockBean private List<Card> cards;
+    @MockBean private List<PostHashtag> postHashtags;
+    @MockBean private List<Review> reviews;
+    @MockBean private List<PostGood> postGoods;
+    @MockBean private List<WishListPost> wishListPosts;
 
     @Test
     @DisplayName("포스트 생성 성공 테스트")
