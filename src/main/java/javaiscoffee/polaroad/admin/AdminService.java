@@ -197,10 +197,10 @@ public class AdminService {
         }
         ResponseGetReviewDto responseGetReviewDto = new ResponseGetReviewDto();
 
-        responseGetReviewDto.setPostId(review.getPostId() != null ? review.getPostId().getPostId() : null);
-        responseGetReviewDto.setMemberId(review.getMemberId() != null ? review.getMemberId().getMemberId() : null);
-        responseGetReviewDto.setProfileImage(review.getMemberId().getProfileImage());
-        responseGetReviewDto.setNickname(review.getMemberId() != null ? review.getMemberId().getNickname() : null);
+        responseGetReviewDto.setPostId(review.getPost() != null ? review.getPost().getPostId() : null);
+        responseGetReviewDto.setMemberId(review.getMember() != null ? review.getMember().getMemberId() : null);
+        responseGetReviewDto.setProfileImage(review.getMember().getProfileImage());
+        responseGetReviewDto.setNickname(review.getMember() != null ? review.getMember().getNickname() : null);
         responseGetReviewDto.setReviewId(review.getReviewId());
         responseGetReviewDto.setContent(review.getContent());
         responseGetReviewDto.setUpdatedTime(review.getUpdatedTime());

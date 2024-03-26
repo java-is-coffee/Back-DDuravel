@@ -150,4 +150,14 @@ public class ReviewController {
         return ResponseEntity.ok(reviewPage);
     }
 
+    @Operation(summary = "댓글 좋아요 토글 API", description = "토글 방식의 댓글 좋아요 API")
+    @PostMapping("/good/{reviewId}")
+    public ResponseEntity<ResponseReviewDto> goodReview(
+            @Parameter(name = "memberIsLiked", description = "## 멤버의 댓글 좋아요 여부", required = false, example = "false")@RequestParam(name = "memberIsLiked", required = false) Boolean memberIsLiked,
+            @PathVariable(name = "reviewId") Long reviewId, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        log.info("댓글 좋아요 토글 요청");
+        Long memberId = userDetails.getMemberId();
+        ResponseReviewDto responseReviewDto = reviewService.goodReview(reviewId, memberId, memberIsLiked);
+        return ResponseEntity.ok(responseReviewDto);
+    }
 }

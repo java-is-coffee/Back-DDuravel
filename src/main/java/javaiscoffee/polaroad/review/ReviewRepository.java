@@ -15,6 +15,6 @@ public interface ReviewRepository {
 
     public void delete(Long reviewId);
 
-    List<Review> findReviewByPostId(Post postId, ReviewStatus status);
-    List<Review> findReviewByMemberId(Member memberId, ReviewStatus status);
+//    List<Review> findReviewByPostId(Post postId, ReviewStatus status);
+//    List<Review> findReviewByMemberId(Member memberId, ReviewStatus status);
 }

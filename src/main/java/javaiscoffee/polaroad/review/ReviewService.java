@@ -5,10 +5,14 @@ import javaiscoffee.polaroad.exception.ForbiddenException;
 import javaiscoffee.polaroad.exception.NotFoundException;
 import javaiscoffee.polaroad.member.JpaMemberRepository;
 import javaiscoffee.polaroad.member.Member;
+import javaiscoffee.polaroad.member.MemberStatus;
 import javaiscoffee.polaroad.post.Post;
 import javaiscoffee.polaroad.post.PostRepository;
 import javaiscoffee.polaroad.post.PostStatus;
 import javaiscoffee.polaroad.response.ResponseMessages;
+import javaiscoffee.polaroad.review.reviewGood.ReviewGood;
+import javaiscoffee.polaroad.review.reviewGood.ReviewGoodId;
+import javaiscoffee.polaroad.review.reviewGood.ReviewGoodRepository;
 import javaiscoffee.polaroad.review.reviewPhoto.JpaReviewPhotoRepository;
 import javaiscoffee.polaroad.review.reviewPhoto.ReviewPhoto;
 import javaiscoffee.polaroad.review.reviewPhoto.ReviewPhotoInfoDto;
@@ -23,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -34,6 +39,7 @@ public class ReviewService {
     private final PostRepository postRepository;
     private final ReviewPhotoService reviewPhotoService;
     private final JpaReviewPhotoRepository reviewPhotoRepository;
+    private final ReviewGoodRepository reviewGoodRepository;
 
     public ResponseReviewDto createReview(ReviewDto reviewDto, Long memberId) {
         if (!memberId.equals(reviewDto.getMemberId())) {
@@ -51,8 +57,8 @@ public class ReviewService {
         }
 
         // 댓글 저장
-        newReview.setMemberId(creatorMember);
-        newReview.setPostId(post);
+        newReview.setMember(creatorMember);
+        newReview.setPost(post);
         Review savedReview = reviewRepository.save(newReview);
 
         List<String> savedReviewPhotos = new ArrayList<>();
@@ -74,7 +80,7 @@ public class ReviewService {
             return null;
         }
         log.info("댓글 id 조회 후 = {}", findedReview);
-        Post post = postRepository.findById(findedReview.getPostId().getPostId()).get();
+        Post post = postRepository.findById(findedReview.getPost().getPostId()).get();
         if (post == null || post.getStatus() == PostStatus.DELETED) {
             return null;
         }
@@ -97,14 +103,14 @@ public class ReviewService {
             throw new BadRequestException(ResponseMessages.NOT_FOUND.getMessage());
         }
         // 포스트가 null 이거나, 삭제된 경우
-        Post post = postRepository.findById(originalReview.getPostId().getPostId()).get();
+        Post post = postRepository.findById(originalReview.getPost().getPostId()).get();
         if (post == null || post.getStatus() == PostStatus.DELETED) {
             throw new BadRequestException(ResponseMessages.NOT_FOUND.getMessage());
         }
 
         Member member = memberRepository.findByMemberId(memberId).get();
         // 멤버가 없거나 댓글을 작성한 memberId와 수정을 요청한 맴버의 memberId가 다른 경우
-        if (member == null || !originalReview.getMemberId().getMemberId().equals(member.getMemberId())) {
+        if (member == null || !originalReview.getMember().getMemberId().equals(member.getMemberId())) {
             throw new ForbiddenException(ResponseMessages.FORBIDDEN.getMessage());
         }
 
@@ -132,7 +138,7 @@ public class ReviewService {
         if (review == null || review.getStatus() == ReviewStatus.DELETED) {
             throw new BadRequestException(ResponseMessages.NOT_FOUND.getMessage());
         }
-        Post post = postRepository.findById(review.getPostId().getPostId()).get();
+        Post post = postRepository.findById(review.getPost().getPostId()).get();
         //포스트 리뷰 개수 - 1
         post.setReviewNumber(post.getReviewNumber() - 1);
 
@@ -142,7 +148,7 @@ public class ReviewService {
         }
         Member member = memberRepository.findByMemberId(memberId).get();
         // member가 댓글 작성자가 아닌 경우
-        if (!review.getMemberId().getMemberId().equals(member.getMemberId())) {
+        if (!review.getMember().getMemberId().equals(member.getMemberId())) {
             throw new ForbiddenException(ResponseMessages.FORBIDDEN.getMessage());
         }
 
@@ -163,16 +169,16 @@ public class ReviewService {
     /**
      * 포스트에 딸린 ACTIVE 상태의 모든 댓글
      */
-    public List<ResponseReviewDto> getReviewByPostId(Long postId) {
-        log.info("해당 포스트의 모든 댓글 조회 시작 ");
-        Post getPost = postRepository.findById(postId).orElse(null);
-        if (getPost == null || getPost.getStatus() == PostStatus.DELETED) {
-            throw new BadRequestException(ResponseMessages.NOT_FOUND.getMessage());
-        }
-        // 가져온 post에 속한 ACTIVE 상태인 모든 댓글을 가져옴
-        List<Review> reviewList = reviewRepository.findReviewByPostId(getPost, ReviewStatus.ACTIVE);
-        return toResponseReviewDtoList(reviewList);
-    }
+//    public List<ResponseReviewDto> getReviewByPostId(Long postId) {
+//        log.info("해당 포스트의 모든 댓글 조회 시작 ");
+//        Post getPost = postRepository.findById(postId).orElse(null);
+//        if (getPost == null || getPost.getStatus() == PostStatus.DELETED) {
+//            throw new BadRequestException(ResponseMessages.NOT_FOUND.getMessage());
+//        }
+//        // 가져온 post에 속한 ACTIVE 상태인 모든 댓글을 가져옴
+//        List<Review> reviewList = reviewRepository.findReviewByPostId(getPost, ReviewStatus.ACTIVE);
+//        return toResponseReviewDtoList(reviewList);
+//    }
 
 
     /**
@@ -202,18 +208,18 @@ public class ReviewService {
 
     /**
      * 맴버가 작성한 모든 댓글
-     */
-    public List<ResponseReviewDto> getReviewByMemberId(Long memberId, Long requestedMemberId) {
-        Member getMember = memberRepository.findById(memberId).orElse(null);
-        log.info("RequestedMemberId = {}",requestedMemberId);
-        log.info("memberId = {}",memberId);
-        if (getMember == null || !memberId.equals(requestedMemberId)) {
-            throw new ForbiddenException(ResponseMessages.FORBIDDEN.getMessage());
-        }
-        // 맴버가 작성한 ACTIVE 댓글 리스트
-        List<Review> reviewList = reviewRepository.findReviewByMemberId(getMember, ReviewStatus.ACTIVE);
-        return toResponseReviewDtoList(reviewList);
-    }
+//     */
+//    public List<ResponseReviewDto> getReviewByMemberId(Long memberId, Long requestedMemberId) {
+//        Member getMember = memberRepository.findById(memberId).orElse(null);
+//        log.info("RequestedMemberId = {}",requestedMemberId);
+//        log.info("memberId = {}",memberId);
+//        if (getMember == null || !memberId.equals(requestedMemberId)) {
+//            throw new ForbiddenException(ResponseMessages.FORBIDDEN.getMessage());
+//        }
+//        // 맴버가 작성한 ACTIVE 댓글 리스트
+//        List<Review> reviewList = reviewRepository.findReviewByMemberId(getMember, ReviewStatus.ACTIVE);
+//        return toResponseReviewDtoList(reviewList);
+//    }
 
     /**
      * 맴버가 작성한 모든 댓글들 페이징
@@ -234,6 +240,40 @@ public class ReviewService {
         return new SliceResponseDto<>(responseReviewDtoList, reviewSlice.hasNext());
     }
 
+    //TODO: 댓글 null인 경우 추가
+    public ResponseReviewDto goodReview(Long reviewId, Long memberId, Boolean memberIsLiked) {
+        Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
+        Review review = reviewRepository.findByReviewId(reviewId);
+        if(member.getStatus().equals(MemberStatus.DELETED) || review.getStatus().equals(ReviewStatus.DELETED)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
+        if(review.getMember().getMemberId().equals(memberId)) throw new BadRequestException(ResponseMessages.REVIEW_GOOD_FAILED.getMessage());
+        log.info("댓글 좋아요 요청 시 댓글 정보 = {}", review);
+        ReviewGoodId reviewGoodId = new ReviewGoodId(member.getMemberId(), review.getReviewId());
+        Optional<ReviewGood> reviewGood = reviewGoodRepository.findById(reviewGoodId);
+        log.info("댓글 좋아요 요청 시 reviewGood 정보 = {}", reviewGood);
+
+        List<ReviewPhoto> reviewPhoto = review.getReviewPhoto();
+        List<String> reviewPhotoUrls = reviewPhoto.stream()
+                .map(ReviewPhoto::getImage)
+                .toList();
+
+        // 좋아요 취소
+        if (reviewGood.isPresent()) {
+            reviewGoodRepository.delete(reviewGood.get());
+            review.setGoodNumber(review.getGoodNumber() - 1);
+            review.setMemberIsLiked(!memberIsLiked);
+            reviewRepository.update(review);
+            log.info("좋아요 취소");
+        }
+        // 좋아요
+        else {
+            reviewGoodRepository.save(new ReviewGood(reviewGoodId, member, review));
+            review.setGoodNumber(review.getGoodNumber() + 1);
+            review.setMemberIsLiked(!memberIsLiked);
+            reviewRepository.update(review);
+            log.info("좋아요");
+        }
+        return toResponseReviewDto(review, reviewPhotoUrls);
+    }
 
     // Review 객체를 ResponseReviewDto 객체로 매핑하는 메서드
     public static ResponseReviewDto toResponseReviewDto(Review review, List<String> reviewPhotos) {
@@ -242,13 +282,15 @@ public class ReviewService {
         }
         ResponseReviewDto responseReviewDto = new ResponseReviewDto();
 
-        responseReviewDto.setPostId(review.getPostId() != null ? review.getPostId().getPostId() : null);
-        responseReviewDto.setMemberId(review.getMemberId() != null ? review.getMemberId().getMemberId() : null);
-        responseReviewDto.setProfileImage(review.getMemberId().getProfileImage());
-        responseReviewDto.setNickname(review.getMemberId() != null ? review.getMemberId().getNickname() : null);
+        responseReviewDto.setPostId(review.getPost() != null ? review.getPost().getPostId() : null);
+        responseReviewDto.setMemberId(review.getMember() != null ? review.getMember().getMemberId() : null);
+        responseReviewDto.setProfileImage(review.getMember().getProfileImage());
+        responseReviewDto.setNickname(review.getMember() != null ? review.getMember().getNickname() : null);
         responseReviewDto.setReviewId(review.getReviewId());
         responseReviewDto.setContent(review.getContent());
         responseReviewDto.setUpdatedTime(review.getUpdatedTime());
+        responseReviewDto.setGoodNumber(review.getGoodNumber());
+        responseReviewDto.setMemberIsLiked(review.isMemberIsLiked());
         responseReviewDto.setReviewPhotoList(reviewPhotos);
 
         return responseReviewDto;
@@ -301,13 +343,15 @@ public class ReviewService {
         }
         ResponseGetReviewDto responseGetReviewDto = new ResponseGetReviewDto();
 
-        responseGetReviewDto.setPostId(review.getPostId() != null ? review.getPostId().getPostId() : null);
-        responseGetReviewDto.setMemberId(review.getMemberId() != null ? review.getMemberId().getMemberId() : null);
-        responseGetReviewDto.setProfileImage(review.getMemberId().getProfileImage());
-        responseGetReviewDto.setNickname(review.getMemberId() != null ? review.getMemberId().getNickname() : null);
+        responseGetReviewDto.setPostId(review.getPost() != null ? review.getPost().getPostId() : null);
+        responseGetReviewDto.setMemberId(review.getMember() != null ? review.getMember().getMemberId() : null);
+        responseGetReviewDto.setProfileImage(review.getMember().getProfileImage());
+        responseGetReviewDto.setNickname(review.getMember() != null ? review.getMember().getNickname() : null);
         responseGetReviewDto.setReviewId(review.getReviewId());
         responseGetReviewDto.setContent(review.getContent());
         responseGetReviewDto.setUpdatedTime(review.getUpdatedTime());
+        responseGetReviewDto.setGoodNumber(review.getGoodNumber());
+        responseGetReviewDto.setMemberIsLiked(review.isMemberIsLiked());
         responseGetReviewDto.setReviewPhotoInfoList(reviewPhotoInfoList);
 
         return responseGetReviewDto;
