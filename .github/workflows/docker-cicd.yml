@@ -46,6 +46,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v3
         with:
@@ -56,8 +57,20 @@ jobs:
           build-args: |
             JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
 
+      - name: Login to EC2 instance
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          port: ${{ secrets.EC2_PORT }}
+          script: |
+            sudo yarn update && sudo yarn install -y docker.io
+            sudo systemctl start docker
+            sudo systemctl enable docker
+
       - name: Update docker-compose.yml on EC2
-        uses: appleboy/ssh-action@v0.1.8
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
@@ -75,14 +88,13 @@ jobs:
 
       ## 3) Docker Hub에 Push한 이미지를 리눅스 서버에 받아와서 run
       - name: Deploy
-        uses: appleboy/ssh-action@v0.1.8
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_KEY }}
           port: ${{ secrets.EC2_PORT }}
           script: |
-            echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USERNAME --password-stdin
             docker ps -aq | xargs -r docker rm
             docker rmi watershell/polaroad:latest
             docker pull watershell/polaroad:latest
