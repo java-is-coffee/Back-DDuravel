@@ -84,6 +84,6 @@ jobs:
           script: |
             echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USERNAME --password-stdin
             docker ps -aq | xargs -r docker rm
-            docker rmi ${{ secrets.DOCKER_HUB_USERNAME }}/polaroad:latest
-            docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/polaroad:latest
+            docker rmi watershell/polaroad:latest
+            docker pull watershell/polaroad:latest
             docker-compose up -d
