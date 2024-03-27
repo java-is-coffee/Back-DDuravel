@@ -40,6 +40,8 @@ public class LoginService {
     private final CertificationGenerator certificationGenerator;
     private final MailSendService mailSendService;
 
+    private final String AWS_URL = "http://ec2-13-125-119-145.ap-northeast-2.compute.amazonaws.com:8080";
+
     /**
      * 1. 로그인 요청으로 들어온 memberId, password를 기반으로 Authentication 객체를 생성한다.
      * 2. authenticate() 메서드를 통해 요청된 Member에 대한 검증이 진행된다.
@@ -199,7 +201,7 @@ public class LoginService {
         member.setPassword(tempPassword.toString());
         member.hashPassword(bCryptPasswordEncoder);
 
-        String requestURL = "http://ec2-13-125-119-145.ap-northeast-2.compute.amazonaws.com:8080/api/email/password-reset?tempPassword=" + tempPassword;
+        String requestURL = AWS_URL + "/api/email/password-reset?email=" +requestDto.getEmail()+"&tempPassword=" + tempPassword;
 
         try {
             mailSendService.sendMail(member.getEmail(),requestURL);

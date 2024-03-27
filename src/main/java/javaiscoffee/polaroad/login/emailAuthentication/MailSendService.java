@@ -16,6 +16,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+import java.io.DataOutputStream;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
@@ -40,6 +41,7 @@ public class MailSendService {
     private String MAIL_USERNAME;
     @Value("${spring.mail.password}")
     private String MAIL_PASSWORD;
+    private final String AWS_URL = "http://ec2-13-125-119-145.ap-northeast-2.compute.amazonaws.com:8080";
 
     public void sendEmailForCertification(String email) throws NoSuchAlgorithmException, MessagingException {
 
@@ -55,7 +57,7 @@ public class MailSendService {
 
         log.info("이메일 = {}, 인증번호 = {}",email,certificationNumber);
 
-        String requestURL = "http://ec2-13-125-119-145.ap-northeast-2.compute.amazonaws.com:8080/api/email/password-reset?certificationNumber=" + certificationNumber;
+        String requestURL = AWS_URL+"/api/email/certification?email="+email+"&certificationNumber=" + certificationNumber;
 
         // 레디스에 인증번호 저장
         redisService.saveEmailVerificationCode(email,certificationNumber,30);
@@ -74,24 +76,31 @@ public class MailSendService {
     public void sendMail(String email, String requestURL) throws MessagingException {
         try {
             URL url = new URL(requestURL);
-            //크램폴린 프록시 설정
-            Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("krmp-proxy.9rum.cc", 3128));
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection(proxy);
-            //로컬테스트용 설정
-//            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            //크램폴린 배포용 프록시 설정
+//            Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("krmp-proxy.9rum.cc", 3128));
+//            HttpURLConnection conn = (HttpURLConnection) url.openConnection(proxy);
+            //로컬 테스트용 설정
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
+            conn.setRequestProperty("accept", "application/json;charset=UTF-8");
+            conn.setDoOutput(true); // Request body를 보낼 수 있게 설정
+
+            try (DataOutputStream wr = new DataOutputStream(conn.getOutputStream())) {
+                // POST 요청에 필요한 파라미터를 Request body에 쓴다.
+                // 이 경우, 별도의 데이터는 필요하지 않으므로 빈 내용을 전송합니다.
+                wr.writeBytes("");
+                wr.flush();
+            }
 
             int responseCode = conn.getResponseCode();
 
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 log.info("메일 전송 완료: {}", email);
+            } else {
+                throw new BadRequestException("메일 전송 실패: HTTP 응답 코드: " + responseCode);
             }
-            else {
-                throw new BadRequestException(ResponseMessages.ERROR.getMessage());
-            }
-
-    } catch (Exception e) {
-            log.error("Error",e);
+        } catch (Exception e) {
+            log.error("메일 전송 중 오류 발생", e);
             throw new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
         }
     }
