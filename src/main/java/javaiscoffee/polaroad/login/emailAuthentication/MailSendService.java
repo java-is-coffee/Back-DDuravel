@@ -16,6 +16,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Properties;
 
@@ -77,5 +78,33 @@ public class MailSendService {
         mailSender.send(mimeMailMessage);   // JavaMailSender를 이용하여 이메일 전송. send()를 호출해서 이메일을 전송하면, 이메일이 수신자에게 발송된다.
 
         log.info("메일 전송 완료: {}", email);
+    }
+
+    /**
+     * api로 요청받으면 이메일 인증 메일 전송
+     */
+    public void sendCertificationEmail(String email, String certificationNumber) {
+        try {
+            // String.format() 사용해서 인증 번호를 포함한 본문 생성.
+            String content = String.format("%s의 이메일 인증을 위해 발송된 메일입니다.%n인증 번호는   :   %s%n인증 번호를 입력칸에 입력해주세요.%n 인증 번호는 30분 후 만료됩니다.",email,certificationNumber);
+            sendMail(email, content);
+        } catch (MessagingException e) {
+            throw new BadRequestException(ResponseMessages.ERROR.getMessage());
+        }
+    }
+
+    /**
+     * api로 요청받으면 비밀번호 재설정 메일 전송
+     */
+    public void sendPasswordResetEmail(String email,String password) {
+        try {
+            // 이메일 인증을 위한 랜덤 인증 번호 생성 => 사용자가 인증 링크를 클릭할 때 확인하는 용도로 사용
+            String certificationNumber = generator.createCertificationNumber(10000000,99999999);
+            // String.format() 사용해서 인증 번호를 포함한 본문 생성.
+            String content = String.format("%s의 비밀번호 리셋을 위해 발송된 메일입니다.%n임시 비밀번호는   :   %s%n임시 비밀번호를 사용하여 로그인해주세요.%n로그인하고 비밀번호 변경 부탁드립니다.",email,password);
+            sendMail(email, content);
+        } catch (NoSuchAlgorithmException | MessagingException e) {
+            throw new BadRequestException(ResponseMessages.ERROR.getMessage());
+        }
     }
 }
