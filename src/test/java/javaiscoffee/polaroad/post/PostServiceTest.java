@@ -50,7 +50,7 @@ class PostServiceTest {
         cardSaveDto.setImage("카드이미지");
         cardSaveDto.setLocation("서울특별시");
         cardSaveDto.setLatitude(1.23);
-        cardSaveDto.setLongtitude(1.23);
+        cardSaveDto.setLongitude(1.23);
         ArrayList<CardSaveDto> cards = new ArrayList<>();
         cards.add(cardSaveDto);
         postSaveDto.setCards(cards);
@@ -105,7 +105,7 @@ class PostServiceTest {
         cardSaveDto.setImage("카드이미지");
         cardSaveDto.setLocation("서울특별시");
         cardSaveDto.setLatitude(1.23);
-        cardSaveDto.setLongtitude(1.23);
+        cardSaveDto.setLongitude(1.23);
         ArrayList<CardSaveDto> cards = new ArrayList<>();
         cards.add(cardSaveDto);
         postSaveDto.setCards(cards);
@@ -141,7 +141,7 @@ class PostServiceTest {
         cardSaveDto.setImage("카드이미지");
         cardSaveDto.setLocation("서울특별시");
         cardSaveDto.setLatitude(1.23);
-        cardSaveDto.setLongtitude(1.23);
+        cardSaveDto.setLongitude(1.23);
         ArrayList<CardSaveDto> cards = new ArrayList<>();
         cards.add(cardSaveDto);
         postSaveDto.setCards(cards);
@@ -186,7 +186,7 @@ class PostServiceTest {
         cardSaveDto.setImage("카드이미지");
         cardSaveDto.setLocation("서울특별시");
         cardSaveDto.setLatitude(1.23);
-        cardSaveDto.setLongtitude(1.23);
+        cardSaveDto.setLongitude(1.23);
         ArrayList<CardSaveDto> cards = new ArrayList<>();
         cards.add(cardSaveDto);
         cards.add(cardSaveDto);
@@ -232,7 +232,7 @@ class PostServiceTest {
         cardSaveDto.setImage("카드이미지");
         cardSaveDto.setLocation("서울특별시");
         cardSaveDto.setLatitude(1.23);
-        cardSaveDto.setLongtitude(1.23);
+        cardSaveDto.setLongitude(1.23);
         ArrayList<CardSaveDto> cards = new ArrayList<>();
         cards.add(cardSaveDto);
         postSaveDto.setCards(cards);

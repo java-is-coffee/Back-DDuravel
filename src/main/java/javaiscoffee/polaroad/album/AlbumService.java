@@ -11,7 +11,6 @@ import javaiscoffee.polaroad.post.card.Card;
 import javaiscoffee.polaroad.post.card.CardInfoDto;
 import javaiscoffee.polaroad.post.card.CardRepository;
 import javaiscoffee.polaroad.response.ResponseMessages;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -249,7 +248,7 @@ public class AlbumService {
         cardInfoDto.setCardId(card.getCardId());
         cardInfoDto.setCardIndex(card.getCardIndex());
         cardInfoDto.setLatitude(card.getLatitude());
-        cardInfoDto.setLongtitude(card.getLongtitude());
+        cardInfoDto.setLongitude(card.getLongitude());
         cardInfoDto.setLocation(card.getLocation());
         cardInfoDto.setImage(card.getImage());
         cardInfoDto.setContent(card.getContent());

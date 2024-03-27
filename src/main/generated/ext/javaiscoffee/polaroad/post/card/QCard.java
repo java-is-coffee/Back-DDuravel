@@ -40,7 +40,7 @@ public class QCard extends EntityPathBase<Card> {
 
     public final StringPath location = createString("location");
 
-    public final NumberPath<Double> longtitude = createNumber("longtitude", Double.class);
+    public final NumberPath<Double> longitude = createNumber("longitude", Double.class);
 
     public final ext.javaiscoffee.polaroad.member.QMember member;
 
