@@ -20,13 +20,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 public class PolaRoadApplication {
 
 	public static void main(String[] args) {
-		// 크램폴린 이메일 프록시 서버 설정
-		// System.setProperty("mail.smtp.proxy.host", "krmp-proxy.9rum.cc");
-		// System.setProperty("mail.smtp.proxy.port", "3128");
-        // System.setProperty("http.proxyHost", "krmp-proxy.9rum.cc");
-        // System.setProperty("http.proxyPort", "3128");
-        // System.setProperty("https.proxyHost", "krmp-proxy.9rum.cc");
-        // System.setProperty("https.proxyPort", "3128");
 		SpringApplication.run(PolaRoadApplication.class, args);
 	}
 
