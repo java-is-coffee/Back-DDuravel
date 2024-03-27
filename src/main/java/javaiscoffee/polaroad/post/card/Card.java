@@ -38,7 +38,7 @@ public class Card {
     @NotNull @Setter
     private double latitude; // 위도
     @NotNull @Setter
-    private double longtitude; // 경도
+    private double longitude; // 경도
     @Column(length = 255)
     @NotNull @Setter
     private String location;//상세 위치

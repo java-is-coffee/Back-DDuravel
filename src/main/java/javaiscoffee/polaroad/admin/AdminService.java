@@ -170,7 +170,7 @@ public class AdminService {
     }
     //카드 정보 Dto로 변환
     private CardInfoDto toCardInfoDto(Card card) {
-        return new CardInfoDto(card.getCardId(), card.getCardIndex(), card.getLatitude(), card.getLongtitude(), card.getLocation(), card.getImage(), card.getContent());
+        return new CardInfoDto(card.getCardId(), card.getCardIndex(), card.getLatitude(), card.getLongitude(), card.getLocation(), card.getImage(), card.getContent());
     }
 
     // ReviewPhotoInfoDto로 매핑하는 메서드
