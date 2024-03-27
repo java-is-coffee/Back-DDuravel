@@ -56,23 +56,12 @@ public class JpaReviewRepository implements ReviewRepository{
     }
 
     /**
-     * 해당 포스트의 모든 댓글들 조회
-     */
-//    @Override
-//    public List<Review> findReviewByPostId(Post postId, ReviewStatus status) {
-//        return em.createQuery("SELECT r FROM Review r WHERE r.postId = :postId AND r.status = :status ORDER BY r.createdTime ASC", Review.class) //post와 status가 set된 값과 일치하는 review 엔티티 선택하고 오름차순 정렬
-//                .setParameter("postId", postId)
-//                .setParameter("status", status)
-//                .getResultList();
-//    }
-
-    /**
      * 포스트의 댓글들 페이징
      */
-    public Slice<Review> findReviewSlicedByPostId(Post postId, Pageable pageable, ReviewStatus status) {
+    public Slice<Review> findReviewSlicedByPostId(Post post, Pageable pageable, ReviewStatus status) {
         // 총 댓글 수를 조회하는 쿼리
-        TypedQuery<Long> countQuery = em.createQuery("SELECT COUNT(r) FROM Review r WHERE r.postId = :postId AND r.status = :status", Long.class)
-                .setParameter("postId", postId)
+        TypedQuery<Long> countQuery = em.createQuery("SELECT COUNT(r) FROM Review r WHERE r.post = :post AND r.status = :status", Long.class)
+                .setParameter("post", post)
                 .setParameter("status", status);
         Long totalReviews = countQuery.getSingleResult();
 
@@ -80,8 +69,8 @@ public class JpaReviewRepository implements ReviewRepository{
         int totalPages = (int) Math.ceil((double) totalReviews / pageable.getPageSize());
 
         // 페이징된 결과를 가져오는 쿼리
-        TypedQuery<Review> query = em.createQuery("SELECT r FROM Review r WHERE r.postId = :postId AND r.status = :status ORDER BY r.createdTime DESC", Review.class)
-                .setParameter("postId", postId)
+        TypedQuery<Review> query = em.createQuery("SELECT r FROM Review r WHERE r.post = :post AND r.status = :status ORDER BY r.createdTime DESC", Review.class)
+                .setParameter("post", post)
                 .setParameter("status", status);
 
         // 페이징 쿼리 적용
@@ -96,23 +85,12 @@ public class JpaReviewRepository implements ReviewRepository{
     }
 
     /**
-     * 맴버가 작성한 모든 댓글들 조회
-     */
-//    @Override
-//    public List<Review> findReviewByMemberId(Member memberId, ReviewStatus status) {
-//        return em.createQuery("SELECT r FROM Review r WHERE r.memberId = :memberId AND r.status = :status ORDER BY r.createdTime ASC", Review.class)
-//                .setParameter("memberId", memberId)
-//                .setParameter("status", status)
-//                .getResultList();
-//    }
-
-    /**
      * 맴버가 작성한 모든 댓글들 페이징
      */
-    public Slice<Review> findReviewSlicedByMemberId(Member memberId, Pageable pageable, ReviewStatus status) {
+    public Slice<Review> findReviewSlicedByMemberId(Member member, Pageable pageable, ReviewStatus status) {
         // 페이징된 결과를 가져오는 쿼리
-        TypedQuery<Review> query = em.createQuery("SELECT r FROM Review r WHERE r.memberId = :memberId AND r.status = :status ORDER BY r.createdTime DESC", Review.class)
-                .setParameter("memberId", memberId)
+        TypedQuery<Review> query = em.createQuery("SELECT r FROM Review r WHERE r.member = :member AND r.status = :status ORDER BY r.createdTime DESC", Review.class)
+                .setParameter("member", member)
                 .setParameter("status", status);
 
         // 페이징 쿼리 적용
@@ -123,4 +101,13 @@ public class JpaReviewRepository implements ReviewRepository{
         boolean hasNextPage = reviewList.size() == pageable.getPageSize();
         return new SliceImpl<>(reviewList, pageable, hasNextPage);
     }
+
+    // 멤버의 댓글 좋아요 여부를 포함한 특정 댓글 조회
+    public Review findLikedReviewByMemberIdAndReviewId(Long memberId, Long reviewId) {
+        return em.createQuery("SELECT r FROM Review r LEFT JOIN reviewGoods rg ON r.reviewId = rg.review.reviewId AND rg.member.memberId = :memberId WHERE r.reviewId = :reviewId",Review.class)
+                .setParameter("memberId", memberId)
+                .setParameter("reviewId", reviewId)
+                .getSingleResult();
+    }
+
 }

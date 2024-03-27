@@ -40,8 +40,8 @@ public class Review {
     private String content;
     @NotNull @Setter
     private int goodNumber; // 좋아요 수
-//    @NotNull @Setter
-//    private boolean memberIsLiked; // 멤버의 좋아요 여부
+    @Setter
+    private boolean goodOrNot; // 좋아요 여부
     @Setter @NotNull
     @Enumerated(EnumType.STRING)
     private ReviewStatus status;
@@ -51,6 +51,8 @@ public class Review {
     private LocalDateTime createdTime;
     @NotNull @OneToMany(mappedBy = "reviewId")
     private List<ReviewPhoto> reviewPhoto;
+    @OneToMany(mappedBy = "review")
+    private List<ReviewGood> reviewGoods;
 
     @PrePersist
     public void PrePersist() {
