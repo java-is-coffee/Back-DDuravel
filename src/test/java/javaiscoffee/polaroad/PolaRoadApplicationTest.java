@@ -10,7 +10,10 @@ import org.springframework.test.context.TestPropertySource;
 		"KAKAO_API_KEY=tabve4120123408dse89749c4123041zvx",
 		"KAKAO_REDIRECT_URI=http://localhost:3000/explore",
 		"MAIL_PASSWORD=abcd efgh ijkl",
-		"REDIS_PASSWORD=a123123!"
+		"REDIS_PASSWORD=a123123!",
+		"GOOGLE_CLIENT_ID=ta555412333i40l2s289a111c2223lg4vx",
+		"GOOGLE_CLIENT_SECRET=ta555412333i40l2s289a111c2223lg4vx",
+		"GOOGLE_REDIRECT_URI=http://localhost:3000/explore",
 })
 class PolaRoadApplicationTest {
 
