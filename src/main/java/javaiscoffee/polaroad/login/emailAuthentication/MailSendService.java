@@ -77,10 +77,10 @@ public class MailSendService {
         try {
             URL url = new URL(requestURL);
             //크램폴린 배포용 프록시 설정
-           // Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("krmp-proxy.9rum.cc", 3128));
-           // HttpURLConnection conn = (HttpURLConnection) url.openConnection(proxy);
+           Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("krmp-proxy.9rum.cc", 3128));
+           HttpURLConnection conn = (HttpURLConnection) url.openConnection(proxy);
             //로컬 테스트용 설정
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            // HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
             conn.setRequestProperty("accept", "application/json;charset=UTF-8");
             conn.setDoOutput(true); // Request body를 보낼 수 있게 설정
