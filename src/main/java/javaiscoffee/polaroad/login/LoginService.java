@@ -199,10 +199,10 @@ public class LoginService {
         member.setPassword(tempPassword.toString());
         member.hashPassword(bCryptPasswordEncoder);
 
-        String mailContent = String.format("%s의 비밀번호 리셋을 위해 발송된 메일입니다.%n임시 비밀번호는   :   %s%n임시 비밀번호를 사용하여 로그인해주세요.%n로그인하고 비밀번호 변경 부탁드립니다.",requestDto.getEmail(),tempPassword);
+        String requestURL = "http://ec2-13-125-119-145.ap-northeast-2.compute.amazonaws.com:8080/api/email/password-reset?tempPassword=" + tempPassword;
 
         try {
-            mailSendService.sendMail(member.getEmail(),mailContent);
+            mailSendService.sendMail(member.getEmail(),requestURL);
         } catch (MessagingException e) {
             throw new BadRequestException(ResponseMessages.ERROR.getMessage());
         }
