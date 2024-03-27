@@ -24,6 +24,8 @@ public class QCard extends EntityPathBase<Card> {
 
     public static final QCard card = new QCard("card");
 
+    public final ListPath<javaiscoffee.polaroad.album.albumCard.AlbumCard, ext.javaiscoffee.polaroad.album.albumCard.QAlbumCard> albumCards = this.<javaiscoffee.polaroad.album.albumCard.AlbumCard, ext.javaiscoffee.polaroad.album.albumCard.QAlbumCard>createList("albumCards", javaiscoffee.polaroad.album.albumCard.AlbumCard.class, ext.javaiscoffee.polaroad.album.albumCard.QAlbumCard.class, PathInits.DIRECT2);
+
     public final NumberPath<Long> cardId = createNumber("cardId", Long.class);
 
     public final NumberPath<Integer> cardIndex = createNumber("cardIndex", Integer.class);
