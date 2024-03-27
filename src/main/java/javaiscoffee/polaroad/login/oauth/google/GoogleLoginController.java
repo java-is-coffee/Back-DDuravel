@@ -1,6 +1,5 @@
-package javaiscoffee.polaroad.login.oauth.kakao;
+package javaiscoffee.polaroad.login.oauth.google;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import javaiscoffee.polaroad.exception.BadRequestException;
 import javaiscoffee.polaroad.exception.NotFoundException;
@@ -12,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -23,39 +21,49 @@ import java.util.HashMap;
 @Slf4j
 @Controller
 @RequestMapping()
-public class KakaoLoginController {
-    @Value("${kakao_api_key}")
-    private String kakaoApiKey;
-    @Value("${kakao_redirect_uri}")
+public class GoogleLoginController {
+    @Value("${google_redirect_uri}")
     private String redirectUri;
-    @Value("${kakao_result_uri}")
+    @Value("${google_result_uri}")
     private String resultUri;
-    private final KakaoService kakaoService;
+    @Value("${google_client_id}")
+    private String googleClientId;
+    @Value("${google_client_secret}")
+    private String googleClientSecret;
+    private final GoogleService googleService;
     private final LoginService loginService;
 
     @Autowired
-    public KakaoLoginController(KakaoService kakaoService, LoginService loginService) {
-        this.kakaoService = kakaoService;
+    public GoogleLoginController(GoogleService googleService, LoginService loginService) {
+        this.googleService = googleService;
         this.loginService = loginService;
     }
 
-    @GetMapping("/api/oauth2/login/kakao")
+    @GetMapping("/api/oauth2/login/google")
     public void getAccessToken(HttpServletResponse response) {
         try {
+            String googleAuthUrl = "https://accounts.google.com/o/oauth2/auth";
+            String clientId = googleClientId;
             String encodedRedirectUri = URLEncoder.encode(redirectUri, "UTF-8");
-            String uri = "https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=" + kakaoApiKey + "&redirect_uri=" + encodedRedirectUri;
+            String responseType = "code";
+            String scope = "openid email profile"; // 요구하는 권한에 따라 조정
+
+            String uri = String.format("%s?client_id=%s&redirect_uri=%s&response_type=%s&scope=%s",
+                    googleAuthUrl, clientId, encodedRedirectUri, responseType, scope);
+
             response.sendRedirect(uri);
         } catch (IOException e) {
-            log.error("카카오 로그인 redirect 오류");
+            log.error("구글 로그인 redirect 오류");
             throw new NotFoundException(ResponseMessages.BAD_REQUEST.getMessage());
         }
     }
-    @GetMapping("/api/oauth2/authorization/kakao")
-    public void callback(@RequestParam(name = "code") String code,HttpServletResponse response) {
-        log.info("카카오 로그인 코드 = {}",code);
-        String accessToken = kakaoService.getAccessTokenFromKakao(kakaoApiKey, code);
-        HashMap<String, Object> uerInfo = kakaoService.getUerInfo(accessToken);
-        TokenDto tokenDto = loginService.oauthKakaoLogin(uerInfo);
+
+    @GetMapping("/api/oauth2/authorization/google")
+    public void callback(@RequestParam(name = "code") String code, HttpServletResponse response) {
+        log.info("구글 로그인 코드 = {}",code);
+        String accessToken = googleService.getAccessTokenFromGoogle(googleClientId, googleClientSecret, redirectUri, code);
+        HashMap<String, Object> userInfo = googleService.getUerInfo(accessToken);
+        TokenDto tokenDto = loginService.oauthGoogleLogin(userInfo);
         try {
             String redirectUrl = resultUri +
                     "?access_token=" + URLEncoder.encode(tokenDto.getAccessToken(), "UTF-8") +

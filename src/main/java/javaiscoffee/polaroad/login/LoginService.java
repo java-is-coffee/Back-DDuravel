@@ -101,7 +101,7 @@ public class LoginService {
      * 가입 정보가 없으면 간편 회원가입 후 토큰 발행
      */
     @Transactional
-    public TokenDto oauthLogin (Map<String, Object> userInfo) {
+    public TokenDto oauthKakaoLogin (Map<String, Object> userInfo) {
         String email = (String) userInfo.get("email");
         Optional<Member> findMember = memberRepository.findByEmail(email);
         Member member;
@@ -109,6 +109,36 @@ public class LoginService {
         if(findMember.isEmpty()) {
             member = new Member(email, "폴라", (String) userInfo.get("nickname"),  String.valueOf(userInfo.get("id")));
             member.setProfileImage((String) userInfo.get("profile"));
+            member.setSocialLogin((SocialLogin) userInfo.get("socialLogin"));
+            member.hashPassword(bCryptPasswordEncoder);
+            memberRepository.save(member);
+        }
+
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(email, String.valueOf(userInfo.get("id")));
+        try {
+            Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+            log.info("Authentication successful, authentication = {}", authentication);
+
+            return jwtTokenProvider.generateToken(authentication);
+        } catch (Exception e) {
+            log.error("로그인 실패: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * 구글 로그인 및 회원가입
+     * 가입 정보가 없으면 간편 회원가입 후 토큰 발행
+     */
+    @Transactional
+    public TokenDto oauthGoogleLogin (Map<String, Object> userInfo) {
+        String email = (String) userInfo.get("email");
+        Optional<Member> findMember = memberRepository.findByEmail(email);
+        Member member;
+        // 가입 정보가 없으면 간편 회원가입 처리
+        if(findMember.isEmpty()) {
+            member = new Member(email, (String) userInfo.get("name"), "폴라",  String.valueOf(userInfo.get("id")));
+            member.setProfileImage((String) userInfo.get("picture"));
             member.setSocialLogin((SocialLogin) userInfo.get("socialLogin"));
             member.hashPassword(bCryptPasswordEncoder);
             memberRepository.save(member);
@@ -169,10 +199,10 @@ public class LoginService {
         member.setPassword(tempPassword.toString());
         member.hashPassword(bCryptPasswordEncoder);
 
-        String mailContent = String.format("%s의 비밀번호 리셋을 위해 발송된 메일입니다.%n임시 비밀번호는   :   %s%n임시 비밀번호를 사용하여 로그인해주세요.%n로그인하고 비밀번호 변경 부탁드립니다.",requestDto.getEmail(),tempPassword);
+        String requestURL = "http://ec2-13-125-119-145.ap-northeast-2.compute.amazonaws.com:8080/api/email/password-reset?tempPassword=" + tempPassword;
 
         try {
-            mailSendService.sendMail(member.getEmail(),mailContent);
+            mailSendService.sendMail(member.getEmail(),requestURL);
         } catch (MessagingException e) {
             throw new BadRequestException(ResponseMessages.ERROR.getMessage());
         }
