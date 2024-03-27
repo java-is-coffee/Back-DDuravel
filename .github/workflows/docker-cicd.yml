@@ -35,6 +35,11 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Run Tests
+        run: ./gradlew test
+        env:
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+
       - name: Build with Gradle
         run: ./gradlew clean build -x test --no-daemon
         env:
