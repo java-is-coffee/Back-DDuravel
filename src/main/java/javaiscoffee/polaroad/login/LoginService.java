@@ -40,7 +40,7 @@ public class LoginService {
     private final CertificationGenerator certificationGenerator;
     private final MailSendService mailSendService;
 
-    private final String AWS_URL = "http://ec2-13-125-119-145.ap-northeast-2.compute.amazonaws.com:8080";
+    private final String AWS_URL = "https://polaroad.shop";
 
     /**
      * 1. 로그인 요청으로 들어온 memberId, password를 기반으로 Authentication 객체를 생성한다.

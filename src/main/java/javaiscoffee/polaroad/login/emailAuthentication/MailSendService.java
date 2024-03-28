@@ -41,7 +41,7 @@ public class MailSendService {
     private String MAIL_USERNAME;
     @Value("${spring.mail.password}")
     private String MAIL_PASSWORD;
-    private final String AWS_URL = "http://ec2-13-125-119-145.ap-northeast-2.compute.amazonaws.com:8080";
+    private final String AWS_URL = "https://polaroad.shop";
 
     public void sendEmailForCertification(String email) throws NoSuchAlgorithmException, MessagingException {
 
