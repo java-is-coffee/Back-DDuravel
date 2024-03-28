@@ -38,4 +38,4 @@ COPY --from=build /app/build/libs/Back-PolaRoad-1.0.jar app.jar
 ENTRYPOINT ["java", "-jar", "app.jar"]
 
 # 애플리케이션이 사용할 포트를 지정합니다. 예를 들어, 8080 포트를 사용한다고 가정합니다.
-EXPOSE 8090
+EXPOSE 8080
