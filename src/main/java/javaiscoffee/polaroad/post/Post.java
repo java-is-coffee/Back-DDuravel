@@ -63,7 +63,7 @@ public class Post {
     private List<Card> cards;
     @NotNull @OneToMany(mappedBy = "post")
     private List<PostHashtag> postHashtags;
-    @NotNull @OneToMany(mappedBy = "postId")
+    @NotNull @OneToMany(mappedBy = "post")
     private List<Review> reviews;
     @NotNull @OneToMany(mappedBy = "post")
     private List<PostGood> postGoods;
