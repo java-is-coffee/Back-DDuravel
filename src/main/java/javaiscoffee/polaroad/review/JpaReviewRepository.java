@@ -69,7 +69,7 @@ public class JpaReviewRepository implements ReviewRepository{
         int totalPages = (int) Math.ceil((double) totalReviews / pageable.getPageSize());
 
         // 페이징된 결과를 가져오는 쿼리
-        TypedQuery<Review> query = em.createQuery("SELECT r FROM Review r WHERE r.post = :post AND r.status = :status ORDER BY r.createdTime DESC", Review.class)
+        TypedQuery<Review> query = em.createQuery("SELECT r FROM Review r WHERE r.post = :post AND r.status = :status ORDER BY r.goodNumber DESC", Review.class)
                 .setParameter("post", post)
                 .setParameter("status", status);
 
