@@ -18,8 +18,6 @@ COPY settings.gradle .
 # 런타임에 사용할 환경 변수 ENV 설정
 ENV JWT_SECRET_KEY=$JWT_SECRET_KEY
 ENV KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD
-RUN echo "JWT_SECRET_KEY=${JWT_SECRET_KEY}"
-RUN echo "KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD}"
 
 # 애플리케이션 빌드
 RUN chmod +x ./gradlew
@@ -32,6 +30,7 @@ FROM openjdk:17
 WORKDIR /app
 
 # 호스트 시스템의 빌드 결과물인 JAR 파일을 컨테이너의 작업 디렉토리로 복사합니다.
+COPY --from=build /app/src/main/resources/keystore.p12 /app/keystore.p12
 COPY --from=build /app/build/libs/Back-PolaRoad-1.0.jar app.jar
 
 # 컨테이너가 시작될 때 실행될 명령어를 정의합니다.
