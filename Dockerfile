@@ -14,7 +14,6 @@ COPY gradle gradle
 COPY src ./src
 COPY build.gradle .
 COPY settings.gradle .
-COPY ./src/main/resources/keystore.p12 /app/keystore.p12
 
 # 런타임에 사용할 환경 변수 ENV 설정
 ENV JWT_SECRET_KEY=$JWT_SECRET_KEY
