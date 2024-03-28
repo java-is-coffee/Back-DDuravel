@@ -39,6 +39,13 @@ jobs:
         run: ./gradlew clean build --no-daemon
         env:
           JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+
+      - name: Copy keystore.p12
+        run: |
+          cd ./src/main/resources
+          touch ./keystore.p12
+          echo "${{ secrets.KEYSTORE_PASSWORD }}" | base64 --decode > ./keystore.p12
 
       ## 2) Docker Hub에 이미지 push 하기
       - name: Log in to Docker Hub
@@ -56,6 +63,7 @@ jobs:
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/polaroad:latest
           build-args: |
             JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+            KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
 
       - name: Login to EC2 instance
         uses: appleboy/ssh-action@master
@@ -84,6 +92,7 @@ jobs:
             echo 'export KAKAO_REDIRECT_URI="${{ secrets.KAKAO_REDIRECT_URI }}"' | sudo tee -a /etc/environment
             echo 'export MAIL_PASSWORD="${{ secrets.MAIL_PASSWORD }}"' | sudo tee -a /etc/environment
             echo 'export REDIS_PASSWORD="${{ secrets.REDIS_PASSWORD }}"' | sudo tee -a /etc/environment
+            echo 'export KEYSTORE_PASSWORD="${{ secrets.KEYSTORE_PASSWORD }}"' | sudo tee -a /etc/environment
             # 적용을 위해 SSH 세션 내에서 환경 변수 로드
             source /etc/environment
 

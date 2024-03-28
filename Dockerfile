@@ -1,5 +1,6 @@
 # 빌드 시점에 사용할 환경 변수 ARG 정의
 ARG JWT_SECRET_KEY
+ARG KEYSTORE_PASSWORD
 
 # 빌드 스테이지
 FROM gradle:7.2-jdk17 AS build
@@ -16,7 +17,9 @@ COPY settings.gradle .
 
 # 런타임에 사용할 환경 변수 ENV 설정
 ENV JWT_SECRET_KEY=$JWT_SECRET_KEY
+ENV KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD
 RUN echo "JWT_SECRET_KEY=${JWT_SECRET_KEY}"
+RUN echo "KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD}"
 
 # 애플리케이션 빌드
 RUN chmod +x ./gradlew
@@ -36,4 +39,4 @@ COPY --from=build /app/build/libs/Back-PolaRoad-1.0.jar app.jar
 ENTRYPOINT ["java", "-jar", "app.jar"]
 
 # 애플리케이션이 사용할 포트를 지정합니다. 예를 들어, 8080 포트를 사용한다고 가정합니다.
-EXPOSE 8080
+EXPOSE 443
