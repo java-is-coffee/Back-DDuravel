@@ -41,7 +41,7 @@ public class MailSendService {
     private String MAIL_USERNAME;
     @Value("${spring.mail.password}")
     private String MAIL_PASSWORD;
-    private final String AWS_URL = "https://polaroad.shop";
+    private final String AWS_URL = "http://ec2-13-125-119-145.ap-northeast-2.compute.amazonaws.com:8080";
 
     public void sendEmailForCertification(String email) throws NoSuchAlgorithmException, MessagingException {
 
@@ -74,34 +74,40 @@ public class MailSendService {
      * JavaMailSender를 사용하여 MimeMessage 객체 생성 => 이메일을 나타내는 객체로, 이메일의 헤더, 본문, 첨부 파일 등을 포함할 수 있다.
      */
     public void sendMail(String email, String requestURL) throws MessagingException {
+        long startTime = System.currentTimeMillis();
         try {
             URL url = new URL(requestURL);
-            //크램폴린 배포용 프록시 설정
-           Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("krmp-proxy.9rum.cc", 3128));
-           HttpURLConnection conn = (HttpURLConnection) url.openConnection(proxy);
-            //로컬 테스트용 설정
-            // HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            log.info("메일 전송 요청 시작: {} (URL: {})", email, requestURL);
+
+            // 크램폴린 배포용 프록시 설정 제거 및 로컬 테스트용 설정 활성화
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
             conn.setRequestMethod("POST");
             conn.setRequestProperty("accept", "application/json;charset=UTF-8");
             conn.setDoOutput(true); // Request body를 보낼 수 있게 설정
 
+            log.info("HTTP 연결 설정 완료: {}", email);
+
             try (DataOutputStream wr = new DataOutputStream(conn.getOutputStream())) {
-                // POST 요청에 필요한 파라미터를 Request body에 쓴다.
-                // 이 경우, 별도의 데이터는 필요하지 않으므로 빈 내용을 전송합니다.
                 wr.writeBytes("");
                 wr.flush();
             }
 
+            log.info("요청 데이터 전송 완료: {}", email);
+
             int responseCode = conn.getResponseCode();
+            long responseTime = System.currentTimeMillis();
 
             if (responseCode == HttpURLConnection.HTTP_OK) {
-                log.info("메일 전송 완료: {}", email);
+                log.info("메일 전송 완료: {} (응답 시간: {}ms)", email, (responseTime - startTime));
             } else {
+                log.error("메일 전송 실패: {} (HTTP 응답 코드: {}, 응답 시간: {}ms)", email, responseCode, (responseTime - startTime));
                 throw new BadRequestException("메일 전송 실패: HTTP 응답 코드: " + responseCode);
             }
         } catch (Exception e) {
-            log.error("메일 전송 중 오류 발생", e);
+            log.error("메일 전송 중 오류 발생: {}", email, e);
             throw new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
         }
     }
+
 }
