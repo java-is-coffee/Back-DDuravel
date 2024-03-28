@@ -2,10 +2,6 @@
 ARG JWT_SECRET_KEY
 ARG KEYSTORE_PASSWORD
 
-# 런타임에 사용할 환경 변수 ENV 설정
-ENV JWT_SECRET_KEY=${JWT_SECRET_KEY}
-ENV KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD}
-
 # 빌드 스테이지
 FROM gradle:7.2-jdk17 AS build
 WORKDIR /app
@@ -18,6 +14,10 @@ COPY gradle gradle
 COPY src ./src
 COPY build.gradle .
 COPY settings.gradle .
+
+# 런타임에 사용할 환경 변수 ENV 설정
+ENV JWT_SECRET_KEY=$JWT_SECRET_KEY
+ENV KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD
 
 # 애플리케이션 빌드
 RUN chmod +x ./gradlew
