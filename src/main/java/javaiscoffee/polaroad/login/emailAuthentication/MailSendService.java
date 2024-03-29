@@ -41,7 +41,7 @@ public class MailSendService {
     private String MAIL_USERNAME;
     @Value("${spring.mail.password}")
     private String MAIL_PASSWORD;
-    private final String AWS_URL = "http://ec2-13-125-119-145.ap-northeast-2.compute.amazonaws.com:8080";
+    private final String AWS_URL = "https://polaroad.shop";
 
     public void sendEmailForCertification(String email) throws NoSuchAlgorithmException, MessagingException {
 
@@ -78,9 +78,12 @@ public class MailSendService {
         try {
             URL url = new URL(requestURL);
             log.info("메일 전송 요청 시작: {} (URL: {})", email, requestURL);
+            
+            Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("krmp-proxy.9rum.cc", 3128));
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection(proxy);
 
             // 크램폴린 배포용 프록시 설정 제거 및 로컬 테스트용 설정 활성화
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            // HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
             conn.setRequestMethod("POST");
             conn.setRequestProperty("accept", "application/json;charset=UTF-8");
@@ -109,5 +112,4 @@ public class MailSendService {
             throw new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
         }
     }
-
 }
