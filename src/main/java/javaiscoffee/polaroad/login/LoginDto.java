@@ -6,10 +6,10 @@ import javaiscoffee.polaroad.validator.PasswordCheck;
 import lombok.Data;
 
 @Data
-@Schema(description = "로그인 입력값을 받는 requestDto")
+@Schema(description = "로그인 입력값을 받는 dto")
 public class LoginDto {
     @EmailCheck
-    @Schema(description = "사용자 이메일이자 아이디로 사용", example = "aaa@naver.com")
+    @Schema(description = "사용자 이메일", example = "aaa@naver.com")
     private String email;
     @PasswordCheck
     @Schema(description = "사용자 비밀번호" +

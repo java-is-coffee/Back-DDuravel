@@ -68,6 +68,9 @@ public class LoginService {
         }
     }
 
+    /**
+     * 회원가입
+     */
     @Transactional
     public Member register(RegisterDto registerDto) {
         //이미 중복된 이메일이 존재

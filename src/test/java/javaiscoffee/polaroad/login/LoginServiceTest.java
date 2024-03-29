@@ -2,13 +2,14 @@ package javaiscoffee.polaroad.login;
 
 import jakarta.servlet.http.HttpServletResponse;
 import javaiscoffee.polaroad.member.Member;
+import javaiscoffee.polaroad.member.SocialLogin;
 import javaiscoffee.polaroad.security.TokenDto;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockHttpServletResponse;
+
+import java.util.HashMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -49,6 +50,41 @@ class LoginServiceTest {
 
         //when
         TokenDto tokenDto = loginService.login(loginDto, response);
+
+        //then
+        assertThat(tokenDto).isNotNull();
+    }
+
+    @Test
+    public void testOauthGoogleLogin() {
+        HashMap<String, Object> userInfo = new HashMap<>();
+
+        userInfo.put("id", "823742296139163914196");
+        userInfo.put("name", "박자바");
+        userInfo.put("picture", "https://lh3.googleusercontent.com/a/ACg8ocIUDVrYxwJiLs3303WK329pqp2QXNnJE9UFEsAaPzz6=s96-c");
+        userInfo.put("email", "aaa@gmail.com");
+        userInfo.put("socialLogin", SocialLogin.GOOGLE);
+
+        when(loginService.oauthGoogleLogin(any(HashMap.class)))
+                .thenReturn(new TokenDto("Bearer","accessToken","refreshToken"));
+
+        //when
+        TokenDto tokenDto = loginService.oauthGoogleLogin(userInfo);
+
+        //then
+        assertThat(tokenDto).isNotNull();
+    }
+
+    @Test
+    public void testRefresh() {
+        String refreshToken = "";
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        when(loginService.refresh(any(String.class),any(HttpServletResponse.class)))
+                .thenReturn(new TokenDto("Bearer","accessToken","refreshToken"));
+
+        //when
+        TokenDto tokenDto = loginService.refresh(refreshToken, response);
 
         //then
         assertThat(tokenDto).isNotNull();
