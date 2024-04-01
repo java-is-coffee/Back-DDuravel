@@ -1,5 +1,6 @@
 package javaiscoffee.polaroad.post.hashtag;
 
+import javaiscoffee.polaroad.exception.BadRequestException;
 import javaiscoffee.polaroad.post.Post;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -42,6 +44,12 @@ public class HashtagService {
     public PostHashtag savePostHashtag(String tagName, Post post) {
         Hashtag hashtag = hashtagRepository.findByName(tagName)
                 .orElseGet(() -> hashtagRepository.save(new Hashtag(tagName)));
+        Optional<PostHashtag> existingPostHashtag = postHashtagRepository.findById(new PostHashtagId(hashtag.getHashtagId(), post.getPostId()));
+        // 중복된 PostHashtag가 존재한다면 에러 처리
+        if (existingPostHashtag.isPresent()) {
+            log.info("중복된 PostHashtag 발견: {}", existingPostHashtag.get());
+            throw new BadRequestException("해당 포스트에 이미 같은 해쉬태그가 존재합니다.");
+        }
         PostHashtag postHashtag = new PostHashtag(new PostHashtagId(hashtag.getHashtagId(), post.getPostId()), hashtag, post);
         log.info("저장된 postHashtag = {}",postHashtag);
         return postHashtagRepository.save(postHashtag);

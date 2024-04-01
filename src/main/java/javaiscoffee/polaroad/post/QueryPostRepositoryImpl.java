@@ -197,9 +197,9 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
         Post findPost = queryFactory
                 .selectFrom(post)
                 .leftJoin(post.member, member).fetchJoin()
-                .leftJoin(post.cards, card).fetchJoin()
-                .leftJoin(post.postHashtags, postHashtag).fetchJoin()
-                .leftJoin(postHashtag.hashtag, hashtag).fetchJoin()
+                .leftJoin(post.cards, card)
+                .leftJoin(post.postHashtags, postHashtag)
+                .leftJoin(postHashtag.hashtag, hashtag)
                 .where(post.postId.eq(postId))
                 .fetchOne();
         if(findPost==null) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
