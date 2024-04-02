@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 
 @Slf4j
@@ -47,7 +48,7 @@ public class LoginController {
             @ApiResponse(responseCode = "404", description = "로그인에 실패한 경우")
     })
     @PostMapping("/login")
-    public ResponseEntity<?> login(/**@Validated*/ @RequestBody RequestWrapperDto<LoginDto> requestDto, HttpServletResponse response) {
+    public ResponseEntity<?> login(@Validated @RequestBody RequestWrapperDto<LoginDto> requestDto, HttpServletResponse response) {
         LoginDto loginDto = requestDto.getData();
         log.info("로그인 요청 = {}",loginDto);
         TokenDto tokenDto = loginService.login(loginDto, response);
@@ -63,7 +64,7 @@ public class LoginController {
             @ApiResponse(responseCode = "400", description = "이메일이 중복되거나 입력값이 형식에 맞지 않아서 회원가입 실패한 경우")
     })
     @PostMapping("/register")
-    public ResponseEntity<?> register(/**@Validated*/ @RequestBody RequestWrapperDto<RegisterDto> requestDto) {
+    public ResponseEntity<?> register(@Validated @RequestBody RequestWrapperDto<RegisterDto> requestDto) {
         RegisterDto registerDto = requestDto.getData();
         log.info("registerDto = {}", registerDto);
         Member registerdMember = loginService.register(registerDto);
@@ -99,7 +100,7 @@ public class LoginController {
             @ApiResponse(responseCode = "400", description = "이메일 형식이 아닐 경우")
     })
     @PostMapping("/register/email-check")
-    public ResponseEntity<Boolean> emailCheck(/**@Validated*/ @RequestBody RequestWrapperDto<EmailCertificationRequest> requestDto) {
+    public ResponseEntity<Boolean> emailCheck(@Validated @RequestBody RequestWrapperDto<EmailCertificationRequest> requestDto) {
         EmailCertificationRequest emailCheckDto = requestDto.getData();
         log.info("이메일 체크 진입 = {}", emailCheckDto.getEmail());
         return ResponseEntity.ok(memberRepository.existsByEmail(emailCheckDto.getEmail()));
@@ -112,7 +113,7 @@ public class LoginController {
             @ApiResponse(responseCode = "404", description = "해당 이메일로 멤버가 존재하지 않을 경우")
     })
     @PostMapping("/login/reset-password")
-    public ResponseEntity<String> resetPassword(/**@Validated*/ @RequestBody RequestWrapperDto<ResetPasswordRequestDto> wrapperDto) {
+    public ResponseEntity<String> resetPassword(@Validated @RequestBody RequestWrapperDto<ResetPasswordRequestDto> wrapperDto) {
         ResetPasswordRequestDto requestDto = wrapperDto.getData();
         loginService.resetPassword(requestDto);
         return ResponseEntity.ok(ResponseMessages.SUCCESS.getMessage());
@@ -124,7 +125,8 @@ public class LoginController {
             @ApiResponse(responseCode = "400", description = " - 30초 이내로 같은 이메일로 재요청했을 경우 \n - 이미 회원가입 된 이메일이 존재할 경우")
     })
     @PostMapping("/register/send-certification")
-    public ResponseEntity<?> sendCertificationNumber(/**@Validated*/ @RequestBody RequestWrapperDto<EmailCertificationRequest> requestDto) throws MessagingException, NoSuchAlgorithmException {
+
+    public ResponseEntity<?> sendCertificationNumber(@Validated @RequestBody RequestWrapperDto<EmailCertificationRequest> requestDto) throws MessagingException, NoSuchAlgorithmException, IOException {
         EmailCertificationRequest request = requestDto.getData();
 
         log.info(">> 사용자의 이메일 인증 요청");

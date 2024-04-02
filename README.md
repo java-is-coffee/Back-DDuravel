@@ -64,9 +64,11 @@
 
 ```
 < example >
-   - Feat/GI-12 - jira GI-12 이슈에 대한 새로운 기능(feature) 추가를 위한 브랜치.
-   - Fix/GI-13 - jira GI-13 이슈의 버그를 수정하는 작업을 위한 브랜치.
-   - Docs/GI-13 - jira GI-13번 이슈와 관련된 문서(docs) 업데이트를 위한 브랜치.
+   - Docs/PO-11 - jira PO-11 기존 코드에 주석을 더하거나 설명 문서를 작성하기 위한 브랜치.
+   - Feat/PO-12 - jira PO-12 이슈에 대한 새로운 기능(feature) 추가를 위한 브랜치.
+   - Fix/PO-13 - jira PO-13 이슈의 버그를 수정하는 작업을 위한 브랜치.
+   - Refactor/PO-14 - jira PO-14 기존 코드의 리팩토링을 진행을 위한 브랜치.
+   - Test/PO-15 - jira PO-15 테스트 진행을 위한 브랜치.
 ```
 
 ### Commit message Convention
