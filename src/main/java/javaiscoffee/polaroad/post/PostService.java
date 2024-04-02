@@ -65,6 +65,7 @@ public class PostService {
         if(postSaveDto.getHashtags().size() > 10) throw new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
         if(postSaveDto.getCards().size() > 10) throw new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
+        if(!member.getStatus().equals(MemberStatus.ACTIVE)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
         Post post = new Post();
         BeanUtils.copyProperties(postSaveDto, post);
         post.setMember(member);
@@ -100,7 +101,7 @@ public class PostService {
         //생성자가 아니면 수정 불가
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         if(!Objects.equals(oldPost.getMember().getMemberId(), memberId)) throw new ForbiddenException(ResponseMessages.FORBIDDEN.getMessage());
-        if(member.getStatus().equals(MemberStatus.DELETED)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
+        if(!member.getStatus().equals(MemberStatus.ACTIVE)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
         //포스트 정보 업데이트
         oldPost.setTitle(postSaveDto.getTitle());
         oldPost.setRoutePoint(postSaveDto.getRoutePoint());
@@ -122,6 +123,7 @@ public class PostService {
         }
         cardService.editCards(postSaveDto.getCards(), oldPost, member);
 
+        log.info("수정된 post = {}",oldPost);
         return ResponseEntity.ok(oldPost);
     }
     /**

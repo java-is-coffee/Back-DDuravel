@@ -125,6 +125,7 @@ public class LoginController {
             @ApiResponse(responseCode = "400", description = " - 30초 이내로 같은 이메일로 재요청했을 경우 \n - 이미 회원가입 된 이메일이 존재할 경우")
     })
     @PostMapping("/register/send-certification")
+
     public ResponseEntity<?> sendCertificationNumber(@Validated @RequestBody RequestWrapperDto<EmailCertificationRequest> requestDto) throws MessagingException, NoSuchAlgorithmException, IOException {
         EmailCertificationRequest request = requestDto.getData();
 

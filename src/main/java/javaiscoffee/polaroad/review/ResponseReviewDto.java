@@ -24,5 +24,9 @@ public class ResponseReviewDto {
     private List<String> reviewPhotoList;
     @Schema(description = "## 댓글 업데이트 시간", example = "2024-03-12T15:11:30.751404")
     private LocalDateTime updatedTime;
+    @Schema(description = "## 댓글 좋아요 수", example = "10")
+    private int goodNumber;
+    @Schema(description = "## 멤버의 좋아요 여부", example = "false")
+    private Boolean memberIsLiked;
 }
 

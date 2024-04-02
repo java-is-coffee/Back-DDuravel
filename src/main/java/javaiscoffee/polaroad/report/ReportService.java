@@ -125,7 +125,7 @@ public class ReportService {
             review.setStatus(ReviewStatus.DELETED);
             review.setUpdatedTime(LocalDateTime.now());
             //멤버 리뷰 개수 1개 감소
-            review.getMemberId().setPostNumber(review.getMemberId().getPostNumber() - 1);
+            review.getMember().setPostNumber(review.getMember().getPostNumber() - 1);
         }
         //신고 완료 처리
         report.setStatus(ReportStatus.COMPLETED);
