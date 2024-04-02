@@ -23,15 +23,19 @@ public class PostSaveDto {
     @Schema(description = "썸네일 번호", example = "0")
     private int thumbnailIndex;
 
+    @NotNull
     @Schema(description = "포스트 메인 카테고리", example = "FOOD")
     private PostConcept concept;
+    @NotNull
     @Schema(description = "여행 지역", example = "SEOUL")
     private PostRegion region;
 
     @Size(min = 1,max = 10)
+    @NotNull
     @Schema(description = "포스트 카드 리스트")
     private List<CardSaveDto> cards;
     @Size(max = 10)
+    @NotNull
     @Schema(description = "포스트 해쉬태그 리스트")
     private List<String> hashtags;
 }
