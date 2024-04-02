@@ -194,7 +194,7 @@ public class PostService {
     public PostListResponseDto getMyPostList (Long memberId,int page, int pageSize, PostStatus status) {
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         if(!member.getStatus().equals(MemberStatus.ACTIVE)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
-        Pageable pageable = PageRequest.of(page, pageSize);
+        Pageable pageable = PageRequest.of(page - 1, pageSize);
         Page<Post> pagePosts = postRepository.findPostsByMemberMemberIdAndStatusOrderByCreatedTimeDesc(memberId, status, pageable);
         List<Post> postList = pagePosts.getContent();
         int totalPages = pagePosts.getTotalPages();
