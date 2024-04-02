@@ -8,6 +8,8 @@ import javaiscoffee.polaroad.post.Post;
 import javaiscoffee.polaroad.post.card.Card;
 import javaiscoffee.polaroad.post.wishlist.WishList;
 import javaiscoffee.polaroad.review.Review;
+import javaiscoffee.polaroad.review.reviewGood.ReviewGood;
+import javaiscoffee.polaroad.review.reviewPhoto.ReviewPhoto;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -47,7 +49,6 @@ public class Member implements UserDetails {
     @Column(nullable = false, length = 255)
     private String nickname;
     @Setter
-    @Column(nullable = false)
     private String profileImage;
     @Setter
     @Column(nullable = false)
@@ -78,7 +79,7 @@ public class Member implements UserDetails {
     private List<Post> posts;
     @NotNull @OneToMany(mappedBy = "member")
     private List<Card> cards;
-    @NotNull @OneToMany(mappedBy = "memberId")
+    @NotNull @OneToMany(mappedBy = "member")
     private List<Review> reviews;
     @NotNull @OneToMany(mappedBy = "member")
     private List<WishList> wishLists;

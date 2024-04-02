@@ -101,15 +101,7 @@ public class MailSendService {
             // HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
             conn.setRequestMethod("POST");
-            conn.setRequestProperty("accept", "application/json;charset=UTF-8");
-            conn.setDoOutput(true); // Request body를 보낼 수 있게 설정
 
-            log.info("HTTP 연결 설정 완료: {}", email);
-
-            try (DataOutputStream wr = new DataOutputStream(conn.getOutputStream())) {
-                wr.writeBytes("");
-                wr.flush();
-            }
 
             log.info("요청 데이터 전송 완료: {}", email);
 
