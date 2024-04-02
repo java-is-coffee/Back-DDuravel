@@ -22,6 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import java.util.Objects;
@@ -207,6 +208,8 @@ public class LoginService {
             mailSendService.sendMail(member.getEmail(),requestURL);
         } catch (MessagingException e) {
             throw new BadRequestException(ResponseMessages.ERROR.getMessage());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }
