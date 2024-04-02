@@ -18,6 +18,10 @@ import javaiscoffee.polaroad.response.ResponseMessages;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -182,6 +186,19 @@ public class PostService {
         if(post.getStatus().equals(PostStatus.DELETED)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
         redisService.addPostView(postId, memberId);
         return ResponseEntity.ok(toPostInfoDto(post,memberId));
+    }
+
+    /**
+     *  본인 포스트 리스트 조회
+     */
+    public PostListResponseDto getMyPostList (Long memberId,int page, int pageSize, PostStatus status) {
+        Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
+        if(!member.getStatus().equals(MemberStatus.ACTIVE)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
+        Pageable pageable = PageRequest.of(page, pageSize);
+        Page<Post> pagePosts = postRepository.findPostsByMemberMemberIdAndStatusOrderByCreatedTimeDesc(memberId, status, pageable);
+        List<Post> postList = pagePosts.getContent();
+        int totalPages = pagePosts.getTotalPages();
+        return toPostListResponseDto(postList,totalPages);
     }
 
     /**

@@ -1,5 +1,8 @@
 package javaiscoffee.polaroad.post;
 
+import javaiscoffee.polaroad.member.Member;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -8,4 +11,5 @@ import java.util.List;
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long>, QueryPostRepository {
     List<Post> getPostsByPostIdIsIn(List<Long> postIds);
+    Page<Post> findPostsByMemberMemberIdAndStatusOrderByCreatedTimeDesc(Long memberId, PostStatus status, Pageable pageable);
 }
