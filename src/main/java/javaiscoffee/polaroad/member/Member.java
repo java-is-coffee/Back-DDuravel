@@ -47,7 +47,6 @@ public class Member implements UserDetails {
     @Column(nullable = false, length = 255)
     private String nickname;
     @Setter
-    @Column(nullable = false)
     private String profileImage;
     @Setter
     @Column(nullable = false)
