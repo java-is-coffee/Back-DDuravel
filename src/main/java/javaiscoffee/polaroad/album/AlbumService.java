@@ -56,8 +56,8 @@ public class AlbumService {
         Album savedAlbum = albumRepository.save(newAlbum);
 
         List<AlbumCard> albumCards = new ArrayList<>();
-        albumDto.getCardIdList().forEach(albumCard -> {
-            Card card = cardRepository.findById(albumCard).orElseThrow(() -> new BadRequestException(ResponseMessages.INPUT_ERROR.getMessage()));
+        albumDto.getCardIdList().forEach(albumCardId -> {
+            Card card = cardRepository.findById(albumCardId).orElseThrow(() -> new BadRequestException(ResponseMessages.INPUT_ERROR.getMessage()));
             // 작성 요청한 멤버 id와 카드의 멤버 id가 다른 경우
             if (!memberId.equals(card.getMember().getMemberId())) {
                 throw new ForbiddenException(ResponseMessages.FORBIDDEN.getMessage());
@@ -156,6 +156,8 @@ public class AlbumService {
         Slice<Album> albumSlice = albumRepository.findAlbumSlicedByMemberId(memberId, pageable);
         List<Album> albumList = albumSlice.getContent();
         List<AlbumInfoDto> albumInfoDtoList = toAlbumInfoDtoList(albumList);
+
+
         return new SliceAlbumListDto<>(albumInfoDtoList, albumSlice.hasNext());
     }
 
@@ -206,6 +208,7 @@ public class AlbumService {
             albumInfoDtoList.add(albumInfoDto);
         }
 
+
         return albumInfoDtoList;
     }
 
@@ -216,6 +219,10 @@ public class AlbumService {
         albumInfoDto.setName(album.getName());
         albumInfoDto.setDescription(album.getDescription());
         albumInfoDto.setUpdatedTime(LocalDateTime.now());
+
+        String image = album.getAlbumCards().get(0).getCard().getImage();
+        albumInfoDto.setThumbnail(image);
+
         return albumInfoDto;
     }
 
