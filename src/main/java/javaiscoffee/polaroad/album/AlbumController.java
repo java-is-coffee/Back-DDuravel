@@ -54,7 +54,7 @@ public class AlbumController {
     })
     @GetMapping("/{albumId}")
     public ResponseEntity<ResponseAlbumDto> getAlbum(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable(name = "albumId") Long albumId) {
-        log.info("댓글 조회 요청");
+        log.info("앨범 조회 요청");
         Long memberId = userDetails.getMemberId();
         ResponseAlbumDto responseAlbumDto = albumService.getAlbum(memberId, albumId);
         return ResponseEntity.ok(responseAlbumDto);
