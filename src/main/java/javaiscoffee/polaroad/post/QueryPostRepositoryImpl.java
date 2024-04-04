@@ -82,7 +82,8 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
                         post.goodNumber,
                         post.concept,
                         post.region,
-                        post.cards
+                        post.cards,
+                        post.updatedTime
                 ))
                 .leftJoin(post.cards, card).fetchJoin()
                 .leftJoin(post.member, member)
@@ -155,7 +156,8 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
                         post.goodNumber,
                         post.concept,
                         post.region,
-                        post.cards
+                        post.cards,
+                        post.updatedTime
                 ))
                 .leftJoin(post.cards, card).fetchJoin()
                 .leftJoin(post.member, member)
@@ -210,7 +212,7 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
 
     //팔로잉하고 있는 멤버 포스트 목록 조회
     @Override
-    public PostListResponseDto getFollowingMembersPostByMember(Member member,int page, int pageSize, PostStatus status) {
+    public PostListResponseDto getFollowingMembersPostByMember(Long memberId,int page, int pageSize, PostStatus status) {
         QPost post = QPost.post;
         QFollow follow = QFollow.follow;
 
@@ -225,11 +227,12 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
                         post.goodNumber,
                         post.concept,
                         post.region,
-                        post.cards
+                        post.cards,
+                        post.updatedTime
                 ))
                 .join(post.member, follow.followedMember)
                 .where(
-                        follow.followingMember.eq(member),
+                        follow.followingMember.memberId.eq(memberId),
                         post.status.eq(status) // 두 where 조건을 하나의 where 절로 결합
                 )
                 .offset(getOffset(page, pageSize))
@@ -242,7 +245,7 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
                 .from(post)
                 .join(post.member, follow.followedMember)
                 .where(
-                        follow.followingMember.eq(member),
+                        follow.followingMember.memberId.eq(memberId),
                         post.status.eq(status)
                 )
                 .fetchOne();
@@ -285,7 +288,8 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
                     p.getGoodNumber(),
                     p.getConcept(),
                     p.getRegion(),
-                    images
+                    images,
+                    p.getUpdatedTime()
             );
         }).collect(Collectors.toList()), maxPage);
     }

@@ -21,7 +21,8 @@ public interface MemberRepository {
     public Member updateMember(Member updatedMember);
 
     //간략하게 정보 조회할 때 사용하는 메서드
-    public MemberSimpleInfoDto getMemberSimpleInfo(Long memberId);
+    public Optional<MemberSimpleInfoDto> getMemberSimpleInfo(Long memberId);
+    public void addMemberPostNumber(Long memberId, int changeNumber);
 
 }
 

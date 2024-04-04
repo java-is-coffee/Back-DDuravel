@@ -49,4 +49,9 @@ public class Report {
         this.createdTime = LocalDateTime.now();
         this.updatedTime = LocalDateTime.now();
     }
+
+    @PreUpdate
+    public void PreUpdate() {
+        this.updatedTime = LocalDateTime.now();
+    }
 }

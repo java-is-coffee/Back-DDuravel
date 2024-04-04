@@ -3,6 +3,7 @@ package javaiscoffee.polaroad.member;
 import jakarta.persistence.*;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -84,9 +85,19 @@ public class JpaMemberRepository implements MemberRepository {
     }
 
     @Override
-    public MemberSimpleInfoDto getMemberSimpleInfo(Long memberId) {
-        TypedQuery<MemberSimpleInfoDto> query = em.createQuery("select m.memberId, m.status from Member m where memberId = :memberId",MemberSimpleInfoDto.class);
-        query.setParameter("memberId", memberId);
-        return query.getSingleResult();
+    public Optional<MemberSimpleInfoDto> getMemberSimpleInfo(Long memberId) {
+        List<MemberSimpleInfoDto> results = em.createQuery("SELECT new javaiscoffee.polaroad.member.MemberSimpleInfoDto(m.memberId, m.status) " +
+                        "FROM Member m WHERE m.memberId = :memberId", MemberSimpleInfoDto.class)
+                .setParameter("memberId", memberId)
+                .getResultList();
+        return results.stream().findFirst();
+    }
+
+    @Override
+    public void addMemberPostNumber(Long memberId, int changeNumber) {
+        em.createQuery("UPDATE Member m Set m.postNumber = m.postNumber + :changeNumber WHERE m.memberId = :memberId")
+                .setParameter("changeNumber", changeNumber)
+                .setParameter("memberId", memberId)
+                .executeUpdate();
     }
 }

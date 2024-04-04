@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -29,4 +30,6 @@ public class PostListDto {
     private PostRegion region;
     @Schema(description = "포스트 썸네일 포함 이미지 3장")
     private List<String> images;
+    @Schema(description = "포스트 업데이트 날짜", example = "2024-04-04T12:12:12")
+    private LocalDateTime updatedTime;
 }
