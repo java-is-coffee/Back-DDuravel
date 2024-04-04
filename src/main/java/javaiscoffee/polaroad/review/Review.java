@@ -49,7 +49,7 @@ public class Review {
     private LocalDateTime updatedTime;
     @NotNull @Setter
     private LocalDateTime createdTime;
-    @NotNull @OneToMany(mappedBy = "reviewId")
+    @NotNull @OneToMany(mappedBy = "review")
     private List<ReviewPhoto> reviewPhoto;
     @OneToMany(mappedBy = "review")
     private List<ReviewGood> reviewGoods;

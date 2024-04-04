@@ -60,11 +60,14 @@ public class ReviewService {
         Review savedReview = reviewRepository.save(newReview);
 
         List<String> savedReviewPhotos = new ArrayList<>();
-        // 사진 저장
-        reviewDto.getReviewPhotoList().forEach(reviewPhotoUrl ->{
-            ReviewPhoto newReviewPhoto = reviewPhotoService.saveReviewPhoto(reviewPhotoUrl, savedReview);
-            savedReviewPhotos.add(newReviewPhoto.getImage());
-        } );
+        List<String> photos = reviewDto.getReviewPhotoList();
+        if (photos != null) {
+            // 사진 저장
+            photos.forEach(reviewPhotoUrl ->{
+                ReviewPhoto newReviewPhoto = reviewPhotoService.saveReviewPhoto(reviewPhotoUrl, savedReview);
+                savedReviewPhotos.add(newReviewPhoto.getImage());
+            } );
+        }
 
         return toResponseReviewDto(savedReview, savedReviewPhotos);
     }

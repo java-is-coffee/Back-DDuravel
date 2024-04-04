@@ -23,7 +23,7 @@ public class ReviewPhotoService {
     public ReviewPhoto saveReviewPhoto(String image, Review review) {
         ReviewPhoto newReviewPhoto = new ReviewPhoto();
         newReviewPhoto.setImage(image);     // 링크 저장
-        newReviewPhoto.setReviewId(review); // 댓글 id 저장
+        newReviewPhoto.setReview(review); // 댓글 id 저장
         reviewPhotoRepository.save(newReviewPhoto);
 
         return newReviewPhoto;
@@ -66,7 +66,7 @@ public class ReviewPhotoService {
                     ReviewPhoto newReviewPhoto = new ReviewPhoto();
                     Review reId = reviewRepository.findByReviewId(review.getReviewId());
                     newReviewPhoto.setImage(reviewPhotoUrl);
-                    newReviewPhoto.setReviewId(reId);
+                    newReviewPhoto.setReview(reId);
                     reviewPhotoRepository.save(newReviewPhoto);
                 }
             }
