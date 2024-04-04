@@ -20,6 +20,9 @@ public interface MemberRepository {
     public void delete(Member member);
     public Member updateMember(Member updatedMember);
 
+    //간략하게 정보 조회할 때 사용하는 메서드
+    public MemberSimpleInfoDto getMemberSimpleInfo(Long memberId);
+
 }
 
 

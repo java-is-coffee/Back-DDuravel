@@ -1,10 +1,12 @@
 package javaiscoffee.polaroad.post;
 
+import jakarta.persistence.EntityManager;
 import javaiscoffee.polaroad.exception.BadRequestException;
 import javaiscoffee.polaroad.exception.ForbiddenException;
 import javaiscoffee.polaroad.exception.NotFoundException;
 import javaiscoffee.polaroad.member.Member;
 import javaiscoffee.polaroad.member.MemberRepository;
+import javaiscoffee.polaroad.member.MemberSimpleInfoDto;
 import javaiscoffee.polaroad.member.MemberStatus;
 import javaiscoffee.polaroad.post.card.*;
 import javaiscoffee.polaroad.post.good.PostGood;
@@ -21,7 +23,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,15 +48,19 @@ public class PostService {
     private final CardService cardService;
     private final PostGoodRepository postGoodRepository;
     private final RedisService redisService;
+    private final PostGoodBatchUpdator postGoodBatchUpdator;
+    private final EntityManager entityManager;
 
     @Autowired
-    public PostService(PostRepository postRepository, MemberRepository memberRepository,HashtagService hashtagService, CardService cardService, PostGoodRepository postGoodRepository, RedisService redisService) {
+    public PostService(PostRepository postRepository, MemberRepository memberRepository, HashtagService hashtagService, CardService cardService, PostGoodRepository postGoodRepository, RedisService redisService, PostGoodBatchUpdator postGoodBatchUpdator, EntityManager entityManager) {
         this.postRepository = postRepository;
         this.memberRepository = memberRepository;
         this.hashtagService = hashtagService;
         this.cardService = cardService;
         this.postGoodRepository = postGoodRepository;
         this.redisService = redisService;
+        this.postGoodBatchUpdator = postGoodBatchUpdator;
+        this.entityManager = entityManager;
     }
 
     /**
@@ -180,10 +185,10 @@ public class PostService {
      * 포스트 내용 조회
      */
     public ResponseEntity<PostInfoDto> getPostInfoById(Long postId, Long memberId) {
-        Post post = postRepository.findById(postId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
+        Post post = postRepository.getPostInfoById(postId);
 //        Member member = memberRepository.findById(post.getMember().getMemberId()).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         //포스트가 삭제되었으면 에러
-        if(post.getStatus().equals(PostStatus.DELETED)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
+        if(post == null || post.getStatus().equals(PostStatus.DELETED)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
         redisService.addPostView(postId, memberId);
         return ResponseEntity.ok(toPostInfoDto(post,memberId));
     }
@@ -229,21 +234,25 @@ public class PostService {
     public void postGoodToggle(Long memberId, Long postId) {
         PostGoodId postGoodId = new PostGoodId(memberId, postId);
 
-        Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
-        Post post = postRepository.findById(postId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
-        if(member.getStatus().equals(MemberStatus.DELETED) || post.getStatus().equals(PostStatus.DELETED)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
-        if(post.getMember().getMemberId().equals(memberId)) throw new BadRequestException(ResponseMessages.GOOD_FAILED.getMessage());
+        MemberSimpleInfoDto memberInfo = memberRepository.getMemberSimpleInfo(memberId);
+        PostSimpleInfoDto postInfo = postRepository.getPostSimpleInfo(postId);
+        // Member와 Post의 참조(프록시)만 로드
+        Member memberRef = entityManager.getReference(Member.class, memberId);
+        Post postRef = entityManager.getReference(Post.class, postId);
 
-        Optional<PostGood> memberGood = postGoodRepository.findById(postGoodId);
+        if(!memberInfo.getStatus().equals(MemberStatus.ACTIVE) || !postInfo.getStatus().equals(PostStatus.ACTIVE)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
+        if(postInfo.getMemberId().equals(memberId)) throw new BadRequestException(ResponseMessages.GOOD_FAILED.getMessage());
+
+        boolean postGoodExists = postGoodRepository.existsById(postGoodId);
         //추천 삭제
-        if(memberGood.isPresent()) {
-            postGoodRepository.delete(memberGood.get());
-            post.setGoodNumber(post.getGoodNumber() - 1);
+        if(postGoodExists) {
+            postGoodRepository.deleteById(postGoodId);
+            postGoodBatchUpdator.decreasePostGoodCount(postId);
         }
         //추천 생성
         else {
-            postGoodRepository.save(new PostGood(postGoodId,member,post));
-            post.setGoodNumber(post.getGoodNumber() + 1);
+            postGoodRepository.save(new PostGood(postGoodId,memberRef,postRef));
+            postGoodBatchUpdator.increasePostGoodCount(postId);
         }
     }
 

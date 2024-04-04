@@ -2,6 +2,8 @@ package javaiscoffee.polaroad.post;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.QueryResults;
+import com.querydsl.core.types.Projections;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import ext.javaiscoffee.polaroad.member.QFollow;
 import ext.javaiscoffee.polaroad.member.QFollowId;
@@ -70,31 +72,34 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
         //게시글 상태 조건 추가
         builder.and(post.status.eq(status));
 
-        List<Post> posts;
+        JPAQuery<PostListRepositoryDto> query = queryFactory
+                .select(Projections.constructor(
+                        PostListRepositoryDto.class,
+                        post.title,
+                        post.postId,
+                        member.nickname,
+                        post.thumbnailIndex,
+                        post.goodNumber,
+                        post.concept,
+                        post.region,
+                        post.cards
+                ))
+                .leftJoin(post.cards, card).fetchJoin()
+                .leftJoin(post.member, member)
+                .where(builder)
+                .groupBy(post.postId)
+                .offset(getOffset(page, pageSize))
+                .limit(pageSize);
         //최신순 정렬
         if (sortBy.equals(PostListSort.RECENT)) {
-            posts = queryFactory.selectFrom(post)
-                    .leftJoin(post.cards, card)
-                    .leftJoin(post.member, member)
-                    .where(builder)
-                    .groupBy(post.postId)
-                    .orderBy(post.createdTime.desc())
-                    .offset(getOffset(page, pageSize))
-                    .limit(pageSize)
-                    .fetch();
+            query.orderBy(post.createdTime.desc());
         }
         //인기순 정렬
         else {
-            posts = queryFactory.selectFrom(post)
-                    .leftJoin(post.cards, card)
-                    .leftJoin(post.member, member)
-                    .where(builder)
-                    .groupBy(post.postId)
-                    .orderBy(post.goodNumber.desc())
-                    .offset(getOffset(page, pageSize))
-                    .limit(pageSize)
-                    .fetch();
+            query.orderBy(post.goodNumber.desc());
         }
+
+        List<PostListRepositoryDto> posts = query.fetch();
 
         //검색 결과 최대 개수 구하기
         long totalPostsCount = queryFactory
@@ -118,7 +123,6 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
         QCard card = QCard.card;
         QMember member = QMember.member; // 멤버와 관련된 쿼리를 위한 QClass
         QPostHashtag postHashtag = QPostHashtag.postHashtag;
-        QHashtag hashtag = QHashtag.hashtag;
 
         BooleanBuilder builder = new BooleanBuilder();
         // 해쉬태그 검색 조건 추가
@@ -141,35 +145,36 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
         //게시글 상태 조건 추가
         builder.and(post.status.eq(status));
 
-        List<Post> posts;
+        JPAQuery<PostListRepositoryDto> query = queryFactory
+                .select(Projections.constructor(
+                        PostListRepositoryDto.class,
+                        post.title,
+                        post.postId,
+                        member.nickname,
+                        post.thumbnailIndex,
+                        post.goodNumber,
+                        post.concept,
+                        post.region,
+                        post.cards
+                ))
+                .leftJoin(post.cards, card).fetchJoin()
+                .leftJoin(post.member, member)
+                .leftJoin(post.postHashtags, postHashtag)
+                .where(builder)
+                .groupBy(post.postId)
+                .offset(getOffset(page, pageSize))
+                .limit(pageSize);
+
         //최신순 정렬
         if (sortBy.equals(PostListSort.RECENT)) {
-            posts = queryFactory.selectFrom(post)
-                    .leftJoin(post.cards, card)
-                    .leftJoin(post.member, member)
-                    .leftJoin(post.postHashtags, postHashtag)
-                    .leftJoin(postHashtag.hashtag, hashtag)
-                    .where(builder)
-                    .groupBy(post.postId)
-                    .orderBy(post.createdTime.desc())
-                    .offset(getOffset(page, pageSize))
-                    .limit(pageSize)
-                    .fetch();
+            query.orderBy(post.createdTime.desc());
         }
         //인기순 정렬
         else {
-            posts = queryFactory.selectFrom(post)
-                    .leftJoin(post.cards, card)
-                    .leftJoin(post.member, member)
-                    .leftJoin(post.postHashtags, postHashtag)
-                    .leftJoin(postHashtag.hashtag, hashtag)
-                    .where(builder)
-                    .groupBy(post.postId)
-                    .orderBy(post.goodNumber.desc())
-                    .offset(getOffset(page, pageSize))
-                    .limit(pageSize)
-                    .fetch();
+            query.orderBy(post.goodNumber.desc());
         }
+
+        List<PostListRepositoryDto> posts = query.fetch();
 
         //검색 결과 최대 개수 구하기
         long totalPostsCount = queryFactory
@@ -177,13 +182,12 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
                 .leftJoin(post.cards, card)
                 .leftJoin(post.member, member)
                 .leftJoin(post.postHashtags, postHashtag)
-                .leftJoin(postHashtag.hashtag, hashtag)
                 .where(builder)
                 .fetchCount();
         int maxPage = (int) Math.ceil((double) totalPostsCount / pageSize);
 
         // 포스트를 DTO로 변환하고 카드 이미지 처리
-        return getPostListResponseDto(posts, maxPage);
+        return getPostListResponseDto(posts,maxPage);
     }
 
     @Override
@@ -194,31 +198,39 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
         QPostHashtag postHashtag = QPostHashtag.postHashtag;
         QHashtag hashtag = QHashtag.hashtag;
 
-        Post findPost = queryFactory
+        return queryFactory
                 .selectFrom(post)
-                .leftJoin(post.member, member).fetchJoin()
-                .leftJoin(post.cards, card)
+                .leftJoin(post.member, member)
+                .leftJoin(post.cards, card).fetchJoin()
                 .leftJoin(post.postHashtags, postHashtag)
                 .leftJoin(postHashtag.hashtag, hashtag)
                 .where(post.postId.eq(postId))
                 .fetchOne();
-        if(findPost==null) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
-        return findPost;
     }
 
     //팔로잉하고 있는 멤버 포스트 목록 조회
     @Override
     public PostListResponseDto getFollowingMembersPostByMember(Member member,int page, int pageSize, PostStatus status) {
-        QPost qPost = QPost.post;
-        QFollow qFollow = QFollow.follow;
+        QPost post = QPost.post;
+        QFollow follow = QFollow.follow;
 
         // 팔로잉하는 멤버의 포스트를 조회
-        List<Post> posts = queryFactory
-                .selectFrom(qPost)
-                .join(qPost.member, qFollow.followedMember)
+        List<PostListRepositoryDto> posts = queryFactory
+                .select(Projections.constructor(
+                        PostListRepositoryDto.class,
+                        post.title,
+                        post.postId,
+                        post.member.nickname,
+                        post.thumbnailIndex,
+                        post.goodNumber,
+                        post.concept,
+                        post.region,
+                        post.cards
+                ))
+                .join(post.member, follow.followedMember)
                 .where(
-                        qFollow.followingMember.eq(member),
-                        qPost.status.eq(status) // 두 where 조건을 하나의 where 절로 결합
+                        follow.followingMember.eq(member),
+                        post.status.eq(status) // 두 where 조건을 하나의 where 절로 결합
                 )
                 .offset(getOffset(page, pageSize))
                 .limit(pageSize)
@@ -226,12 +238,12 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
 
         // 검색 결과의 총 개수 구하기
         Long countResult  = queryFactory
-                .select(qPost.count())
-                .from(qPost)
-                .join(qPost.member, qFollow.followedMember)
+                .select(post.count())
+                .from(post)
+                .join(post.member, follow.followedMember)
                 .where(
-                        qFollow.followingMember.eq(member),
-                        qPost.status.eq(status)
+                        follow.followingMember.eq(member),
+                        post.status.eq(status)
                 )
                 .fetchOne();
         // null 체크를 수행
@@ -243,7 +255,7 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
     }
 
     //포스트 리스트를 DTO로 변환하고 카드 이미지에서 썸네일을 제일 앞으로 설정
-    private static PostListResponseDto getPostListResponseDto(List<Post> posts, int maxPage) {
+    private static PostListResponseDto getPostListResponseDto(List<PostListRepositoryDto> posts, int maxPage) {
         return new PostListResponseDto(posts.stream().map(p -> {
             List<String> images = p.getCards().stream()
                     .sorted(Comparator.comparingInt(Card::getCardIndex))
@@ -269,7 +281,7 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
             return new PostListDto(
                     p.getTitle(),
                     p.getPostId(),
-                    p.getMember().getNickname(),
+                    p.getNickname(),
                     p.getGoodNumber(),
                     p.getConcept(),
                     p.getRegion(),

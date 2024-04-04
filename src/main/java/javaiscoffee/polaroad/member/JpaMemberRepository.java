@@ -1,9 +1,6 @@
 package javaiscoffee.polaroad.member;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.NoResultException;
-import jakarta.persistence.Table;
-import jakarta.persistence.TypedQuery;
+import jakarta.persistence.*;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -84,5 +81,12 @@ public class JpaMemberRepository implements MemberRepository {
     public Member updateMember(Member updatedMember) {
         em.merge(updatedMember);
         return updatedMember;
+    }
+
+    @Override
+    public MemberSimpleInfoDto getMemberSimpleInfo(Long memberId) {
+        TypedQuery<MemberSimpleInfoDto> query = em.createQuery("select m.memberId, m.status from Member m where memberId = :memberId",MemberSimpleInfoDto.class);
+        query.setParameter("memberId", memberId);
+        return query.getSingleResult();
     }
 }
