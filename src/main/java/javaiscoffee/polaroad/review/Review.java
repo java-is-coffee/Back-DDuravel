@@ -47,9 +47,9 @@ public class Review {
     private ReviewStatus status;
     @Setter
     private LocalDateTime updatedTime;
-    @NotNull @Setter
+    @Setter
     private LocalDateTime createdTime;
-    @NotNull @OneToMany(mappedBy = "review")
+    @OneToMany(mappedBy = "review")
     private List<ReviewPhoto> reviewPhoto;
     @OneToMany(mappedBy = "review")
     private List<ReviewGood> reviewGoods;
