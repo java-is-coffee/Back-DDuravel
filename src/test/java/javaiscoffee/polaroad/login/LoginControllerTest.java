@@ -186,18 +186,32 @@ class LoginControllerTest {
         JSONObject jsonObject = new JSONObject(jsonString);
         String refreshToken = jsonObject.getString("refreshToken");
 
-        RefreshTokenDto.Data data = new RefreshTokenDto.Data();
-        data.setRefreshToken(refreshToken);
+        RefreshTokenDto.Data data1 = new RefreshTokenDto.Data();
+        data1.setRefreshToken(refreshToken);
 
-        RefreshTokenDto refreshTokenDto = new RefreshTokenDto();
-        refreshTokenDto.setData(data);
+        RefreshTokenDto refreshTokenDto1 = new RefreshTokenDto();
+        refreshTokenDto1.setData(data1);
 
-        MockHttpServletRequestBuilder refreshTokenBuilder = post("/api/member/refresh")
-                .content(objectMapper.writeValueAsString(refreshTokenDto))
+        MockHttpServletRequestBuilder refreshTokenBuilder1 = post("/api/member/refresh")
+                .content(objectMapper.writeValueAsString(refreshTokenDto1))
                 .contentType(MediaType.APPLICATION_JSON);
 
-        mockMvc.perform(refreshTokenBuilder)
+        mockMvc.perform(refreshTokenBuilder1)
                 .andExpect(status().isOk())
+                .andReturn();
+
+        RefreshTokenDto.Data data2 = new RefreshTokenDto.Data();
+        data2.setRefreshToken("eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhYWFAbmF2ZXIuY29tIiwiYXV0aCI6IlJPTEVfVVNFUiIsIm1lbWJlcklkIjoxLCJleHAiOjE3MTIzMTM2NDZ9.R7mMGi4nP6rUbUDjfuG55INgDNVsPfg0r3vle7alS5c");
+
+        RefreshTokenDto refreshTokenDto2 = new RefreshTokenDto();
+        refreshTokenDto2.setData(data2);
+
+        MockHttpServletRequestBuilder refreshTokenBuilder2 = post("/api/member/refresh")
+                .content(objectMapper.writeValueAsString(refreshTokenDto2))
+                .contentType(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(refreshTokenBuilder2)
+                .andExpect(status().isUnauthorized())
                 .andReturn();
     }
 
