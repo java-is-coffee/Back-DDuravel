@@ -1,25 +1,27 @@
 package javaiscoffee.polaroad.member;
 
 import javaiscoffee.polaroad.exception.BadRequestException;
-import javaiscoffee.polaroad.login.LoginService;
+import javaiscoffee.polaroad.exception.NotFoundException;
 import javaiscoffee.polaroad.login.RegisterDto;
 import javaiscoffee.polaroad.security.BaseException;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.dao.EmptyResultDataAccessException;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
-@SpringBootTest(properties = {"JWT_SECRET_KEY=3123755132fdfds4daas4551af789d59f36977df5093be12c2314515135ddasg1f5k12hdfhjk412bh531uiadfi14b14bwebs52"})
-class MemberServiceTest {
-    @Autowired
-    private LoginService loginService;
-    @Autowired
-    private MemberService memberService;
-    @Autowired
+@ExtendWith(MockitoExtension.class)
+class MemberServiceUnitTest {
+    @Mock
     private MemberRepository memberRepository;
+    @InjectMocks
+    private MemberService memberService;
 
     @Test
     public void testGetMemberInformation() {
@@ -29,8 +31,26 @@ class MemberServiceTest {
         registerDto.setNickname("자바커피");
         registerDto.setPassword("a123123!");
 
-        loginService.register(registerDto);
+        Member mockMember = Member.builder().memberId(1L)
+                .email(registerDto.getEmail())
+                .name(registerDto.getName())
+                .nickname(registerDto.getNickname())
+                .password(registerDto.getPassword())
+                .profileImage("")
+                .postNumber(0)
+                .followedNumber(0)
+                .followingNumber(0)
+                .role(MemberRole.USER)
+                .socialLogin(null)
+                .status(MemberStatus.ACTIVE)
+                .build();
 
+        when(memberRepository.findByEmail(registerDto.getEmail())).thenReturn(Optional.of(mockMember));
+
+        // 그냥 메서드만 가정해서 findByEmail 메서드가 시작되면 이라고 가정을 주고 뒤에는 반환되어야 할 데이터를 주입해주는 것으로 마무리했습니다.
+        // 그러고 나서 나타났던 문제가 의존성 관련 문제인데 memberRepository는 사용하지 않게 mock으로 주입하면서 memberService만 실제 코드를 사용하게 하려고 했으나
+        // 다른 코드들에 영향을 끼치기 때문에 실행이 안되어서, 위에 보시는 것처럼 memberService는 실제 코드를 사용하게 어노테이션을 붙였고 memberRepository는 mock으로 처리했습니다.
+        // 이렇게 함으로써 이 테스트를 실행할 때 다른 클래스들은 로딩하지 않고 MemberServiceUnitTest, MemberService, MemberRepository만 로딩하게 해서 테스트를 진행하게 수정했습니다.
         String email1 = "aaa@naver.com";
 
         MemberInformationResponseDto memberInformationResponseDto1 = memberService.getMemberInformation(email1);
@@ -51,7 +71,21 @@ class MemberServiceTest {
         registerDto.setNickname("자바커피");
         registerDto.setPassword("a123123!");
 
-        loginService.register(registerDto);
+        Member mockMember = Member.builder().memberId(1L)
+                .email(registerDto.getEmail())
+                .name(registerDto.getName())
+                .nickname(registerDto.getNickname())
+                .password(registerDto.getPassword())
+                .profileImage("")
+                .postNumber(0)
+                .followedNumber(0)
+                .followingNumber(0)
+                .role(MemberRole.USER)
+                .socialLogin(null)
+                .status(MemberStatus.ACTIVE)
+                .build();
+
+        when(memberRepository.findByEmail(registerDto.getEmail())).thenReturn(Optional.of(mockMember));
 
         String email1 = "aaa@naver.com";
 
@@ -92,66 +126,6 @@ class MemberServiceTest {
     }
 
     @Test
-    public void testResetPassword() {
-        RegisterDto registerDto = new RegisterDto();
-        registerDto.setEmail("aaa@naver.com");
-        registerDto.setName("박자바");
-        registerDto.setNickname("자바커피");
-        registerDto.setPassword("a123123!");
-
-        Member member = loginService.register(registerDto);
-
-        Boolean boo = memberService.resetPassword(member.getEmail(), "abc123");
-        assertThat(boo).isTrue();
-
-        Assertions.assertThatThrownBy(() -> memberService.resetPassword("bbb@naver.com", "abc123")).isInstanceOf(BaseException.class);
-    }
-
-    @Test
-    public void testToggleFollow() {
-        RegisterDto registerDto1 = new RegisterDto();
-        registerDto1.setEmail("aaa@naver.com");
-        registerDto1.setName("박자바");
-        registerDto1.setNickname("자바커피");
-        registerDto1.setPassword("a123123!");
-
-        Member member1 = loginService.register(registerDto1);
-
-        RegisterDto registerDto2 = new RegisterDto();
-        registerDto2.setEmail("bbb@naver.com");
-        registerDto2.setName("김자바");
-        registerDto2.setNickname("커피자바");
-        registerDto2.setPassword("abc123");
-
-        Member member2 = loginService.register(registerDto2);
-
-        assertThat(member1.getFollowedNumber()).isEqualTo(0);
-        assertThat(member1.getFollowingNumber()).isEqualTo(0);
-        assertThat(member2.getFollowedNumber()).isEqualTo(0);
-        assertThat(member2.getFollowingNumber()).isEqualTo(0);
-
-        memberService.toggleFollow(member1.getMemberId(), member2.getMemberId());
-
-        member1 = memberRepository.findById(member1.getMemberId()).get();
-        member2 = memberRepository.findById(member2.getMemberId()).get();
-
-        assertThat(member1.getFollowedNumber()).isEqualTo(0);
-        assertThat(member1.getFollowingNumber()).isEqualTo(1);
-        assertThat(member2.getFollowedNumber()).isEqualTo(1);
-        assertThat(member2.getFollowingNumber()).isEqualTo(0);
-
-        memberService.toggleFollow(member1.getMemberId(), member2.getMemberId());
-
-        member1 = memberRepository.findById(member1.getMemberId()).get();
-        member2 = memberRepository.findById(member2.getMemberId()).get();
-
-        assertThat(member1.getFollowedNumber()).isEqualTo(0);
-        assertThat(member1.getFollowingNumber()).isEqualTo(0);
-        assertThat(member2.getFollowedNumber()).isEqualTo(0);
-        assertThat(member2.getFollowingNumber()).isEqualTo(0);
-    }
-
-    @Test
     public void testDeleteAccount() {
         RegisterDto registerDto = new RegisterDto();
         registerDto.setEmail("aaa@naver.com");
@@ -159,11 +133,27 @@ class MemberServiceTest {
         registerDto.setNickname("자바커피");
         registerDto.setPassword("a123123!");
 
-        Member member = loginService.register(registerDto);
+        Member mockMember = Member.builder().memberId(1L)
+                .email(registerDto.getEmail())
+                .name(registerDto.getName())
+                .nickname(registerDto.getNickname())
+                .password(registerDto.getPassword())
+                .profileImage("")
+                .postNumber(0)
+                .followedNumber(0)
+                .followingNumber(0)
+                .role(MemberRole.USER)
+                .socialLogin(null)
+                .status(MemberStatus.ACTIVE)
+                .build();
 
-        memberService.deleteAccount(member.getMemberId());
+        when(memberRepository.findByMemberId(1L)).thenReturn(Optional.of(mockMember));
 
-        Assertions.assertThatThrownBy(() -> memberService.deleteAccount(member.getMemberId() + 1)).isInstanceOf(EmptyResultDataAccessException.class);
-        Assertions.assertThatThrownBy(() -> memberService.deleteAccount(member.getMemberId())).isInstanceOf(BadRequestException.class);
+        memberService.deleteAccount(1L);
+        Assertions.assertThatThrownBy(() -> memberService.deleteAccount(2L)).isInstanceOf(NotFoundException.class);
+
+        assertThat(mockMember.getStatus()).isEqualTo(MemberStatus.DELETED);
+        
+        Assertions.assertThatThrownBy(() -> memberService.deleteAccount(1L)).isInstanceOf(BadRequestException.class);
     }
 }

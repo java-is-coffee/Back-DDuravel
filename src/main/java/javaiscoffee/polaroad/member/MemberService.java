@@ -141,7 +141,7 @@ public class MemberService {
     @Transactional
     public void deleteAccount(Long memberId) {
         Member member = memberRepository.findByMemberId(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
-        if(!member.getStatus().equals(MemberStatus.ACTIVE)) new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
+        if(!member.getStatus().equals(MemberStatus.ACTIVE)) throw new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
         member.deleteMember();
     }
 }

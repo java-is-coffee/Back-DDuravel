@@ -1,6 +1,5 @@
 package javaiscoffee.polaroad.login;
 
-import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -50,7 +49,7 @@ public class LoginController {
     public ResponseEntity<?> login(@Validated @RequestBody RequestWrapperDto<LoginDto> requestDto, HttpServletResponse response) {
         LoginDto loginDto = requestDto.getData();
         log.info("로그인 요청 = {}",loginDto);
-        TokenDto tokenDto = loginService.login(loginDto, response);
+        TokenDto tokenDto = loginService.login(loginDto);
         //로그인 실패했을 경우 실패 Response 반환
         if(tokenDto == null) throw new NotFoundException(ResponseMessages.LOGIN_FAILED.getMessage());
 

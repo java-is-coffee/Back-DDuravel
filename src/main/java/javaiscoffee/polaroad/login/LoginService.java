@@ -47,7 +47,7 @@ public class LoginService {
      * 2. authenticate() 메서드를 통해 요청된 Member에 대한 검증이 진행된다.
      * 3. 검증이 정상적으로 통과되었다면 인증된 Authentication 객체를 기반으로 JWT 토큰을 생성한다.
      */
-    public TokenDto login(LoginDto loginDto, HttpServletResponse response) {
+    public TokenDto login(LoginDto loginDto) {
         log.info("로그인 검사 시작 loginDto={}",loginDto);
         Member member = memberRepository.findByEmail(loginDto.getEmail()).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         if(!member.getStatus().equals(MemberStatus.ACTIVE)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
