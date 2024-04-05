@@ -16,8 +16,10 @@ import jakarta.persistence.EntityManager;
 import javaiscoffee.polaroad.exception.NotFoundException;
 import javaiscoffee.polaroad.member.Member;
 import javaiscoffee.polaroad.post.card.Card;
+import javaiscoffee.polaroad.post.wishlist.WishListPostListResponseDto;
 import javaiscoffee.polaroad.response.ResponseMessages;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -72,6 +74,16 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
         //게시글 상태 조건 추가
         builder.and(post.status.eq(status));
 
+        //검색 결과 최대 개수 구하기
+        Long totalPostsCount = queryFactory
+                .select(post.count())
+                .leftJoin(post.cards, card)
+                .leftJoin(post.member, member)
+                .where(builder)
+                .fetchOne();
+        //검색 결과가 없으므로 빈 배열 반환
+        if(totalPostsCount == null) return new PostListResponseDto(new ArrayList<>(),0);
+
         JPAQuery<PostListRepositoryDto> query = queryFactory
                 .select(Projections.constructor(
                         PostListRepositoryDto.class,
@@ -102,13 +114,7 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
 
         List<PostListRepositoryDto> posts = query.fetch();
 
-        //검색 결과 최대 개수 구하기
-        long totalPostsCount = queryFactory
-                .selectFrom(post)
-                .leftJoin(post.cards, card)
-                .leftJoin(post.member, member)
-                .where(builder)
-                .fetchCount();
+
         int maxPage = (int) Math.ceil((double) totalPostsCount / pageSize);
 
         // 포스트를 DTO로 변환하고 카드 이미지 처리
@@ -146,6 +152,17 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
         //게시글 상태 조건 추가
         builder.and(post.status.eq(status));
 
+        //검색 결과 최대 개수 구하기
+        Long totalPostsCount = queryFactory
+                .select(post.count())
+                .leftJoin(post.cards, card)
+                .leftJoin(post.member, member)
+                .leftJoin(post.postHashtags, postHashtag)
+                .where(builder)
+                .fetchOne();
+        //검색 결과가 없으므로 빈 배열 반환
+        if(totalPostsCount == null) return new PostListResponseDto(new ArrayList<>(),0);
+
         JPAQuery<PostListRepositoryDto> query = queryFactory
                 .select(Projections.constructor(
                         PostListRepositoryDto.class,
@@ -178,14 +195,6 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
 
         List<PostListRepositoryDto> posts = query.fetch();
 
-        //검색 결과 최대 개수 구하기
-        long totalPostsCount = queryFactory
-                .selectFrom(post)
-                .leftJoin(post.cards, card)
-                .leftJoin(post.member, member)
-                .leftJoin(post.postHashtags, postHashtag)
-                .where(builder)
-                .fetchCount();
         int maxPage = (int) Math.ceil((double) totalPostsCount / pageSize);
 
         // 포스트를 DTO로 변환하고 카드 이미지 처리
@@ -216,6 +225,19 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
         QPost post = QPost.post;
         QFollow follow = QFollow.follow;
 
+        // 검색 결과의 총 개수 구하기
+        Long totalPostsCount  = queryFactory
+                .select(post.count())
+                .from(post)
+                .join(post.member, follow.followedMember)
+                .where(
+                        follow.followingMember.memberId.eq(memberId),
+                        post.status.eq(status)
+                )
+                .fetchOne();
+        //검색 결과가 없으므로 빈 배열 반환
+        if(totalPostsCount == null) return new PostListResponseDto(new ArrayList<>(),0);
+
         // 팔로잉하는 멤버의 포스트를 조회
         List<PostListRepositoryDto> posts = queryFactory
                 .select(Projections.constructor(
@@ -239,18 +261,6 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
                 .limit(pageSize)
                 .fetch();
 
-        // 검색 결과의 총 개수 구하기
-        Long countResult  = queryFactory
-                .select(post.count())
-                .from(post)
-                .join(post.member, follow.followedMember)
-                .where(
-                        follow.followingMember.memberId.eq(memberId),
-                        post.status.eq(status)
-                )
-                .fetchOne();
-        // null 체크를 수행
-        long totalPostsCount = countResult != null ? countResult : 0;
         int maxPage = (int) Math.ceil((double) totalPostsCount / pageSize);
 
         // 포스트를 DTO로 변환하고 카드 이미지 처리

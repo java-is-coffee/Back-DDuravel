@@ -10,6 +10,7 @@ import javaiscoffee.polaroad.member.MemberSimpleInfoDto;
 import javaiscoffee.polaroad.member.MemberStatus;
 import javaiscoffee.polaroad.post.card.*;
 import javaiscoffee.polaroad.post.good.PostGood;
+import javaiscoffee.polaroad.post.good.PostGoodBatchUpdator;
 import javaiscoffee.polaroad.post.good.PostGoodId;
 import javaiscoffee.polaroad.post.good.PostGoodRepository;
 import javaiscoffee.polaroad.post.hashtag.PostHashtagInfoDto;
@@ -104,6 +105,10 @@ public class PostService {
      */
     @Transactional
     public ResponseEntity<Post> editPost(PostSaveDto postSaveDto,Long memberId, Long postId) {
+        //썸네일 번호가 잘못되었을 경우 에러
+        if(postSaveDto.getThumbnailIndex() < 0 || postSaveDto.getThumbnailIndex() >= postSaveDto.getCards().size()) throw new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
+        //카드, 해쉬태그 개수가 잘못된 경우
+        if(postSaveDto.getCards().size() > 10 || postSaveDto.getHashtags().size() > 10) throw new BadRequestException("카드 또는 해쉬태그 개수가 많습니다.");
         Post oldPost = postRepository.findById(postId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         //포스트가 삭제되었으면
         if(oldPost.getStatus() == PostStatus.DELETED) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
@@ -114,8 +119,6 @@ public class PostService {
         //포스트 정보 업데이트
         oldPost.setTitle(postSaveDto.getTitle());
         oldPost.setRoutePoint(postSaveDto.getRoutePoint());
-        //썸네일 번호가 잘못되었을 경우 에러
-        if(postSaveDto.getThumbnailIndex() < 0 || postSaveDto.getThumbnailIndex() >= postSaveDto.getCards().size()) throw new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
         oldPost.setThumbnailIndex(postSaveDto.getThumbnailIndex());
         oldPost.setConcept(postSaveDto.getConcept());
         oldPost.setRegion(postSaveDto.getRegion());
@@ -145,7 +148,7 @@ public class PostService {
         if(postInfo.getStatus() == PostStatus.DELETED) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
         // 멤버가 삭제되었으면 에러
         MemberSimpleInfoDto memberInfo = memberRepository.getMemberSimpleInfo(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
-        if(memberInfo.getStatus().equals(MemberStatus.DELETED)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
+        if(!memberInfo.getStatus().equals(MemberStatus.ACTIVE)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
         //생성자가 아니면 수정 불가
         if(!Objects.equals(postInfo.getMemberId(), memberId)) throw new ForbiddenException(ResponseMessages.FORBIDDEN.getMessage());
 
@@ -208,7 +211,7 @@ public class PostService {
     /**
      * 조회수 랭킹으로 조회
      */
-    public ResponseEntity<PostListResponseDto> getPostRankingList(int page, int pageSize, PostRankingDto range) {
+    public ResponseEntity<PostListResponseDto> getPostRankingList(int page, int pageSize, PostRankingRange range) {
         //랭킹 순위 리스트 조회
         List<String> list = redisService.getViewRankingList(page, pageSize, range);
         List<Long> rankingList = list.stream().map(Long::valueOf).toList();

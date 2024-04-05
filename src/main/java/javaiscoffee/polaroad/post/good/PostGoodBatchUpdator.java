@@ -1,6 +1,7 @@
-package javaiscoffee.polaroad.post;
+package javaiscoffee.polaroad.post.good;
 
 import javaiscoffee.polaroad.exception.NotFoundException;
+import javaiscoffee.polaroad.post.PostRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.*;
