@@ -2,6 +2,7 @@ package javaiscoffee.polaroad.post;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import javaiscoffee.polaroad.post.card.Card;
+import javaiscoffee.polaroad.post.card.CardListRepositoryDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -26,7 +27,19 @@ public class PostListRepositoryDto {
     @Schema(description = "포스트 지역", example = "BUSAN")
     private PostRegion region;
     @Schema(description = "포스트 썸네일 포함 이미지 3장")
-    private List<Card> cards;
+    private List<CardListRepositoryDto> cards;
     @Schema(description = "포스트 업데이트 날짜", example = "2024-04-04T12:12:12")
     private LocalDateTime updatedTime;
+
+    public PostListRepositoryDto(String title, Long postId, String nickname, int thumbnailIndex, int goodNumber, PostConcept concept, PostRegion region, LocalDateTime updatedTime) {
+        this.title = title;
+        this.postId = postId;
+        this.nickname = nickname;
+        this.thumbnailIndex = thumbnailIndex;
+        this.goodNumber = goodNumber;
+        this.concept = concept;
+        this.region = region;
+        this.cards = null;
+        this.updatedTime = updatedTime;
+    }
 }

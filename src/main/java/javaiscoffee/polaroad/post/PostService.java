@@ -377,11 +377,11 @@ public class PostService {
     }
 
     //포스트 리스트를 DTO로 변환하고 카드 이미지에서 썸네일을 제일 앞으로 설정
-    private static PostListResponseDto getPostListResponseDto(List<PostListRepositoryDto> posts, int maxPage) {
+    private PostListResponseDto getPostListResponseDto(List<PostListRepositoryDto> posts, int maxPage) {
         return new PostListResponseDto(posts.stream().map(p -> {
             List<String> images = p.getCards().stream()
-                    .sorted(Comparator.comparingInt(Card::getCardIndex))
-                    .map(Card::getImage)
+                    .sorted(Comparator.comparingInt(CardListRepositoryDto::getCardIndex))
+                    .map(CardListRepositoryDto::getImage)
                     .distinct()
                     .limit(3)
                     .collect(Collectors.toList());
