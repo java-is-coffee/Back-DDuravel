@@ -1,253 +1,273 @@
 package javaiscoffee.polaroad.post;
 
-import javaiscoffee.polaroad.login.LoginService;
-import javaiscoffee.polaroad.login.RegisterDto;
+import javaiscoffee.polaroad.exception.BadRequestException;
+import javaiscoffee.polaroad.exception.ForbiddenException;
+import javaiscoffee.polaroad.exception.NotFoundException;
+import javaiscoffee.polaroad.member.Member;
+import javaiscoffee.polaroad.member.MemberRepository;
+import javaiscoffee.polaroad.member.MemberStatus;
 import javaiscoffee.polaroad.post.card.CardSaveDto;
+import javaiscoffee.polaroad.response.ResponseMessages;
+import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@SpringBootTest(properties = {"JWT_SECRET_KEY=3123755132fdfds4daas4551af789d59f36977df5093be12c2314515135ddasg1f5k12hdfhjk412bh531uiadfi14b14bwebs52"})
+@Slf4j
+@SpringBootTest(properties = {"JWT_SECRET_KEY=3123758a0d7ef02a46cba8bdd3f898dec8afc9f8470341af789d59f3695093be"})
+@Transactional(readOnly = true)
 class PostServiceTest {
-    @Mock private LoginService loginService;
-    @Mock private PostService postService;
+    @Autowired
+    private PostService postService;
+    @Autowired
+    private MemberRepository memberRepository;
+    @Autowired
+    private PostRepository postRepository;
+
+    private PostSaveDto postSaveDto1;
+    private Member member1;
+    private Member member2;
 
     @BeforeEach
     void setup() {
-
-        RegisterDto registerDto = new RegisterDto();
-        registerDto.setEmail("aaa@naver.com");
-        registerDto.setName("박자바");
-        registerDto.setNickname("자바커피");
-        registerDto.setPassword("a123123!");
-        loginService.register(registerDto);
-    }
-
-    @Test
-    @DisplayName("포스트 생성 성공 테스트 1. 카드, 해쉬태그 있을 경우")
-    public void successCreatePost () {
-        //포스트 정보 설정
-        PostSaveDto postSaveDto = new PostSaveDto();
-        postSaveDto.setTitle("꽃놀이 명당 추천");
-        postSaveDto.setRoutePoint("좌표-좌표;좌표-좌표");
-        postSaveDto.setThumbnailIndex(0);
-        postSaveDto.setConcept(PostConcept.CITY);
-        postSaveDto.setRegion(PostRegion.SEOUL);
-
-        //카드 배열 설정
+        List<CardSaveDto> cards = new ArrayList<>();
         CardSaveDto cardSaveDto = new CardSaveDto();
-        cardSaveDto.setContent("1번카드");
-        cardSaveDto.setImage("카드이미지");
-        cardSaveDto.setLocation("서울특별시");
-        cardSaveDto.setLatitude(1.23);
-        cardSaveDto.setLongitude(1.23);
-        ArrayList<CardSaveDto> cards = new ArrayList<>();
+        cardSaveDto.setContent("생성테스트");
+        cardSaveDto.setImage("사진");
+        cardSaveDto.setLocation("위치");
+        cardSaveDto.setLatitude(0.1);
+        cardSaveDto.setLongitude(0.1);
         cards.add(cardSaveDto);
-        postSaveDto.setCards(cards);
+        cards.add(cardSaveDto);
 
-        //해쉬태그 배열 설정
-        ArrayList<String> tags = new ArrayList<>();
-        tags.add("1번 태그");
-        tags.add("2번 태그");
-        postSaveDto.setHashtags(tags);
+        List<String> hashTags = new ArrayList<>(){{
+            add("태그1");
+            add("태그2");
+        }};
 
-        when(postService.savePost(any(PostSaveDto.class), any(Long.class)))
-                .thenReturn(new ResponseEntity<>(new Post(), HttpStatus.OK));
+        postSaveDto1 = new PostSaveDto();
+        postSaveDto1.setTitle("테스트");
+        postSaveDto1.setRoutePoint("좌표-좌표");
+        postSaveDto1.setThumbnailIndex(0);
+        postSaveDto1.setConcept(PostConcept.CITY);
+        postSaveDto1.setRegion(PostRegion.SEOUL);
+        postSaveDto1.setCards(cards);
+        postSaveDto1.setHashtags(hashTags);
 
-        ResponseEntity<Post> response = postService.savePost(postSaveDto, 1l);
-
-        Assertions.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        member1 = new Member("aaa@naver.com","박자바","자바커피","a123123!");
+        member1.hashPassword(new BCryptPasswordEncoder());
+        member2 = new Member("bbb@naver.com","김책상","장패드","b123123!");
+        member2.hashPassword(new BCryptPasswordEncoder());
     }
 
     @Test
-    @DisplayName("포스트 생성 성공 테스트 2. 카드, 해쉬태그 없을 경우")
-    public void successCreatePostWithNoCardAndHashtag () {
-        //포스트 정보 설정
-        PostSaveDto postSaveDto = new PostSaveDto();
-        postSaveDto.setTitle("꽃놀이 명당 추천");
-        postSaveDto.setRoutePoint("좌표-좌표;좌표-좌표");
-        postSaveDto.setThumbnailIndex(0);
-        postSaveDto.setConcept(PostConcept.CITY);
-        postSaveDto.setRegion(PostRegion.SEOUL);
+    @Transactional
+    @DisplayName("포스트 생성 성공")
+    void savePostSuccess() {
+        memberRepository.save(member1);
+        Member findMember = memberRepository.findByEmail(member1.getEmail()).orElseThrow(() -> new BadRequestException(ResponseMessages.SAVE_FAILED.getMessage()));
+        ResponseEntity<Post> response = postService.savePost(postSaveDto1, findMember.getMemberId());
 
-        when(postService.savePost(any(PostSaveDto.class), any(Long.class)))
-                .thenReturn(new ResponseEntity<>(new Post(), HttpStatus.OK));
-
-        ResponseEntity<Post> response = postService.savePost(postSaveDto, 1l);
-
-        Assertions.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
     @Test
-    @DisplayName("포스트 생성 실패 테스트 1. 멤버가 없을 경우")
-    public void failedByNotMemberWhenCreatePost () {
-        //포스트 정보 설정
-        PostSaveDto postSaveDto = new PostSaveDto();
-        postSaveDto.setTitle("꽃놀이 명당 추천");
-        postSaveDto.setRoutePoint("좌표-좌표;좌표-좌표");
-        postSaveDto.setThumbnailIndex(0);
-        postSaveDto.setConcept(PostConcept.CITY);
-        postSaveDto.setRegion(PostRegion.SEOUL);
+    @Transactional
+    @DisplayName("포스트 생성 실패 - 포스트 썸네일 번호가 카드 전체 개수를 넘어가서")
+    void savePostFailByThumbnailIndex() {
+        memberRepository.save(member1);
+        Member findMember = memberRepository.findByEmail(member1.getEmail()).orElseThrow(() -> new BadRequestException(ResponseMessages.SAVE_FAILED.getMessage()));
+        postSaveDto1.setThumbnailIndex(2);
 
-        //카드 배열 설정
-        CardSaveDto cardSaveDto = new CardSaveDto();
-        cardSaveDto.setContent("1번카드");
-        cardSaveDto.setImage("카드이미지");
-        cardSaveDto.setLocation("서울특별시");
-        cardSaveDto.setLatitude(1.23);
-        cardSaveDto.setLongitude(1.23);
-        ArrayList<CardSaveDto> cards = new ArrayList<>();
-        cards.add(cardSaveDto);
-        postSaveDto.setCards(cards);
-
-        //해쉬태그 배열 설정
-        ArrayList<String> tags = new ArrayList<>();
-        tags.add("1번 태그");
-        tags.add("2번 태그");
-        postSaveDto.setHashtags(tags);
-
-        when(postService.savePost(any(PostSaveDto.class), any(Long.class)))
-                .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND));
-
-        ResponseEntity<Post> response = postService.savePost(postSaveDto, 10l);
-
-        Assertions.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThatThrownBy(() -> postService.savePost(postSaveDto1,findMember.getMemberId())).isInstanceOf(BadRequestException.class);
     }
 
     @Test
-    @DisplayName("포스트 생성 실패 테스트 2. 해쉬태그가 개수가 최대 한도를 초과 할 경우")
-    public void failedByManyHashtagsWhenCreatePost () {
-        //포스트 정보 설정
-        PostSaveDto postSaveDto = new PostSaveDto();
-        postSaveDto.setTitle("꽃놀이 명당 추천");
-        postSaveDto.setRoutePoint("좌표-좌표;좌표-좌표");
-        postSaveDto.setThumbnailIndex(0);
-        postSaveDto.setConcept(PostConcept.CITY);
-        postSaveDto.setRegion(PostRegion.SEOUL);
+    @Transactional
+    @DisplayName("포스트 생성 실패 - 포스트 해쉬태그 개수가 10개 넘어가서")
+    void savePostFailByHashtagNumber() {
+        memberRepository.save(member1);
+        Member findMember = memberRepository.findByEmail(member1.getEmail()).orElseThrow(() -> new BadRequestException(ResponseMessages.SAVE_FAILED.getMessage()));
+        postSaveDto1.getHashtags().add("태그1");
+        postSaveDto1.getHashtags().add("태그1");
+        postSaveDto1.getHashtags().add("태그1");
+        postSaveDto1.getHashtags().add("태그1");
+        postSaveDto1.getHashtags().add("태그1");
+        postSaveDto1.getHashtags().add("태그1");
+        postSaveDto1.getHashtags().add("태그1");
+        postSaveDto1.getHashtags().add("태그1");
+        postSaveDto1.getHashtags().add("태그1");
 
-        //카드 배열 설정
-        CardSaveDto cardSaveDto = new CardSaveDto();
-        cardSaveDto.setContent("1번카드");
-        cardSaveDto.setImage("카드이미지");
-        cardSaveDto.setLocation("서울특별시");
-        cardSaveDto.setLatitude(1.23);
-        cardSaveDto.setLongitude(1.23);
-        ArrayList<CardSaveDto> cards = new ArrayList<>();
-        cards.add(cardSaveDto);
-        postSaveDto.setCards(cards);
-
-        //해쉬태그 배열 설정
-        ArrayList<String> tags = new ArrayList<>();
-        tags.add("1번 태그");
-        tags.add("2번 태그");
-        tags.add("3번 태그");
-        tags.add("4번 태그");
-        tags.add("5번 태그");
-        tags.add("6번 태그");
-        tags.add("7번 태그");
-        tags.add("8번 태그");
-        tags.add("9번 태그");
-        tags.add("10번 태그");
-        tags.add("11번 태그");
-        postSaveDto.setHashtags(tags);
-
-        when(postService.savePost(any(PostSaveDto.class), any(Long.class)))
-                .thenReturn(new ResponseEntity<>(HttpStatus.BAD_REQUEST));
-
-
-        ResponseEntity<Post> response = postService.savePost(postSaveDto, 10l);
-
-        Assertions.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-    }
-    @Test
-    @DisplayName("포스트 생성 실패 테스트 3. 카드가 최대 개수를 초과할 경우")
-    public void failedByManyCardsWhenCreatePost () {
-        //포스트 정보 설정
-        PostSaveDto postSaveDto = new PostSaveDto();
-        postSaveDto.setTitle("꽃놀이 명당 추천");
-        postSaveDto.setRoutePoint("좌표-좌표;좌표-좌표");
-        postSaveDto.setThumbnailIndex(0);
-        postSaveDto.setConcept(PostConcept.CITY);
-        postSaveDto.setRegion(PostRegion.SEOUL);
-
-        //카드 배열 설정
-        CardSaveDto cardSaveDto = new CardSaveDto();
-        cardSaveDto.setContent("1번카드");
-        cardSaveDto.setImage("카드이미지");
-        cardSaveDto.setLocation("서울특별시");
-        cardSaveDto.setLatitude(1.23);
-        cardSaveDto.setLongitude(1.23);
-        ArrayList<CardSaveDto> cards = new ArrayList<>();
-        cards.add(cardSaveDto);
-        cards.add(cardSaveDto);
-        cards.add(cardSaveDto);
-        cards.add(cardSaveDto);
-        cards.add(cardSaveDto);
-        cards.add(cardSaveDto);
-        cards.add(cardSaveDto);
-        cards.add(cardSaveDto);
-        cards.add(cardSaveDto);
-        cards.add(cardSaveDto);
-        cards.add(cardSaveDto);
-        postSaveDto.setCards(cards);
-
-        //해쉬태그 배열 설정
-        ArrayList<String> tags = new ArrayList<>();
-        tags.add("1번 태그");
-        tags.add("2번 태그");
-        postSaveDto.setHashtags(tags);
-
-        when(postService.savePost(any(PostSaveDto.class), any(Long.class)))
-                .thenReturn(new ResponseEntity<>(HttpStatus.BAD_REQUEST));
-
-        ResponseEntity<Post> response = postService.savePost(postSaveDto, 10l);
-
-        Assertions.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThatThrownBy(() -> postService.savePost(postSaveDto1,findMember.getMemberId())).isInstanceOf(BadRequestException.class);
     }
 
     @Test
-    @DisplayName("포스트 생성 실패 테스트 4. 썸네일 번호가 잘못된 경우")
-    public void failedByWrongThumbnailIndexWhenCreatePost () {
-        //포스트 정보 설정
-        PostSaveDto postSaveDto = new PostSaveDto();
-        postSaveDto.setTitle("꽃놀이 명당 추천");
-        postSaveDto.setRoutePoint("좌표-좌표;좌표-좌표");
-        postSaveDto.setThumbnailIndex(10);
-        postSaveDto.setConcept(PostConcept.CITY);
-        postSaveDto.setRegion(PostRegion.SEOUL);
+    @Transactional
+    @DisplayName("포스트 생성 실패 - 포스트 카드 개수가 10개 넘어가서")
+    void savePostFailByCardNumber() {
+        memberRepository.save(member1);
+        Member findMember = memberRepository.findByEmail(member1.getEmail()).orElseThrow(() -> new BadRequestException(ResponseMessages.SAVE_FAILED.getMessage()));
+        postSaveDto1.getCards().add(new CardSaveDto());
+        postSaveDto1.getCards().add(new CardSaveDto());
+        postSaveDto1.getCards().add(new CardSaveDto());
+        postSaveDto1.getCards().add(new CardSaveDto());
+        postSaveDto1.getCards().add(new CardSaveDto());
+        postSaveDto1.getCards().add(new CardSaveDto());
+        postSaveDto1.getCards().add(new CardSaveDto());
+        postSaveDto1.getCards().add(new CardSaveDto());
+        postSaveDto1.getCards().add(new CardSaveDto());
 
-        //카드 배열 설정
-        CardSaveDto cardSaveDto = new CardSaveDto();
-        cardSaveDto.setContent("1번카드");
-        cardSaveDto.setImage("카드이미지");
-        cardSaveDto.setLocation("서울특별시");
-        cardSaveDto.setLatitude(1.23);
-        cardSaveDto.setLongitude(1.23);
-        ArrayList<CardSaveDto> cards = new ArrayList<>();
-        cards.add(cardSaveDto);
-        postSaveDto.setCards(cards);
+        assertThatThrownBy(() -> postService.savePost(postSaveDto1,findMember.getMemberId())).isInstanceOf(BadRequestException.class);
+    }
 
-        //해쉬태그 배열 설정
-        ArrayList<String> tags = new ArrayList<>();
-        tags.add("1번 태그");
-        tags.add("2번 태그");
-        postSaveDto.setHashtags(tags);
+    @Test
+    @Transactional
+    @DisplayName("포스트 생성 실패 - 포스트 해쉬태그가 중복되어서")
+    void savePostFailBySameHashtags() {
+        memberRepository.save(member1);
+        Member findMember = memberRepository.findByEmail(member1.getEmail()).orElseThrow(() -> new BadRequestException(ResponseMessages.SAVE_FAILED.getMessage()));
+        postSaveDto1.getHashtags().add("태그1");
+        postSaveDto1.getHashtags().add("태그1");
 
-        when(postService.savePost(any(PostSaveDto.class), any(Long.class)))
-                .thenReturn(new ResponseEntity<>(HttpStatus.BAD_REQUEST));
+        assertThatThrownBy(() -> postService.savePost(postSaveDto1,findMember.getMemberId())).isInstanceOf(BadRequestException.class);
+    }
 
-        ResponseEntity<Post> response = postService.savePost(postSaveDto, 10l);
+    @Test
+    @Transactional
+    @DisplayName("포스트 생성 실패 - 회원이 존재하지 않아서")
+    void savePostFailByMember() {
+        assertThatThrownBy(() -> postService.savePost(postSaveDto1,1L)).isInstanceOf(NotFoundException.class);
+    }
 
-        Assertions.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    @Test
+    @Transactional
+    @DisplayName("포스트 수정 성공")
+    void editPostSuccess() {
+        memberRepository.save(member1);
+        Member findMember = memberRepository.findByEmail(member1.getEmail()).get();
+        ResponseEntity<Post> response = postService.savePost(postSaveDto1, findMember.getMemberId());
+        postRepository.flush();
+
+        Post savedPost = postRepository.findById(response.getBody().getPostId()).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
+        postSaveDto1.setTitle("수정된제목");
+        postSaveDto1.setRoutePoint("수정된좌표");
+        postSaveDto1.setThumbnailIndex(1);
+        postSaveDto1.setConcept(PostConcept.FOOD);
+        postSaveDto1.setRegion(PostRegion.BUSAN);
+
+        CardSaveDto cardSaveDto1 = postSaveDto1.getCards().get(0);
+        cardSaveDto1.setCardId(1L);
+        cardSaveDto1.setContent("수정된카드1");
+        CardSaveDto cardSaveDto2 = postSaveDto1.getCards().get(1);
+        cardSaveDto2.setCardId(2L);
+        cardSaveDto2.setContent("수정된카드2");
+
+        List<String> hashtags = new ArrayList<>(){{
+            add("수정된태그1");
+            add("수정된태그2");
+        }};
+        postSaveDto1.setHashtags(hashtags);
+        ResponseEntity<Post> editResponse = postService.editPost(postSaveDto1, findMember.getMemberId(), savedPost.getPostId());
+        Post editedPost = postRepository.getPostInfoById(savedPost.getPostId());
+
+        //수정한 포스트 내용 비교
+        assertThat(editResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(editedPost.getTitle()).isEqualTo("수정된제목");
+        assertThat(editedPost.getRoutePoint()).isEqualTo("수정된좌표");
+        assertThat(editedPost.getThumbnailIndex()).isEqualTo(1);
+        assertThat(editedPost.getConcept()).isEqualTo(PostConcept.FOOD);
+        assertThat(editedPost.getRegion()).isEqualTo(PostRegion.BUSAN);
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("포스트 수정 실패 - 포스트가 존재하지 않음")
+    void editPostFailByNotFoundPost() {
+        memberRepository.save(member1);
+        assertThatThrownBy(() -> postService.editPost(postSaveDto1, 1L, 10L)).isInstanceOf(NotFoundException.class);
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("포스트 수정 실패 - 멤버가 존재하지 않음")
+    void editPostFailByNotFoundMember() {
+        memberRepository.save(member1);
+        Member member = memberRepository.findByEmail(member1.getEmail()).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
+        postService.savePost(postSaveDto1,member.getMemberId());
+        assertThatThrownBy(() -> postService.editPost(postSaveDto1, 10L, 1L)).isInstanceOf(NotFoundException.class);
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("포스트 수정 실패 - 포스트 생성자가 아닌데 수정하려고 하는 경우")
+    void editPostFailByNotWriter() {
+        memberRepository.save(member1);
+        memberRepository.save(member2);
+        Member writer = memberRepository.findByEmail(member1.getEmail()).get();
+        Member noWriter = memberRepository.findByEmail(member2.getEmail()).get();
+        ResponseEntity<Post> response = postService.savePost(postSaveDto1, writer.getMemberId());
+        assertThatThrownBy(() -> postService.editPost(postSaveDto1, noWriter.getMemberId(), response.getBody().getPostId())).isInstanceOf(ForbiddenException.class);
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("포스트 수정 실패 - 생성자가 활동중인 상태가 아닌 경우")
+    void editPostFailByWriterNotActive() {
+        memberRepository.save(member1);
+        Member member = memberRepository.findByEmail(member1.getEmail()).get();
+        postService.savePost(postSaveDto1,member.getMemberId());
+        member.setStatus(MemberStatus.DELETED);
+        memberRepository.updateMember(member);
+        assertThatThrownBy(() -> postService.editPost(postSaveDto1, 1L, 1L)).isInstanceOf(NotFoundException.class);
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("포스트 수정 실패 - 카드 개수 범위 안에 썸네일 번호가 없을 경우")
+    void editPostFailByWrongThumbnailIndex() {
+        memberRepository.save(member1);
+        Member member = memberRepository.findByEmail(member1.getEmail()).get();
+        postService.savePost(postSaveDto1,member.getMemberId());
+        postSaveDto1.setThumbnailIndex(10);
+        assertThatThrownBy(() -> postService.editPost(postSaveDto1, 1L, 1L)).isInstanceOf(BadRequestException.class);
+    }
+
+    @Test
+    void deletePost() {
+    }
+
+    @Test
+    void getPostList() {
+    }
+
+    @Test
+    void getFollowingMemberPosts() {
+    }
+
+    @Test
+    void getPostInfoById() {
+    }
+
+    @Test
+    void getPostRankingList() {
+    }
+
+    @Test
+    void postGoodToggle() {
     }
 }

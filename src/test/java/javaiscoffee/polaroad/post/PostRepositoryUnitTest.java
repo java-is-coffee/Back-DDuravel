@@ -1,10 +1,8 @@
 package javaiscoffee.polaroad.post;
 
-import jakarta.persistence.EntityManager;
 import javaiscoffee.polaroad.config.JpaConfigTest;
 import javaiscoffee.polaroad.member.JpaMemberRepository;
 import javaiscoffee.polaroad.member.Member;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @Import(JpaConfigTest.class)
-class PostRepositoryTest {
+class PostRepositoryUnitTest {
     @Autowired
     private JpaMemberRepository memberRepository;
     @Autowired

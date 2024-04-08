@@ -12,9 +12,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
+import java.net.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,9 +32,9 @@ public class GoogleService {
                             + "&code=" + URLEncoder.encode(code, "UTF-8");
 
             URL url = new URL(requestURL);
-//            Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("krmp-proxy.9rum.cc", 3128));
-//            HttpURLConnection conn = (HttpURLConnection) url.openConnection(proxy);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("krmp-proxy.9rum.cc", 3128));
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection(proxy);
+//            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
             conn.setDoOutput(true); // 요청 본문에 데이터를 넣기 위해 필요
             conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
@@ -80,9 +78,9 @@ public class GoogleService {
         try {
             String requestURL = "https://www.googleapis.com/oauth2/v2/userinfo";
             URL url = new URL(requestURL);
-//            Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("krmp-proxy.9rum.cc", 3128));
-//            HttpURLConnection conn = (HttpURLConnection) url.openConnection(proxy);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("krmp-proxy.9rum.cc", 3128));
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection(proxy);
+//            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             conn.setRequestProperty("Authorization", "Bearer " + accessToken);
 

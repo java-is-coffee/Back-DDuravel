@@ -143,6 +143,21 @@ public class PostController {
         return ResponseEntity.ok(cardService.getCardListByMember(memberId, page, pageSize));
     }
 
+    @Operation(summary = "멤버 id로 포스트 조회", description = "사용자가 업로드한 삭제되지 않은 포스트 리스트 조회")
+    @Parameter(name = "page", description = "현재 페이지 숫자 1부터 시작 1페이지이면 1을 주입", required = true, example = "1")
+    @Parameter(name = "pageSize",description = "페이지 크기, 한 페이지에 표시할 카드 개수", required = true, example = "8")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "포스트 추천에 성공했을 경우"),
+            @ApiResponse(responseCode = "404", description = "멤버가 삭제되었거나 존재하지 않는 경우")
+    })
+    @GetMapping("/mypost")
+    public ResponseEntity<PostListResponseDto> getMyPostList(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                           @RequestParam(name = "page") int page,
+                                                           @RequestParam(name = "pageSize") int pageSize) {
+        Long memberId = userDetails.getMemberId();
+        return ResponseEntity.ok(postService.getMyPostList(memberId, page, pageSize, PostStatus.ACTIVE));
+    }
+
     @Operation(summary = "팔로잉하고 있는 멤버들의 포스트 조회", description = "현재 멤버가 팔로잉하고 있는 멤버들이 올린 포스트 목록 조회")
     @Parameter(name = "page", description = "현재 페이지 숫자 1부터 시작 1페이지이면 1을 주입", required = true, example = "1")
     @Parameter(name = "pageSize",description = "페이지 크기, 한 페이지에 표시할 카드 개수", required = true, example = "8")
