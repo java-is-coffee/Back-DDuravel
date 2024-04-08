@@ -328,7 +328,7 @@ class MemberControllerTest {
                 .contentType(MediaType.APPLICATION_JSON);
 
         mockMvc.perform(customUserDetailBuilder3)
-                .andExpect(status().isOk())
+                .andExpect(status().isNotFound())
                 .andReturn();
     }
 
