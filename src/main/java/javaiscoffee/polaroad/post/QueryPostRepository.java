@@ -14,5 +14,5 @@ public interface QueryPostRepository {
 
     Post getPostInfoById(Long postId);
 
-    PostListResponseDto getFollowingMembersPostByMember(Member member,int page, int pageSize, PostStatus status);
+    PostListResponseDto getFollowingMembersPostByMember(Long memberId,int page, int pageSize, PostStatus status);
 }

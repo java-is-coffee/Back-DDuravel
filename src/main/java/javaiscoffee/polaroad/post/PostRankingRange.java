@@ -1,5 +1,5 @@
 package javaiscoffee.polaroad.post;
 
-public enum PostRankingDto {
+public enum PostRankingRange {
     DAILY,WEEKLY,MONTHLY;
 }

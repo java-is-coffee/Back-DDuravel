@@ -1,6 +1,6 @@
 package javaiscoffee.polaroad.redis;
 
-import javaiscoffee.polaroad.post.PostRankingDto;
+import javaiscoffee.polaroad.post.PostRankingRange;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -91,12 +91,12 @@ public class RedisService {
     /**
      * 일일 조회 수 상위 게시물 조회
      */
-    public List<String> getViewRankingList(int page, int pageSize, PostRankingDto range) {
+    public List<String> getViewRankingList(int page, int pageSize, PostRankingRange range) {
         String key;
-        if(range.equals(PostRankingDto.DAILY)) {
+        if(range.equals(PostRankingRange.DAILY)) {
             key = POST_VIEW_DAILY_PREFIX + LocalDate.now();
         }
-        else if(range.equals(PostRankingDto.WEEKLY)) {
+        else if(range.equals(PostRankingRange.WEEKLY)) {
             key = POST_VIEW_WEEKLY_PREFIX + LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         }
         else {
@@ -109,12 +109,12 @@ public class RedisService {
         return results.stream().toList();
     }
 
-    public int getViewRankingMaxPageSize(int pageSize, PostRankingDto range) {
+    public int getViewRankingMaxPageSize(int pageSize, PostRankingRange range) {
         String key;
-        if(range.equals(PostRankingDto.DAILY)) {
+        if(range.equals(PostRankingRange.DAILY)) {
             key = POST_VIEW_DAILY_PREFIX + LocalDate.now();
         }
-        else if(range.equals(PostRankingDto.WEEKLY)) {
+        else if(range.equals(PostRankingRange.WEEKLY)) {
             key = POST_VIEW_WEEKLY_PREFIX + LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         }
         else {

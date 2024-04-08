@@ -106,10 +106,10 @@ public class WishListController {
         return ResponseEntity.ok(wishListService.getWishLists(userDetails.getMemberId()));
     }
 
-    @Operation(summary = "포스트 추가할 때 보여줄 위시리스트 목록 및 포함여부 조회", description = "사용자가 포스트를 위시리스트에 추가하기 위해 요청했을 때 사용자한테 보여줄 위시리스트 전체 목록 \n + 현재 포스트가 각각의 위시리스트에 포함되었는지 여부를 목록으로 조회하는 API")
+    @Operation(summary = "포스트를 위시리스트에 추가할 때 보여줄 위시리스트 목록 및 포함여부 조회", description = "사용자가 포스트를 위시리스트에 추가하기 위해 요청했을 때 사용자한테 보여줄 위시리스트 전체 목록 \n + 현재 포스트가 각각의 위시리스트에 포함되었는지 여부를 목록으로 조회하는 API")
     @Parameter(name = "postId", description = "위시리스트에 포함되어 있는지 확인하려는 포스트 ID", required = true, example = "1")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "위시리스트에 포스트 삭제를 성공했을 경우"),
+            @ApiResponse(responseCode = "200", description = "포스트를 위시리스트에 추가할 때 보여줄 위시리스트 목록 조회에 성공했을 경우"),
             @ApiResponse(responseCode = "404", description = "멤버나 포스트가 존재하지 않는 경우")
     })
     @GetMapping("/add-list/{postId}")
@@ -122,7 +122,7 @@ public class WishListController {
     @Parameter(name = "page", description = "조회할 페이지 번호 \n ### 1부터 시작합니다.", required = true, example = "1")
     @Parameter(name = "pageSize", description = "한 번에 조회할 포스트 개수", required = true, example = "8")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "위시리스트에 포스트 삭제를 성공했을 경우"),
+            @ApiResponse(responseCode = "200", description = "위시리스트에 들어있는 포스트 목록 조회에 성공했을 경우"),
             @ApiResponse(responseCode = "403", description = "남의 위시리스트 조회하려고 할 경우"),
             @ApiResponse(responseCode = "404", description = "멤버나 위시리스트가 존재하지 않는 경우")
     })

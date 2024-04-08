@@ -75,15 +75,12 @@ public class CardService {
         }
     }
 
-    public List<CardListDto> getCardListByMember(Long memberId,int page, int pageSize) {
+    public CardListResponseDto getCardListByMember(Long memberId,int page, int pageSize) {
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         if(member.getStatus() == MemberStatus.DELETED) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
         Pageable pageable = PageRequest.of(page, pageSize, Sort.Direction.DESC, "createdTime");
-        Page<Card> cardPage = cardRepository.findCardsByMemberAndStatusOrderByCreatedTimeDesc(member, CardStatus.ACTIVE,pageable);
+        Page<CardListDto> cardPage = cardRepository.findCardsByMemberAndStatusOrderByCreatedTimeDesc(member, CardStatus.ACTIVE,pageable);
 
-        List<Card> memberCardList = cardPage.getContent();
-        return memberCardList.stream()
-                .map(card -> new CardListDto(card.getCardId(), card.getLocation(), card.getImage()))
-                .toList();
+        return new CardListResponseDto(cardPage.getContent(), cardPage.getTotalPages());
     }
 }
