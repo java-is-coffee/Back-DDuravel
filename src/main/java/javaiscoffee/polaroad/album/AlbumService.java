@@ -49,12 +49,15 @@ public class AlbumService {
         Album newAlbum = new Album();
         BeanUtils.copyProperties(albumDto, newAlbum);
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
+        if (member.getStatus() == MemberStatus.DELETED) {
+            throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
+        }
         newAlbum.setMember(member);
         Album savedAlbum = albumRepository.save(newAlbum);
 
         List<AlbumCard> albumCards = new ArrayList<>();
-        albumDto.getCardIdList().forEach(albumCard -> {
-            Card card = cardRepository.findById(albumCard).orElseThrow(() -> new BadRequestException(ResponseMessages.INPUT_ERROR.getMessage()));
+        albumDto.getCardIdList().forEach(albumCardId -> {
+            Card card = cardRepository.findById(albumCardId).orElseThrow(() -> new BadRequestException(ResponseMessages.INPUT_ERROR.getMessage()));
             // 작성 요청한 멤버 id와 카드의 멤버 id가 다른 경우
             if (!memberId.equals(card.getMember().getMemberId())) {
                 throw new ForbiddenException(ResponseMessages.FORBIDDEN.getMessage());
@@ -70,12 +73,9 @@ public class AlbumService {
      * 앨범 1개 조회
      */
     public ResponseAlbumDto getAlbum(Long memberId, Long albumId) {
-        // 앨범이 없으면 NOT_FOUND
         Album findedAlbum = albumRepository.findById(albumId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
-        //  멤버가 없는 경우, 멤버가 삭제된 경우
         if (!member.getStatus().equals(MemberStatus.ACTIVE)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
-        // 요청한 멤버가 앨범 생성자가 아닌 경우
         if (!memberId.equals(findedAlbum.getMember().getMemberId())) throw new ForbiddenException(ResponseMessages.FORBIDDEN.getMessage());
 
         List<AlbumCard> albumCard = albumCardRepository.findAllByAlbum(findedAlbum);
@@ -86,10 +86,9 @@ public class AlbumService {
     public ResponseAlbumDto editAlbum(AlbumDto editAlbumDto, Long albumId, Long memberId) {
         Album oldAlbum = albumRepository.findById(albumId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
-        //  멤버가 없는 경우, 멤버가 삭제된 경우
         if (!member.getStatus().equals(MemberStatus.ACTIVE)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
-        // 요청한 멤버가 앨범 생성자가 아닌 경우
         if (!memberId.equals(oldAlbum.getMember().getMemberId())) throw new ForbiddenException(ResponseMessages.FORBIDDEN.getMessage());
+
         // 수정된 내용 적용
         oldAlbum.setName(editAlbumDto.getName());
         oldAlbum.setDescription(editAlbumDto.getDescription());
@@ -106,12 +105,9 @@ public class AlbumService {
     }
 
     public ResponseEntity<String> deleteAlbum(Long memberId, Long albumId) {
-        // 삭제 요청한 앨범이 없는 경우
         Album album = albumRepository.findById(albumId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
-        //  멤버가 없는 경우, 멤버가 삭제된 경우
         if (!member.getStatus().equals(MemberStatus.ACTIVE)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
-        // 요청한 멤버가 앨범 생성자가 아닌 경우
         if (!memberId.equals(album.getMember().getMemberId())) throw new ForbiddenException(ResponseMessages.FORBIDDEN.getMessage());
 
         // albumCard 삭제
@@ -127,14 +123,12 @@ public class AlbumService {
     public ResponseAlbumDto addAlbumCard(RequestAlbumCardDto addAlbumCardDto, Long albumId, Long memberId) {
         Album album = albumRepository.findById(albumId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
-        //  멤버가 없는 경우, 멤버가 삭제된 경우
         if (!member.getStatus().equals(MemberStatus.ACTIVE)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
-        // 요청한 멤버가 앨범 생성자가 아닌 경우
         if (!memberId.equals(album.getMember().getMemberId())) throw new ForbiddenException(ResponseMessages.FORBIDDEN.getMessage());
+
         // 새로 추가된 앨범 카드 저장
         List<Long> cardIdList = addAlbumCardDto.getCardId();
         albumCardService.addCard(cardIdList, album);
-
         List<AlbumCardInfoDto> albumCardInfoDto = toAlbumCardInfoDto(album.getAlbumCards());
         return toResponseAlbumDto(album, albumCardInfoDto);
     }
@@ -142,14 +136,12 @@ public class AlbumService {
     public ResponseAlbumDto deleteAlbumCard(RequestAlbumCardDto deleteAlbumCardDto, Long albumId, Long memberId) {
         Album album = albumRepository.findById(albumId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
-        //  멤버가 없는 경우, 멤버가 삭제된 경우
         if (!member.getStatus().equals(MemberStatus.ACTIVE)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
-        // 요청한 멤버가 앨범 생성자가 아닌 경우
         if (!memberId.equals(album.getMember().getMemberId())) throw new ForbiddenException(ResponseMessages.FORBIDDEN.getMessage());
+
         // 앨범에서 앨범 카드 삭제
         List<Long> cardIdList = deleteAlbumCardDto.getCardId();
         albumCardService.deleteCard(cardIdList, album);
-
         List<AlbumCardInfoDto> albumCardInfoDto = toAlbumCardInfoDto(album.getAlbumCards());
         return toResponseAlbumDto(album, albumCardInfoDto);
     }
@@ -157,7 +149,6 @@ public class AlbumService {
     public SliceAlbumListDto<AlbumInfoDto> getPagedAlbumList(int page, Long memberId) {
         page = (page == 0) ? 0 : (page - 1);
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
-        //  멤버가 없는 경우, 멤버가 삭제된 경우
         if (!member.getStatus().equals(MemberStatus.ACTIVE)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
         //HACK: 요청한 멤버가 앨범 생성자가 아닌 경우는 어떻게 할 것인지
 
@@ -165,6 +156,8 @@ public class AlbumService {
         Slice<Album> albumSlice = albumRepository.findAlbumSlicedByMemberId(memberId, pageable);
         List<Album> albumList = albumSlice.getContent();
         List<AlbumInfoDto> albumInfoDtoList = toAlbumInfoDtoList(albumList);
+
+
         return new SliceAlbumListDto<>(albumInfoDtoList, albumSlice.hasNext());
     }
 
@@ -215,6 +208,7 @@ public class AlbumService {
             albumInfoDtoList.add(albumInfoDto);
         }
 
+
         return albumInfoDtoList;
     }
 
@@ -225,6 +219,10 @@ public class AlbumService {
         albumInfoDto.setName(album.getName());
         albumInfoDto.setDescription(album.getDescription());
         albumInfoDto.setUpdatedTime(LocalDateTime.now());
+
+        String image = album.getAlbumCards().get(0).getCard().getImage();
+        albumInfoDto.setThumbnail(image);
+
         return albumInfoDto;
     }
 

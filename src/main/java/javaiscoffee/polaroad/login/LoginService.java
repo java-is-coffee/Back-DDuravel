@@ -22,6 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import java.util.Objects;
@@ -40,7 +41,7 @@ public class LoginService {
     private final CertificationGenerator certificationGenerator;
     private final MailSendService mailSendService;
 
-    private final String AWS_URL = "http://ec2-13-125-119-145.ap-northeast-2.compute.amazonaws.com:8080";
+    private final String AWS_URL = "https://polaroad.shop";
 
     /**
      * 1. 로그인 요청으로 들어온 memberId, password를 기반으로 Authentication 객체를 생성한다.
@@ -210,6 +211,8 @@ public class LoginService {
             mailSendService.sendMail(member.getEmail(),requestURL);
         } catch (MessagingException e) {
             throw new BadRequestException(ResponseMessages.ERROR.getMessage());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }

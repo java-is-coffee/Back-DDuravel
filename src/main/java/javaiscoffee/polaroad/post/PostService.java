@@ -18,6 +18,10 @@ import javaiscoffee.polaroad.response.ResponseMessages;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -65,6 +69,7 @@ public class PostService {
         if(postSaveDto.getHashtags().size() > 10) throw new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
         if(postSaveDto.getCards().size() > 10) throw new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
+        if(!member.getStatus().equals(MemberStatus.ACTIVE)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
         Post post = new Post();
         BeanUtils.copyProperties(postSaveDto, post);
         post.setMember(member);
@@ -100,7 +105,7 @@ public class PostService {
         //생성자가 아니면 수정 불가
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         if(!Objects.equals(oldPost.getMember().getMemberId(), memberId)) throw new ForbiddenException(ResponseMessages.FORBIDDEN.getMessage());
-        if(member.getStatus().equals(MemberStatus.DELETED)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
+        if(!member.getStatus().equals(MemberStatus.ACTIVE)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
         //포스트 정보 업데이트
         oldPost.setTitle(postSaveDto.getTitle());
         oldPost.setRoutePoint(postSaveDto.getRoutePoint());
@@ -122,6 +127,7 @@ public class PostService {
         }
         cardService.editCards(postSaveDto.getCards(), oldPost, member);
 
+        log.info("수정된 post = {}",oldPost);
         return ResponseEntity.ok(oldPost);
     }
     /**
@@ -180,6 +186,19 @@ public class PostService {
         if(post.getStatus().equals(PostStatus.DELETED)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
         redisService.addPostView(postId, memberId);
         return ResponseEntity.ok(toPostInfoDto(post,memberId));
+    }
+
+    /**
+     *  본인 포스트 리스트 조회
+     */
+    public PostListResponseDto getMyPostList (Long memberId,int page, int pageSize, PostStatus status) {
+        Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
+        if(!member.getStatus().equals(MemberStatus.ACTIVE)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
+        Pageable pageable = PageRequest.of(page - 1, pageSize);
+        Page<Post> pagePosts = postRepository.findPostsByMemberMemberIdAndStatusOrderByCreatedTimeDesc(memberId, status, pageable);
+        List<Post> postList = pagePosts.getContent();
+        int totalPages = pagePosts.getTotalPages();
+        return toPostListResponseDto(postList,totalPages);
     }
 
     /**
