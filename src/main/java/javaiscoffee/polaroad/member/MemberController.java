@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import javaiscoffee.polaroad.exception.NotFoundException;
 import javaiscoffee.polaroad.response.ResponseMessages;
 import javaiscoffee.polaroad.response.Status;
 import javaiscoffee.polaroad.security.CustomUserDetails;
@@ -14,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -35,7 +37,7 @@ public class MemberController {
             @ApiResponse(responseCode = "404", description = "멤버가 존재하지 않는 경우")
     })
     @GetMapping("/my")
-    public ResponseEntity<?> getMyProfile(@AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<MemberInformationResponseDto> getMyProfile(@AuthenticationPrincipal CustomUserDetails userDetails) {
         if (userDetails != null) {
             String email = userDetails.getUsername(); //이메일
             Long memberId = userDetails.getMemberId();
@@ -46,7 +48,7 @@ public class MemberController {
         } else {
             // userDetails가 null인 경우의 처리
             log.error("인증된 사용자가 없음");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Status(ResponseMessages.NOT_FOUND));
+            throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
         }
     }
 
@@ -61,7 +63,7 @@ public class MemberController {
             @ApiResponse(responseCode = "400", description = "잘못된 요청인 경우")
     })
     @PatchMapping("/my/edit")
-    public ResponseEntity<?> editMyProfile(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody RequestWrapperDto<MemberInformationRequestDto> wrapperDto) {
+    public ResponseEntity<MemberInformationResponseDto> editMyProfile(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody RequestWrapperDto<MemberInformationRequestDto> wrapperDto) {
         MemberInformationRequestDto memberInformationRequestDto = wrapperDto.getData();
         String email = userDetails.getUsername();
         log.info("내 정보를 확인하려는 email = {}", email);
@@ -82,16 +84,13 @@ public class MemberController {
             @ApiResponse(responseCode = "400", description = "잘못된 요청인 경우")
     })
     @PatchMapping("/my/edit/reset-password")
-    public ResponseEntity<?> resetPassword(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody RequestWrapperDto<PasswordResetRequestDto> wrapperDto) {
+    public ResponseEntity<Boolean> resetPassword(@AuthenticationPrincipal CustomUserDetails userDetails, @Validated @RequestBody RequestWrapperDto<PasswordResetRequestDto> wrapperDto) {
         String email = userDetails.getUsername();
         PasswordResetRequestDto passwordResetRequestDto = wrapperDto.getData();
         log.info("비밀번호 재설정하려는 email = {}", email);
         // 여기서 email 변수를 사용하여 필요한 로직을 수행
         String newPassword = passwordResetRequestDto.getPassword();
-        if (!memberService.resetPassword(email, newPassword)) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Status(ResponseMessages.NOT_FOUND));
-        }
-        return ResponseEntity.ok(null);
+        return ResponseEntity.ok(memberService.resetPassword(email, newPassword));
     }
 
     @Operation(summary = "다른 멤버 팔로우 API", description = "현재 멤버가 다른 멤버를 팔로잉하려고 할 때 사용하는 API")

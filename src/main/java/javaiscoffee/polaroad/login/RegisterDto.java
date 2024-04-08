@@ -7,9 +7,10 @@ import javaiscoffee.polaroad.validator.PasswordCheck;
 import lombok.Data;
 
 @Data
+@Schema(description = "회원가입 입력값을 받는 dto")
 public class RegisterDto {
     @EmailCheck
-    @Schema(description = "## 사용자 이메일", example = "aaa@naver.com")
+    @Schema(description = "사용자 이메일", example = "aaa@naver.com")
     private String email;
 //    private String certificationNumber;
     @Schema(description = "사용자 이름", example = "박자바")
@@ -18,6 +19,6 @@ public class RegisterDto {
     @Schema(description = "사용자 닉네임", example = "자바커피")
     private String nickname;
     @PasswordCheck
-    @Schema(description = "## 사용자 비밀번호", example = "a123123!")
+    @Schema(description = "사용자 비밀번호", example = "a123123!")
     private String password;
 }

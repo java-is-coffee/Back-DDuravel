@@ -53,7 +53,8 @@ public class JpaMemberRepository implements MemberRepository {
     public Optional<Member> findByMemberId(Long memberId) {
         TypedQuery<Member> query = em.createQuery("SELECT m FROM Member m WHERE m.memberId = :memberId", Member.class);
         query.setParameter("memberId", memberId);
-        return Optional.ofNullable(query.getSingleResult());
+        List<Member> results = query.getResultList();
+        return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
     }
 
     @Override
