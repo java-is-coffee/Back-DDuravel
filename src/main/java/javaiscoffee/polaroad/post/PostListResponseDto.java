@@ -14,5 +14,5 @@ public class PostListResponseDto {
     @Schema(description = "포스트 목록")
     private List<PostListDto> posts;
     @Schema(description = "총 페이지", example = "1")
-    private int maxPage;
+    private boolean hasNext;
 }

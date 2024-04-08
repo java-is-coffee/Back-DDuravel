@@ -21,13 +21,15 @@ import javaiscoffee.polaroad.response.ResponseMessages;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigInteger;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
@@ -166,7 +168,7 @@ public class PostService {
         //검색어가 없으면 키워드 검색으로 넘김
         if(searchType.equals(PostSearchType.HASHTAG) && searchKeyword != null) {
             Long hashtagId = hashtagService.getHashtagIdByName(searchKeyword);
-            if(hashtagId == null) return ResponseEntity.ok(new PostListResponseDto(new ArrayList<>(),0));
+            if(hashtagId == null) return ResponseEntity.ok(new PostListResponseDto(new ArrayList<>(),false));
             return ResponseEntity.ok(postRepository.searchPostByHashtag(page, pageSize, hashtagId, sortBy, concept, region, status));
         }
         //키워드 검색일 경우
@@ -202,10 +204,9 @@ public class PostService {
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         if(!member.getStatus().equals(MemberStatus.ACTIVE)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
         Pageable pageable = PageRequest.of(page - 1, pageSize);
-        Page<Post> pagePosts = postRepository.findPostsByMemberMemberIdAndStatusOrderByCreatedTimeDesc(memberId, status, pageable);
-        List<Post> postList = pagePosts.getContent();
-        int totalPages = pagePosts.getTotalPages();
-        return toPostListResponseDto(postList,totalPages);
+        Slice<Post> slicePosts = postRepository.findPostsByMemberMemberIdAndStatusOrderByCreatedTimeDesc(memberId, status, pageable);
+
+        return toPostListResponseDto(slicePosts.getContent(), slicePosts.hasNext());
     }
 
     /**
@@ -218,16 +219,11 @@ public class PostService {
         //랭킹 최대 페이지 구하기
         int maxPage = redisService.getViewRankingMaxPageSize(pageSize, range);
         //포스트 목록 구해서 정렬하기
-        List<PostListRepositoryDto> unorderedPosts = postRepository.getPostsByPostIdIsIn(rankingList);
-        Map<Long, PostListRepositoryDto> postMap = unorderedPosts.stream().collect(Collectors.toMap(PostListRepositoryDto::getPostId, Function.identity()));
-        // 순서 유지를 위해 rankingList에 따라 orderedPosts 구성
-        List<PostListRepositoryDto> orderedPosts = rankingList.stream()
-                .map(postMap::get)
-                .filter(Objects::nonNull) // null이면 무시
-                .toList();
+        List<PostListRepositoryDto> postListDtos = getRankingPostListRepositoryDtoList(rankingList);
         //반환값으로 매핑
-        return ResponseEntity.ok(getPostListResponseDto(orderedPosts, maxPage));
+        return ResponseEntity.ok(getPostListResponseDto(postListDtos, page < maxPage));
     }
+
 
     /**
      * 포스트 추천 토글
@@ -256,6 +252,45 @@ public class PostService {
             postGoodRepository.save(new PostGood(postGoodId,memberRef,postRef));
             postGoodBatchUpdator.increasePostGoodCount(postId);
         }
+    }
+
+    //랭킹 리스트에 해당하는 포스트 정보 리스트로 조회 후 PostListRepositoryDto로 매핑
+    private List<PostListRepositoryDto> getRankingPostListRepositoryDtoList(List<Long> rankingList) {
+        List<PostListRepositoryDto> postListDtos = new ArrayList<>();
+        List<Object[]> queryResults = postRepository.getPostsWithCardsByPostId(rankingList);
+        //이미 앞에서 나온 포스트 정보인지 확인
+        Map<Long, PostListRepositoryDto> postDtoMap = new HashMap<>();
+
+        for (Object[] result : queryResults) {
+            Long postId = (Long) result[1];
+            PostListRepositoryDto postDto = postDtoMap.get(postId);
+            //새로운 포스트
+            if (postDto == null) {
+                postDto = new PostListRepositoryDto(
+                        (String) result[0], // title
+                        postId, // postId
+                        (String) result[2], // nickname
+                        (Integer) result[3], // thumbnailIndex
+                        (Integer) result[4], // goodNumber
+                        PostConcept.valueOf((String) result[5]), // concept
+                        PostRegion.valueOf((String) result[6]), // region
+                        new ArrayList<>(), // cards
+                        ((Timestamp) result[7]).toLocalDateTime() // updatedTime
+                );
+                postDtoMap.put(postId, postDto);
+                postListDtos.add(postDto);
+            }
+            //카드 정보 주입
+            if (result[8] != null) { // cardIndex
+                CardListRepositoryDto cardDto = new CardListRepositoryDto(
+                        postId,
+                        (Integer) result[8], // cardIndex
+                        (String) result[9] // image
+                );
+                postDto.getCards().add(cardDto);
+            }
+        }
+        return postListDtos;
     }
 
     /**
@@ -340,7 +375,7 @@ public class PostService {
     }
 
     //포스트 리스트를 DTO로 변환하고 카드 이미지에서 썸네일을 제일 앞으로 설정
-    private static PostListResponseDto toPostListResponseDto(List<Post> posts, int maxPage) {
+    private static PostListResponseDto toPostListResponseDto(List<Post> posts, boolean hasNext) {
         return new PostListResponseDto(posts.stream().map(p -> {
             List<String> images = p.getCards().stream()
                     .sorted(Comparator.comparingInt(Card::getCardIndex))
@@ -373,11 +408,11 @@ public class PostService {
                     images,
                     p.getUpdatedTime()
             );
-        }).collect(Collectors.toList()), maxPage);
+        }).collect(Collectors.toList()), hasNext);
     }
 
     //포스트 리스트를 DTO로 변환하고 카드 이미지에서 썸네일을 제일 앞으로 설정
-    private PostListResponseDto getPostListResponseDto(List<PostListRepositoryDto> posts, int maxPage) {
+    private PostListResponseDto getPostListResponseDto(List<PostListRepositoryDto> posts, boolean hasNext) {
         return new PostListResponseDto(posts.stream().map(p -> {
             List<String> images = p.getCards().stream()
                     .sorted(Comparator.comparingInt(CardListRepositoryDto::getCardIndex))
@@ -410,6 +445,6 @@ public class PostService {
                     images,
                     p.getUpdatedTime()
             );
-        }).collect(Collectors.toList()), maxPage);
+        }).collect(Collectors.toList()), hasNext);
     }
 }
