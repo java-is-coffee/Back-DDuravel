@@ -68,7 +68,7 @@ public class GoogleLoginController {
     }
 
     @Operation(summary = "구글 oauth 로그인 권한 부여 API", description = "구글로 로그인할 때 사용하는 API")
-    @Parameter(name = "code", description = "구글 로그인 코드", required = true, example = "4/0AeaYSHBE3pVEjibfPPUQS8NjLYF_hcAh0QqmtUsRLWAMTGh7A7oIXM2tXhEJpj05cos5ZA")
+    @Parameter(name = "code", description = "구글 로그인 코드", required = true)
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "구글 로그인에 성공했을 경우"),
             @ApiResponse(responseCode = "500", description = "구글 로그인에 실패했을 경우")

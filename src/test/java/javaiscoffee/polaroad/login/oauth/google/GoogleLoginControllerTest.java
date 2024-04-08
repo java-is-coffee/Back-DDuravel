@@ -39,12 +39,13 @@ class GoogleLoginControllerTest {
 
         mockMvc.perform(builder)
                 .andExpect(redirectedUrl(uri))
+                .andExpect(status().isOk())
                 .andReturn();
     }
 
     @Test
     public void testCallback() throws Exception {
-        String code = "4/0AeaYSHCPWfzDgukjOaIlxmnwbb9x8WSRO39KYc-bF-nL0sTtMO0NPRkHyb16JoprHscSNg";
+        String code = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         MockHttpServletRequestBuilder builder = get("/api/oauth2/authorization/google")
                 .param("code", code);
 

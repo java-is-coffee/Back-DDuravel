@@ -7,20 +7,19 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import javaiscoffee.polaroad.exception.BadRequestException;
 import javaiscoffee.polaroad.exception.NotFoundException;
 import javaiscoffee.polaroad.exception.UnAuthorizedException;
 import javaiscoffee.polaroad.login.emailAuthentication.EmailCertificationRequest;
 import javaiscoffee.polaroad.login.emailAuthentication.MailSendService;
 import javaiscoffee.polaroad.member.MemberRepository;
 import javaiscoffee.polaroad.response.ResponseMessages;
-import javaiscoffee.polaroad.response.Status;
 import javaiscoffee.polaroad.member.Member;
 import javaiscoffee.polaroad.security.RefreshTokenDto;
 import javaiscoffee.polaroad.security.TokenDto;
 import javaiscoffee.polaroad.wrapper.RequestWrapperDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -46,12 +45,14 @@ public class LoginController {
             @ApiResponse(responseCode = "404", description = "로그인에 실패한 경우")
     })
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Validated @RequestBody RequestWrapperDto<LoginDto> requestDto, HttpServletResponse response) {
+    public ResponseEntity<TokenDto> login(@Validated @RequestBody RequestWrapperDto<LoginDto> requestDto, HttpServletResponse response) {
         LoginDto loginDto = requestDto.getData();
         log.info("로그인 요청 = {}",loginDto);
         TokenDto tokenDto = loginService.login(loginDto);
         //로그인 실패했을 경우 실패 Response 반환
-        if(tokenDto == null) throw new NotFoundException(ResponseMessages.LOGIN_FAILED.getMessage());
+        if(tokenDto == null) {
+            throw new NotFoundException(ResponseMessages.LOGIN_FAILED.getMessage());
+        }
 
         return ResponseEntity.ok(tokenDto);
     }
@@ -62,14 +63,14 @@ public class LoginController {
             @ApiResponse(responseCode = "400", description = "이메일이 중복되거나 입력값이 형식에 맞지 않아서 회원가입 실패한 경우")
     })
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Validated @RequestBody RequestWrapperDto<RegisterDto> requestDto) {
+    public ResponseEntity<Member> register(@Validated @RequestBody RequestWrapperDto<RegisterDto> requestDto) {
         RegisterDto registerDto = requestDto.getData();
         log.info("registerDto = {}", registerDto);
         Member registerdMember = loginService.register(registerDto);
         if(registerdMember ==null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Status(ResponseMessages.REGISTER_FAILED));
+            throw new BadRequestException(ResponseMessages.REGISTER_FAILED.getMessage());
         }
-        return ResponseEntity.ok(null);
+        return ResponseEntity.ok(registerdMember);
     }
 
     /**
@@ -123,11 +124,11 @@ public class LoginController {
             @ApiResponse(responseCode = "400", description = " - 30초 이내로 같은 이메일로 재요청했을 경우 \n - 이미 회원가입 된 이메일이 존재할 경우")
     })
     @PostMapping("/register/send-certification")
-    public ResponseEntity<?> sendCertificationNumber(@Validated @RequestBody RequestWrapperDto<EmailCertificationRequest> requestDto) throws MessagingException, NoSuchAlgorithmException {
+    public ResponseEntity<String> sendCertificationNumber(@Validated @RequestBody RequestWrapperDto<EmailCertificationRequest> requestDto) throws MessagingException, NoSuchAlgorithmException {
         EmailCertificationRequest request = requestDto.getData();
 
         log.info(">> 사용자의 이메일 인증 요청");
         mailSendService.sendEmailForCertification(request.getEmail());
-        return ResponseEntity.ok(ResponseMessages.SUCCESS);
+        return ResponseEntity.ok(ResponseMessages.SUCCESS.getMessage());
     }
 }
