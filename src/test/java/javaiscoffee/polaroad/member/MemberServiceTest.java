@@ -1,6 +1,7 @@
 package javaiscoffee.polaroad.member;
 
 import javaiscoffee.polaroad.exception.BadRequestException;
+import javaiscoffee.polaroad.exception.NotFoundException;
 import javaiscoffee.polaroad.login.LoginService;
 import javaiscoffee.polaroad.login.RegisterDto;
 import javaiscoffee.polaroad.security.BaseException;
@@ -9,10 +10,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(properties = {"JWT_SECRET_KEY=3123755132fdfds4daas4551af789d59f36977df5093be12c2314515135ddasg1f5k12hdfhjk412bh531uiadfi14b14bwebs52"})
+@Transactional
 class MemberServiceTest {
     @Autowired
     private LoginService loginService;
@@ -53,18 +56,18 @@ class MemberServiceTest {
 
         loginService.register(registerDto);
 
-        String email1 = "aaa@naver.com";
+        Member member = memberRepository.findByEmail(registerDto.getEmail()).orElseThrow(() -> new NotFoundException("멤버가 없습니다."));
 
         MemberInformationRequestDto memberInformationRequestDtoInput1 = new MemberInformationRequestDto();
-        memberInformationRequestDtoInput1.setMemberId(1L);
+        memberInformationRequestDtoInput1.setMemberId(member.getMemberId());
         memberInformationRequestDtoInput1.setEmail("aaa@naver.com");
         memberInformationRequestDtoInput1.setName("박자바");
         memberInformationRequestDtoInput1.setNickname("자바커피");
         memberInformationRequestDtoInput1.setProfileImage("https://lh3.googleusercontent.com/a/ACg8ocIUDVrYxwJiLs3303WK329pqp2QXNnJE9UFEsAaPzz6=s96-c");
 
-        MemberInformationResponseDto memberInformationResponseDtoOutput1 = memberService.updateMemberInformation(email1, memberInformationRequestDtoInput1);
+        MemberInformationResponseDto memberInformationResponseDtoOutput1 = memberService.updateMemberInformation(member.getEmail(), memberInformationRequestDtoInput1);
 
-        assertThat(memberInformationResponseDtoOutput1.getEmail()).isEqualTo(email1);
+        assertThat(memberInformationResponseDtoOutput1.getEmail()).isEqualTo(member.getEmail());
         assertThat(memberInformationResponseDtoOutput1.getEmail()).isEqualTo(memberInformationRequestDtoInput1.getEmail());
         assertThat(memberInformationResponseDtoOutput1.getEmail()).isNotEqualTo("bbb@naver.com");
 
@@ -163,7 +166,7 @@ class MemberServiceTest {
 
         memberService.deleteAccount(member.getMemberId());
 
-        Assertions.assertThatThrownBy(() -> memberService.deleteAccount(member.getMemberId() + 1)).isInstanceOf(EmptyResultDataAccessException.class);
+        Assertions.assertThatThrownBy(() -> memberService.deleteAccount(member.getMemberId() + 1)).isInstanceOf(NotFoundException.class);
         Assertions.assertThatThrownBy(() -> memberService.deleteAccount(member.getMemberId())).isInstanceOf(BadRequestException.class);
     }
 }
