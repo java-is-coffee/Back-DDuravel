@@ -19,7 +19,9 @@ import java.util.Map;
 @Slf4j
 @Service
 public class GoogleService {
-
+    /**
+     * 구글로부터 Access Token 얻기
+     */
     public String getAccessTokenFromGoogle(String clientId, String clientSecret, String redirectUri, String code) {
         String requestURL = "https://oauth2.googleapis.com/token";
         try {
@@ -68,6 +70,9 @@ public class GoogleService {
         }
     }
 
+    /**
+     * 사용자 정보 얻기
+     */
     public HashMap<String, Object> getUerInfo(String accessToken) {
         HashMap<String, Object> userInfo = new HashMap<>();
         try {

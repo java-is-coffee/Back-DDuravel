@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import javaiscoffee.polaroad.post.card.CardListDto;
+import javaiscoffee.polaroad.post.card.CardListResponseDto;
 import javaiscoffee.polaroad.post.card.CardService;
 import javaiscoffee.polaroad.security.CustomUserDetails;
 import javaiscoffee.polaroad.wrapper.RequestWrapperDto;
@@ -14,8 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Slf4j
 @RestController
@@ -136,9 +134,9 @@ public class PostController {
             @ApiResponse(responseCode = "404", description = "멤버가 삭제되었거나 존재하지 않는 경우")
     })
     @GetMapping("/mycard")
-    public ResponseEntity<List<CardListDto>> getMyCardList(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                                     @RequestParam(name = "page") int page,
-                                                     @RequestParam(name = "pageSize") int pageSize) {
+    public ResponseEntity<CardListResponseDto> getMyCardList(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                             @RequestParam(name = "page") int page,
+                                                             @RequestParam(name = "pageSize") int pageSize) {
         Long memberId = userDetails.getMemberId();
         return ResponseEntity.ok(cardService.getCardListByMember(memberId, page, pageSize));
     }
@@ -180,7 +178,7 @@ public class PostController {
     @GetMapping("/view-rangking")
     public ResponseEntity<PostListResponseDto> getPostViewRangkingList(@RequestParam(name = "page") int page,
                                                                        @RequestParam(name = "pageSize") int pageSize,
-                                                                       @RequestParam(name = "range") PostRankingDto range) {
+                                                                       @RequestParam(name = "range") PostRankingRange range) {
         return postService.getPostRankingList(page, pageSize, range);
     }
 }

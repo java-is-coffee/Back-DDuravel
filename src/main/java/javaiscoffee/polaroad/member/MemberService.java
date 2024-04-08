@@ -94,6 +94,11 @@ public class MemberService {
         return true;
     }
 
+    /**
+     * 사용 용도 : 다른 멤버 팔로우
+     * 요구 데이터 : followingMemberId, followedMemberId
+     * 반환 데이터 : 없음
+     */
     @Transactional
     public void toggleFollow(Long followingMemberId, Long followedMemberId) {
         if(!Objects.equals(followingMemberId, followedMemberId)) {
@@ -136,7 +141,7 @@ public class MemberService {
     @Transactional
     public void deleteAccount(Long memberId) {
         Member member = memberRepository.findByMemberId(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
-        if(!member.getStatus().equals(MemberStatus.ACTIVE)) new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
+        if(!member.getStatus().equals(MemberStatus.ACTIVE)) throw new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
         member.deleteMember();
     }
 }

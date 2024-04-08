@@ -1,13 +1,16 @@
 package javaiscoffee.polaroad.post;
 
+import jakarta.persistence.EntityManager;
 import javaiscoffee.polaroad.exception.BadRequestException;
 import javaiscoffee.polaroad.exception.ForbiddenException;
 import javaiscoffee.polaroad.exception.NotFoundException;
 import javaiscoffee.polaroad.member.Member;
 import javaiscoffee.polaroad.member.MemberRepository;
+import javaiscoffee.polaroad.member.MemberSimpleInfoDto;
 import javaiscoffee.polaroad.member.MemberStatus;
 import javaiscoffee.polaroad.post.card.*;
 import javaiscoffee.polaroad.post.good.PostGood;
+import javaiscoffee.polaroad.post.good.PostGoodBatchUpdator;
 import javaiscoffee.polaroad.post.good.PostGoodId;
 import javaiscoffee.polaroad.post.good.PostGoodRepository;
 import javaiscoffee.polaroad.post.hashtag.PostHashtagInfoDto;
@@ -18,14 +21,15 @@ import javaiscoffee.polaroad.response.ResponseMessages;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigInteger;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
@@ -47,15 +51,19 @@ public class PostService {
     private final CardService cardService;
     private final PostGoodRepository postGoodRepository;
     private final RedisService redisService;
+    private final PostGoodBatchUpdator postGoodBatchUpdator;
+    private final EntityManager entityManager;
 
     @Autowired
-    public PostService(PostRepository postRepository, MemberRepository memberRepository,HashtagService hashtagService, CardService cardService, PostGoodRepository postGoodRepository, RedisService redisService) {
+    public PostService(PostRepository postRepository, MemberRepository memberRepository, HashtagService hashtagService, CardService cardService, PostGoodRepository postGoodRepository, RedisService redisService, PostGoodBatchUpdator postGoodBatchUpdator, EntityManager entityManager) {
         this.postRepository = postRepository;
         this.memberRepository = memberRepository;
         this.hashtagService = hashtagService;
         this.cardService = cardService;
         this.postGoodRepository = postGoodRepository;
         this.redisService = redisService;
+        this.postGoodBatchUpdator = postGoodBatchUpdator;
+        this.entityManager = entityManager;
     }
 
     /**
@@ -99,6 +107,10 @@ public class PostService {
      */
     @Transactional
     public ResponseEntity<Post> editPost(PostSaveDto postSaveDto,Long memberId, Long postId) {
+        //썸네일 번호가 잘못되었을 경우 에러
+        if(postSaveDto.getThumbnailIndex() < 0 || postSaveDto.getThumbnailIndex() >= postSaveDto.getCards().size()) throw new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
+        //카드, 해쉬태그 개수가 잘못된 경우
+        if(postSaveDto.getCards().size() > 10 || postSaveDto.getHashtags().size() > 10) throw new BadRequestException("카드 또는 해쉬태그 개수가 많습니다.");
         Post oldPost = postRepository.findById(postId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         //포스트가 삭제되었으면
         if(oldPost.getStatus() == PostStatus.DELETED) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
@@ -109,8 +121,6 @@ public class PostService {
         //포스트 정보 업데이트
         oldPost.setTitle(postSaveDto.getTitle());
         oldPost.setRoutePoint(postSaveDto.getRoutePoint());
-        //썸네일 번호가 잘못되었을 경우 에러
-        if(postSaveDto.getThumbnailIndex() < 0 || postSaveDto.getThumbnailIndex() >= postSaveDto.getCards().size()) throw new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
         oldPost.setThumbnailIndex(postSaveDto.getThumbnailIndex());
         oldPost.setConcept(postSaveDto.getConcept());
         oldPost.setRegion(postSaveDto.getRegion());
@@ -135,19 +145,18 @@ public class PostService {
      */
     @Transactional
     public ResponseEntity<String> deletePost(Long postId, Long memberId) {
-        Post post = postRepository.findById(postId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
+        PostSimpleInfoDto postInfo = postRepository.getPostSimpleInfo(postId).orElseThrow(() -> new NotFoundException("포스트를 찾을 수 없습니다."));
         //포스트가 삭제되었으면 에러
-        if(post.getStatus() == PostStatus.DELETED) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
+        if(postInfo.getStatus() == PostStatus.DELETED) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
         // 멤버가 삭제되었으면 에러
-        Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
-        if(member.getStatus().equals(MemberStatus.DELETED)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
+        MemberSimpleInfoDto memberInfo = memberRepository.getMemberSimpleInfo(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
+        if(!memberInfo.getStatus().equals(MemberStatus.ACTIVE)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
         //생성자가 아니면 수정 불가
-        if(!Objects.equals(post.getMember().getMemberId(), memberId)) throw new ForbiddenException(ResponseMessages.FORBIDDEN.getMessage());
+        if(!Objects.equals(postInfo.getMemberId(), memberId)) throw new ForbiddenException(ResponseMessages.FORBIDDEN.getMessage());
 
-        post.setStatus(PostStatus.DELETED);
-        post.setUpdatedTime(LocalDateTime.now());
+        postRepository.updatePostStatus(postId,PostStatus.DELETED);
         //멤버 포스트 개수 1개 감소
-        member.setPostNumber(member.getPostNumber() - 1);
+        memberRepository.addMemberPostNumber(memberId, -1);
         return ResponseEntity.ok(ResponseMessages.SUCCESS.getMessage());
     }
 
@@ -159,7 +168,7 @@ public class PostService {
         //검색어가 없으면 키워드 검색으로 넘김
         if(searchType.equals(PostSearchType.HASHTAG) && searchKeyword != null) {
             Long hashtagId = hashtagService.getHashtagIdByName(searchKeyword);
-            if(hashtagId == null) return ResponseEntity.ok(new PostListResponseDto(new ArrayList<>(),0));
+            if(hashtagId == null) return ResponseEntity.ok(new PostListResponseDto(new ArrayList<>(),false));
             return ResponseEntity.ok(postRepository.searchPostByHashtag(page, pageSize, hashtagId, sortBy, concept, region, status));
         }
         //키워드 검색일 경우
@@ -171,19 +180,19 @@ public class PostService {
      * 팔로잉하고 있는 멤버의 게시글을 목록으로 조회
      */
     public ResponseEntity<PostListResponseDto> getFollowingMemberPosts (Long memberId,int page, int pageSize, PostStatus status) {
-        Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
-        if(!member.getStatus().equals(MemberStatus.ACTIVE)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
-        return ResponseEntity.ok(postRepository.getFollowingMembersPostByMember(member, page, pageSize, status));
+        MemberSimpleInfoDto memberInfo = memberRepository.getMemberSimpleInfo(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
+        if(!memberInfo.getStatus().equals(MemberStatus.ACTIVE)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
+        return ResponseEntity.ok(postRepository.getFollowingMembersPostByMember(memberInfo.getMemberId(), page, pageSize, status));
     }
 
     /**
      * 포스트 내용 조회
      */
     public ResponseEntity<PostInfoDto> getPostInfoById(Long postId, Long memberId) {
-        Post post = postRepository.findById(postId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
+        Post post = postRepository.getPostInfoById(postId);
 //        Member member = memberRepository.findById(post.getMember().getMemberId()).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         //포스트가 삭제되었으면 에러
-        if(post.getStatus().equals(PostStatus.DELETED)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
+        if(post == null || post.getStatus().equals(PostStatus.DELETED)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
         redisService.addPostView(postId, memberId);
         return ResponseEntity.ok(toPostInfoDto(post,memberId));
     }
@@ -195,32 +204,26 @@ public class PostService {
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         if(!member.getStatus().equals(MemberStatus.ACTIVE)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
         Pageable pageable = PageRequest.of(page - 1, pageSize);
-        Page<Post> pagePosts = postRepository.findPostsByMemberMemberIdAndStatusOrderByCreatedTimeDesc(memberId, status, pageable);
-        List<Post> postList = pagePosts.getContent();
-        int totalPages = pagePosts.getTotalPages();
-        return toPostListResponseDto(postList,totalPages);
+        Slice<Post> slicePosts = postRepository.findPostsByMemberMemberIdAndStatusOrderByCreatedTimeDesc(memberId, status, pageable);
+
+        return toPostListResponseDto(slicePosts.getContent(), slicePosts.hasNext());
     }
 
     /**
      * 조회수 랭킹으로 조회
      */
-    public ResponseEntity<PostListResponseDto> getPostRankingList(int page, int pageSize, PostRankingDto range) {
+    public ResponseEntity<PostListResponseDto> getPostRankingList(int page, int pageSize, PostRankingRange range) {
         //랭킹 순위 리스트 조회
         List<String> list = redisService.getViewRankingList(page, pageSize, range);
         List<Long> rankingList = list.stream().map(Long::valueOf).toList();
         //랭킹 최대 페이지 구하기
         int maxPage = redisService.getViewRankingMaxPageSize(pageSize, range);
         //포스트 목록 구해서 정렬하기
-        List<Post> unorderedPosts = postRepository.getPostsByPostIdIsIn(rankingList);
-        Map<Long, Post> postMap = unorderedPosts.stream().collect(Collectors.toMap(Post::getPostId, Function.identity()));
-        // 순서 유지를 위해 rankingList에 따라 orderedPosts 구성
-        List<Post> orderedPosts = rankingList.stream()
-                .map(postMap::get)
-                .filter(Objects::nonNull) // null이면 무시
-                .toList();
+        List<PostListRepositoryDto> postListDtos = getRankingPostListRepositoryDtoList(rankingList);
         //반환값으로 매핑
-        return ResponseEntity.ok(toPostListResponseDto(orderedPosts, maxPage));
+        return ResponseEntity.ok(getPostListResponseDto(postListDtos, page < maxPage));
     }
+
 
     /**
      * 포스트 추천 토글
@@ -229,22 +232,65 @@ public class PostService {
     public void postGoodToggle(Long memberId, Long postId) {
         PostGoodId postGoodId = new PostGoodId(memberId, postId);
 
-        Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
-        Post post = postRepository.findById(postId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
-        if(member.getStatus().equals(MemberStatus.DELETED) || post.getStatus().equals(PostStatus.DELETED)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
-        if(post.getMember().getMemberId().equals(memberId)) throw new BadRequestException(ResponseMessages.GOOD_FAILED.getMessage());
+        MemberSimpleInfoDto memberInfo = memberRepository.getMemberSimpleInfo(memberId).orElseThrow(() -> new NotFoundException("멤버를 찾을 수 없습니다."));
+        PostSimpleInfoDto postInfo = postRepository.getPostSimpleInfo(postId).orElseThrow(() -> new NotFoundException("포스트를 찾을 수 없습니다."));
+        // Member와 Post의 참조(프록시)만 로드
+        Member memberRef = entityManager.getReference(Member.class, memberId);
+        Post postRef = entityManager.getReference(Post.class, postId);
 
-        Optional<PostGood> memberGood = postGoodRepository.findById(postGoodId);
+        if(!memberInfo.getStatus().equals(MemberStatus.ACTIVE) || !postInfo.getStatus().equals(PostStatus.ACTIVE)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
+        if(postInfo.getMemberId().equals(memberId)) throw new BadRequestException(ResponseMessages.GOOD_FAILED.getMessage());
+
+        boolean postGoodExists = postGoodRepository.existsById(postGoodId);
         //추천 삭제
-        if(memberGood.isPresent()) {
-            postGoodRepository.delete(memberGood.get());
-            post.setGoodNumber(post.getGoodNumber() - 1);
+        if(postGoodExists) {
+            postGoodRepository.deleteById(postGoodId);
+            postGoodBatchUpdator.decreasePostGoodCount(postId);
         }
         //추천 생성
         else {
-            postGoodRepository.save(new PostGood(postGoodId,member,post));
-            post.setGoodNumber(post.getGoodNumber() + 1);
+            postGoodRepository.save(new PostGood(postGoodId,memberRef,postRef));
+            postGoodBatchUpdator.increasePostGoodCount(postId);
         }
+    }
+
+    //랭킹 리스트에 해당하는 포스트 정보 리스트로 조회 후 PostListRepositoryDto로 매핑
+    private List<PostListRepositoryDto> getRankingPostListRepositoryDtoList(List<Long> rankingList) {
+        List<PostListRepositoryDto> postListDtos = new ArrayList<>();
+        List<Object[]> queryResults = postRepository.getPostsWithCardsByPostId(rankingList);
+        //이미 앞에서 나온 포스트 정보인지 확인
+        Map<Long, PostListRepositoryDto> postDtoMap = new HashMap<>();
+
+        for (Object[] result : queryResults) {
+            Long postId = (Long) result[1];
+            PostListRepositoryDto postDto = postDtoMap.get(postId);
+            //새로운 포스트
+            if (postDto == null) {
+                postDto = new PostListRepositoryDto(
+                        (String) result[0], // title
+                        postId, // postId
+                        (String) result[2], // nickname
+                        (Integer) result[3], // thumbnailIndex
+                        (Integer) result[4], // goodNumber
+                        PostConcept.valueOf((String) result[5]), // concept
+                        PostRegion.valueOf((String) result[6]), // region
+                        new ArrayList<>(), // cards
+                        ((Timestamp) result[7]).toLocalDateTime() // updatedTime
+                );
+                postDtoMap.put(postId, postDto);
+                postListDtos.add(postDto);
+            }
+            //카드 정보 주입
+            if (result[8] != null) { // cardIndex
+                CardListRepositoryDto cardDto = new CardListRepositoryDto(
+                        postId,
+                        (Integer) result[8], // cardIndex
+                        (String) result[9] // image
+                );
+                postDto.getCards().add(cardDto);
+            }
+        }
+        return postListDtos;
     }
 
     /**
@@ -329,7 +375,7 @@ public class PostService {
     }
 
     //포스트 리스트를 DTO로 변환하고 카드 이미지에서 썸네일을 제일 앞으로 설정
-    private static PostListResponseDto toPostListResponseDto(List<Post> posts, int maxPage) {
+    private static PostListResponseDto toPostListResponseDto(List<Post> posts, boolean hasNext) {
         return new PostListResponseDto(posts.stream().map(p -> {
             List<String> images = p.getCards().stream()
                     .sorted(Comparator.comparingInt(Card::getCardIndex))
@@ -359,8 +405,46 @@ public class PostService {
                     p.getGoodNumber(),
                     p.getConcept(),
                     p.getRegion(),
-                    images
+                    images,
+                    p.getUpdatedTime()
             );
-        }).collect(Collectors.toList()), maxPage);
+        }).collect(Collectors.toList()), hasNext);
+    }
+
+    //포스트 리스트를 DTO로 변환하고 카드 이미지에서 썸네일을 제일 앞으로 설정
+    private PostListResponseDto getPostListResponseDto(List<PostListRepositoryDto> posts, boolean hasNext) {
+        return new PostListResponseDto(posts.stream().map(p -> {
+            List<String> images = p.getCards().stream()
+                    .sorted(Comparator.comparingInt(CardListRepositoryDto::getCardIndex))
+                    .map(CardListRepositoryDto::getImage)
+                    .distinct()
+                    .limit(3)
+                    .collect(Collectors.toList());
+
+            // 썸네일 이미지가 없으면 맨 앞에 추가
+            String thumbnailImage = p.getCards().get(p.getThumbnailIndex()).getImage();
+            if (!images.contains(thumbnailImage)) {
+                images.add(0, thumbnailImage); // 맨 앞에 썸네일 이미지 추가
+                if (images.size() > 3) {
+                    images = images.subList(0, 3); // 최대 3개 이미지 유지
+                }
+            }
+            //썸네일 이미지가 있으면 맨 앞으로 옮기기
+            else {
+                images.remove(thumbnailImage);
+                images.add(0, thumbnailImage);
+            }
+
+            return new PostListDto(
+                    p.getTitle(),
+                    p.getPostId(),
+                    p.getNickname(),
+                    p.getGoodNumber(),
+                    p.getConcept(),
+                    p.getRegion(),
+                    images,
+                    p.getUpdatedTime()
+            );
+        }).collect(Collectors.toList()), hasNext);
     }
 }
