@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -83,7 +84,7 @@ public class MemberController {
             @ApiResponse(responseCode = "400", description = "잘못된 요청인 경우")
     })
     @PatchMapping("/my/edit/reset-password")
-    public ResponseEntity<Boolean> resetPassword(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody RequestWrapperDto<PasswordResetRequestDto> wrapperDto) {
+    public ResponseEntity<Boolean> resetPassword(@AuthenticationPrincipal CustomUserDetails userDetails, @Validated @RequestBody RequestWrapperDto<PasswordResetRequestDto> wrapperDto) {
         String email = userDetails.getUsername();
         PasswordResetRequestDto passwordResetRequestDto = wrapperDto.getData();
         log.info("비밀번호 재설정하려는 email = {}", email);
