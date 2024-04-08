@@ -106,23 +106,10 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
             builder.and(postHashtag.hashtag.hashtagId.eq(hashtagId));
         }
 
-        //검색 결과 최대 개수 구하기
-        Long totalPostsCount = queryFactory
-                .select(post.count())
-                .from(post)
-                .leftJoin(post.cards, card)
-                .leftJoin(post.member, member)
-                .leftJoin(post.postHashtags, postHashtag)
-                .where(builder)
-                .fetchOne();
-        //검색 결과가 없으므로 빈 배열 반환
-        if(totalPostsCount == null) return new PostListResponseDto(new ArrayList<>(),false);
-        int maxPage = (int) Math.ceil((double) totalPostsCount / pageSize);
-
         JPAQuery<PostListRepositoryDto> query = queryFactory
                 .select(getPostListRepositoryDtoConstructor(post, member))
                 .from(post)
-                .leftJoin(post.cards, card).fetchJoin()
+                .leftJoin(post.cards, card)
                 .leftJoin(post.member, member)
                 .leftJoin(post.postHashtags, postHashtag)
                 .where(builder)
@@ -167,18 +154,6 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
                 .where(follow.followingMember.memberId.eq(memberId))
                 .fetch();
 
-        // 검색 결과의 총 개수 구하기
-        Long totalPostsCount = queryFactory
-                .select(post.count())
-                .from(post)
-                .where(
-                        post.member.memberId.in(followingMemberIds),
-                        post.status.eq(status)
-                )
-                .fetchOne();
-        //검색 결과가 없으므로 빈 배열 반환
-        if(totalPostsCount == null) return new PostListResponseDto(new ArrayList<>(),false);
-
         // 팔로잉하는 멤버의 포스트를 조회
         List<PostListRepositoryDto> posts = queryFactory
                 .select(getPostListRepositoryDtoConstructor(post, post.member))
@@ -201,8 +176,6 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
 
         // 3. DTO에 카드 정보 추가
         setCardInfoToPostDto(posts, cardsMap);
-
-        int maxPage = (int) Math.ceil((double) totalPostsCount / pageSize);
 
         // 포스트를 DTO로 변환하고 카드 이미지 처리
         return getPostListResponseDto(posts, hasNext);
