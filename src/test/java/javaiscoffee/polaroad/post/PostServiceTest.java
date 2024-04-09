@@ -7,6 +7,7 @@ import javaiscoffee.polaroad.member.Member;
 import javaiscoffee.polaroad.member.MemberRepository;
 import javaiscoffee.polaroad.member.MemberStatus;
 import javaiscoffee.polaroad.post.card.CardSaveDto;
+import javaiscoffee.polaroad.redis.RedisService;
 import javaiscoffee.polaroad.response.ResponseMessages;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -27,6 +29,9 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doNothing;
 
 @Slf4j
 @SpringBootTest(properties = {"JWT_SECRET_KEY=3123758a0d7ef02a46cba8bdd3f898dec8afc9f8470341af789d59f3695093be"})
@@ -38,6 +43,8 @@ class PostServiceTest {
     private MemberRepository memberRepository;
     @Autowired
     private PostRepository postRepository;
+    @MockBean
+    private RedisService redisService;
 
     private PostSaveDto postSaveDto1;
     private Member member1;
@@ -79,6 +86,7 @@ class PostServiceTest {
     @Transactional
     @DisplayName("포스트 생성 성공")
     void savePostSuccess() {
+        doNothing().when(redisService).saveCachingPostInfo(any(), anyLong());
         memberRepository.save(member1);
         Member findMember = memberRepository.findByEmail(member1.getEmail()).orElseThrow(() -> new BadRequestException(ResponseMessages.SAVE_FAILED.getMessage()));
         ResponseEntity<Post> response = postService.savePost(postSaveDto1, findMember.getMemberId());
@@ -182,8 +190,12 @@ class PostServiceTest {
             add("수정된태그2");
         }};
         postSaveDto1.setHashtags(hashtags);
+
+        //when
+        doNothing().when(redisService).updateCachingPost(any(), anyLong());
+
         ResponseEntity<Post> editResponse = postService.editPost(postSaveDto1, findMember.getMemberId(), savedPost.getPostId());
-        Post editedPost = postRepository.getPostInfoById(savedPost.getPostId());
+        PostInfoDto editedPost = postRepository.getPostInfoById(savedPost.getPostId(),findMember.getMemberId());
 
         //수정한 포스트 내용 비교
         assertThat(editResponse.getStatusCode()).isEqualTo(HttpStatus.OK);

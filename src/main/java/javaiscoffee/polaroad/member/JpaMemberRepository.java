@@ -1,6 +1,7 @@
 package javaiscoffee.polaroad.member;
 
 import jakarta.persistence.*;
+import javaiscoffee.polaroad.post.PostMemberInfoDto;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -92,6 +93,14 @@ public class JpaMemberRepository implements MemberRepository {
                 .setParameter("memberId", memberId)
                 .getResultList();
         return results.stream().findFirst();
+    }
+
+    @Override
+    public PostMemberInfoDto getPostMemberInfoByMemberId(Long memberId) {
+        TypedQuery<PostMemberInfoDto> query = em.createQuery("SELECT m.memberId, m.name, m.nickname, m.profileImage FROM Member m WHERE m.memberId = :memberId", PostMemberInfoDto.class);
+        query.setParameter("memberId", memberId);
+        List<PostMemberInfoDto> results = query.getResultList();
+        return results.get(0);
     }
 
     @Override

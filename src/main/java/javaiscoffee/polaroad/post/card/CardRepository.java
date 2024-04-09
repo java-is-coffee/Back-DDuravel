@@ -17,7 +17,7 @@ public interface CardRepository extends JpaRepository<Card, Long> {
     public List<Card> findCardsByPostAndStatusOrderByCardIndexAsc(Post post, CardStatus status);
 
     //마이페이지에서 자기가 업로드한 카도 조회
-    @Query("select new javaiscoffee.polaroad.post.card.CardListDto(c.cardId, c.location, c.image) from Card c where  c.member = :member and" +
+    @Query("select new javaiscoffee.polaroad.post.card.CardListDto(c.cardId, c.location, c.image) from Card c where  c.member.memberId = :memberId and" +
             " c.status = :status order by c.createdTime desc")
-    public Page<CardListDto> findCardsByMemberAndStatusOrderByCreatedTimeDesc(@Param("member") Member member,@Param("status") CardStatus status, Pageable pageable);
+    public Page<CardListDto> findCardsByMemberAndStatusOrderByCreatedTimeDesc(@Param("memberId") Long memberId,@Param("status") CardStatus status, Pageable pageable);
 }
