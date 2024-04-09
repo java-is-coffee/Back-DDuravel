@@ -2,7 +2,10 @@ package javaiscoffee.polaroad.post;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.ConstructorExpression;
+import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.ListExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -10,11 +13,14 @@ import ext.javaiscoffee.polaroad.member.QFollow;
 import ext.javaiscoffee.polaroad.member.QMember;
 import ext.javaiscoffee.polaroad.post.QPost;
 import ext.javaiscoffee.polaroad.post.card.QCard;
+import ext.javaiscoffee.polaroad.post.good.QPostGood;
 import ext.javaiscoffee.polaroad.post.hashtag.QHashtag;
 import ext.javaiscoffee.polaroad.post.hashtag.QPostHashtag;
 import jakarta.persistence.EntityManager;
+import javaiscoffee.polaroad.post.card.CardInfoDto;
 import javaiscoffee.polaroad.post.card.CardListRepositoryDto;
 import javaiscoffee.polaroad.post.card.CardStatus;
+import javaiscoffee.polaroad.post.hashtag.PostHashtagInfoDto;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -182,18 +188,107 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
     }
 
     @Override
-    public Post getPostInfoById(Long postId) {
+    public PostInfoDto getPostInfoById(Long postId, Long memberId) {
+        QPostGood postGood = QPostGood.postGood;
         QPostHashtag postHashtag = QPostHashtag.postHashtag;
         QHashtag hashtag = QHashtag.hashtag;
 
-        return queryFactory
-                .selectFrom(post)
+        BooleanExpression isMemberGood = JPAExpressions
+                .selectOne()
+                .from(postGood)
+                .where(postGood.post.postId.eq(postId)
+                        .and(postGood.member.memberId.eq(memberId)))
+                .exists();
+
+        PostInfoDto postInfoDto = queryFactory
+                .select(Projections.constructor(PostInfoDto.class,
+                        post.title,
+                        isMemberGood,
+                        Projections.constructor(PostMemberInfoDto.class, post.member.memberId, post.member.name, post.member.nickname, post.member.profileImage),
+                        post.routePoint,
+                        post.goodNumber,
+                        post.thumbnailIndex,
+                        post.concept,
+                        post.region,
+                        post.updatedTime))
+                .from(post)
                 .leftJoin(post.member, member)
-                .leftJoin(post.cards, card).fetchJoin()
-                .leftJoin(post.postHashtags, postHashtag)
-                .leftJoin(postHashtag.hashtag, hashtag)
                 .where(post.postId.eq(postId))
                 .fetchOne();
+
+        List<CardInfoDto> postCards = queryFactory.select(Projections.constructor(
+                        CardInfoDto.class,
+                        card.cardId,
+                        card.cardIndex,
+                        card.latitude,
+                        card.longitude,
+                        card.location,
+                        card.image,
+                        card.content))
+                .from(card)
+                .where(card.post.postId.eq(postId).and(card.status.eq(CardStatus.ACTIVE)))
+                .fetch();
+
+        List<PostHashtagInfoDto> postHashtags = queryFactory
+                .select(Projections.constructor(
+                        PostHashtagInfoDto.class,
+                        postHashtag.postHashtagId.hashtagId,
+                        postHashtag.hashtag.name))
+                .from(postHashtag)
+                .leftJoin(postHashtag.hashtag, hashtag)
+                .where(postHashtag.post.postId.eq(postId))
+                .fetch();
+
+        postInfoDto.setCards(postCards);
+        postInfoDto.setPostHashtags(postHashtags);
+        return postInfoDto;
+    }
+
+    @Override
+    public PostInfoCachingDto getPostCachingDtoById(Long postId) {
+        QPostHashtag postHashtag = QPostHashtag.postHashtag;
+        QHashtag hashtag = QHashtag.hashtag;
+
+        PostInfoCachingDto postInfoDto = queryFactory
+                .select(Projections.constructor(PostInfoCachingDto.class,
+                        post.title,
+                        post.member.memberId,
+                        post.routePoint,
+                        post.goodNumber,
+                        post.thumbnailIndex,
+                        post.concept,
+                        post.region,
+                        post.updatedTime))
+                .from(post)
+                .leftJoin(post.member, member)
+                .where(post.postId.eq(postId))
+                .fetchOne();
+        List<CardInfoDto> postCards = queryFactory.select(Projections.constructor(
+                        CardInfoDto.class,
+                        card.cardId,
+                        card.cardIndex,
+                        card.latitude,
+                        card.longitude,
+                        card.location,
+                        card.image,
+                        card.content))
+                .from(card)
+                .where(card.post.postId.eq(postId).and(card.status.eq(CardStatus.ACTIVE)))
+                .fetch();
+
+        List<PostHashtagInfoDto> postHashtags = queryFactory
+                .select(Projections.constructor(
+                        PostHashtagInfoDto.class,
+                        postHashtag.postHashtagId.hashtagId,
+                        postHashtag.hashtag.name))
+                .from(postHashtag)
+                .leftJoin(postHashtag.hashtag, hashtag)
+                .where(postHashtag.post.postId.eq(postId))
+                .fetch();
+
+        postInfoDto.setCards(postCards);
+        postInfoDto.setPostHashtags(postHashtags);
+        return postInfoDto;
     }
 
     private static void addBuilderCondition(PostConcept concept, PostRegion region, PostStatus status, BooleanBuilder builder, QPost post) {

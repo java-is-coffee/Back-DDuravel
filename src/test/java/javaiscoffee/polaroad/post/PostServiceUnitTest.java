@@ -16,6 +16,7 @@ import javaiscoffee.polaroad.post.good.PostGoodBatchUpdator;
 import javaiscoffee.polaroad.post.good.PostGoodId;
 import javaiscoffee.polaroad.post.good.PostGoodRepository;
 import javaiscoffee.polaroad.post.hashtag.HashtagService;
+import javaiscoffee.polaroad.redis.RedisService;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
 import org.hibernate.mapping.Any;
@@ -56,6 +57,7 @@ class PostServiceUnitTest {
     @Mock private PostGoodBatchUpdator postGoodBatchUpdator;
     @Mock private CardService cardService;
     @Mock private HashtagService hashtagService;
+    @Mock private RedisService redisService;
     @Mock EntityManager entityManager;
     private Member testMember1;
     private Member testMember2;
@@ -82,7 +84,7 @@ class PostServiceUnitTest {
         //given
         PostSaveDto postSaveDto = successPostBuilder.sample();
         log.info("postSaveDto = {}", postSaveDto);
-        Post testPost = new Post();
+        Post testPost = new Post(1L, "제목", testMember1, "", 0, 0, 0, PostConcept.FOOD, PostRegion.BUSAN, PostStatus.ACTIVE, LocalDateTime.now(), LocalDateTime.now(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
         BeanUtils.copyProperties(postSaveDto,testPost);
         testPost.setMember(testMember1);
         //when
@@ -90,6 +92,7 @@ class PostServiceUnitTest {
         when(postRepository.save(any(Post.class))).thenReturn(testPost);
         when(hashtagService.savePostHashtag(any(String.class),any(Post.class))).thenReturn(null);
         when(cardService.saveCard(any(Card.class))).thenReturn(null);
+        doNothing().when(redisService).saveCachingPostInfo(any(PostInfoCachingDto.class), any(Long.class));
         ResponseEntity<Post> response = postService.savePost(postSaveDto, 1L);
         //then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -102,7 +105,7 @@ class PostServiceUnitTest {
         //given
         PostSaveDto postSaveDto = failPostBuilder.sample();
         log.info("postSaveDto = {}", postSaveDto);
-        Post testPost = new Post();
+        Post testPost = new Post(1L, "제목", testMember1, "", 0, 0, 0, PostConcept.FOOD, PostRegion.BUSAN, PostStatus.ACTIVE, LocalDateTime.now(), LocalDateTime.now(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
         BeanUtils.copyProperties(postSaveDto,testPost);
         testPost.setMember(testMember1);
         //when & then
@@ -117,7 +120,7 @@ class PostServiceUnitTest {
         PostSaveDto editPostDto = successPostBuilder.sample();
         log.info("postSaveDto = {}", postSaveDto);
         log.info("editPostDto = {}", editPostDto);
-        Post savedPost = Post.builder().postId(1L).member(testMember1).build();
+        Post savedPost = new Post(1L, "제목", testMember1, "", 0, 0, 0, PostConcept.FOOD, PostRegion.BUSAN, PostStatus.ACTIVE, LocalDateTime.now(), LocalDateTime.now(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());;
         Post editedPost = Post.builder().postId(1L).member(testMember2).build();
         BeanUtils.copyProperties(postSaveDto,savedPost);
         BeanUtils.copyProperties(editPostDto,editedPost);
@@ -126,6 +129,7 @@ class PostServiceUnitTest {
         when(memberRepository.findById(any(Long.class))).thenReturn(Optional.of(testMember1));
         doNothing().when(hashtagService).editPostHashtags(any(List.class), eq(savedPost));
         doNothing().when(cardService).editCards(any(List.class), eq(savedPost), eq(testMember1));
+        doNothing().when(redisService).updateCachingPost(any(PostInfoCachingDto.class), any(Long.class));
         //then
         ResponseEntity<Post> response = postService.editPost(editPostDto, testMember1.getMemberId(), savedPost.getPostId());
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -144,7 +148,7 @@ class PostServiceUnitTest {
         PostSaveDto editPostDto = successPostBuilder.sample();
         log.info("postSaveDto = {}", postSaveDto);
         log.info("editPostDto = {}", editPostDto);
-        Post savedPost = Post.builder().postId(1L).member(testMember1).build();
+        Post savedPost = new Post(1L, "제목", testMember1, "", 0, 0, 0, PostConcept.FOOD, PostRegion.BUSAN, PostStatus.ACTIVE, LocalDateTime.now(), LocalDateTime.now(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());;
         Post editedPost = Post.builder().postId(1L).member(testMember2).build();
         BeanUtils.copyProperties(postSaveDto,savedPost);
         BeanUtils.copyProperties(editPostDto,editedPost);
@@ -163,7 +167,7 @@ class PostServiceUnitTest {
         PostSaveDto editPostDto = successPostBuilder.sample();
         log.info("postSaveDto = {}", postSaveDto);
         log.info("editPostDto = {}", editPostDto);
-        Post savedPost = Post.builder().postId(1L).member(testMember1).build();
+        Post savedPost = new Post(1L, "제목", testMember1, "", 0, 0, 0, PostConcept.FOOD, PostRegion.BUSAN, PostStatus.ACTIVE, LocalDateTime.now(), LocalDateTime.now(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());;
         Post editedPost = Post.builder().postId(1L).member(testMember2).build();
         BeanUtils.copyProperties(postSaveDto,savedPost);
         BeanUtils.copyProperties(editPostDto,editedPost);
@@ -183,7 +187,7 @@ class PostServiceUnitTest {
         PostSaveDto editPostDto = failPostBuilder.sample();
         log.info("postSaveDto = {}", postSaveDto);
         log.info("editPostDto = {}", editPostDto);
-        Post savedPost = Post.builder().postId(1L).member(testMember1).build();
+        Post savedPost = new Post(1L, "제목", testMember1, "", 0, 0, 0, PostConcept.FOOD, PostRegion.BUSAN, PostStatus.ACTIVE, LocalDateTime.now(), LocalDateTime.now(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());;
         Post editedPost = Post.builder().postId(1L).member(testMember2).build();
         BeanUtils.copyProperties(postSaveDto,savedPost);
         BeanUtils.copyProperties(editPostDto,editedPost);
@@ -200,7 +204,7 @@ class PostServiceUnitTest {
         editPostDto.setThumbnailIndex(0);
         log.info("postSaveDto = {}", postSaveDto);
         log.info("editPostDto = {}", editPostDto);
-        Post savedPost = Post.builder().postId(1L).member(testMember1).build();
+        Post savedPost = new Post(1L, "제목", testMember1, "", 0, 0, 0, PostConcept.FOOD, PostRegion.BUSAN, PostStatus.ACTIVE, LocalDateTime.now(), LocalDateTime.now(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());;
         Post editedPost = Post.builder().postId(1L).member(testMember2).build();
         BeanUtils.copyProperties(postSaveDto,savedPost);
         BeanUtils.copyProperties(editPostDto,editedPost);

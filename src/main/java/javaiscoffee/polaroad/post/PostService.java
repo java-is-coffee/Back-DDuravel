@@ -90,8 +90,12 @@ public class PostService {
         int cardIndex = 0;
         for(CardSaveDto cardInfo : postSaveDto.getCards()) {
             Card newCard = new Card();
-            BeanUtils.copyProperties(cardInfo,newCard);
             newCard.setCardIndex(cardIndex++);
+            newCard.setLocation(cardInfo.getLocation());
+            newCard.setLatitude(cardInfo.getLatitude());
+            newCard.setLongitude(cardInfo.getLongitude());
+            newCard.setImage(cardInfo.getImage());
+            newCard.setContent(cardInfo.getContent());
             newCard.setPost(savedPost);
             newCard.setMember(member);
             cardService.saveCard(newCard);
@@ -100,6 +104,8 @@ public class PostService {
         member.setPostNumber(member.getPostNumber() + 1);
 
         log.info("저장된 post = {}",post);
+
+        redisService.saveCachingPostInfo(toPostInfoCachingDto(savedPost), savedPost.getPostId());
         return ResponseEntity.ok(savedPost);
     }
     /**
@@ -111,13 +117,15 @@ public class PostService {
         if(postSaveDto.getThumbnailIndex() < 0 || postSaveDto.getThumbnailIndex() >= postSaveDto.getCards().size()) throw new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
         //카드, 해쉬태그 개수가 잘못된 경우
         if(postSaveDto.getCards().size() > 10 || postSaveDto.getHashtags().size() > 10) throw new BadRequestException("카드 또는 해쉬태그 개수가 많습니다.");
-        Post oldPost = postRepository.findById(postId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
+        Post oldPost = postRepository.findById(postId).orElseThrow(() -> new NotFoundException(ResponseMessages.POST_NOT_FOUND.getMessage()));
         //포스트가 삭제되었으면
-        if(oldPost.getStatus() == PostStatus.DELETED) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
+        if(oldPost.getStatus() == PostStatus.DELETED) throw new NotFoundException(ResponseMessages.POST_NOT_FOUND.getMessage());
+        //인기게시글이면 수정 불가
+        if(oldPost.getGoodNumber() >= 10) throw new BadRequestException("인기 포스트는 수정이 불가능합니다.");
         //생성자가 아니면 수정 불가
-        Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
+        Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.MEMBER_NOT_FOUND.getMessage()));
         if(!Objects.equals(oldPost.getMember().getMemberId(), memberId)) throw new ForbiddenException(ResponseMessages.FORBIDDEN.getMessage());
-        if(!member.getStatus().equals(MemberStatus.ACTIVE)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
+        if(!member.getStatus().equals(MemberStatus.ACTIVE)) throw new NotFoundException(ResponseMessages.MEMBER_NOT_FOUND.getMessage());
         //포스트 정보 업데이트
         oldPost.setTitle(postSaveDto.getTitle());
         oldPost.setRoutePoint(postSaveDto.getRoutePoint());
@@ -138,6 +146,7 @@ public class PostService {
         cardService.editCards(postSaveDto.getCards(), oldPost, member);
 
         log.info("수정된 post = {}",oldPost);
+        redisService.updateCachingPost(toPostInfoCachingDto(oldPost), postId);
         return ResponseEntity.ok(oldPost);
     }
     /**
@@ -189,12 +198,40 @@ public class PostService {
      * 포스트 내용 조회
      */
     public ResponseEntity<PostInfoDto> getPostInfoById(Long postId, Long memberId) {
-        Post post = postRepository.getPostInfoById(postId);
-//        Member member = memberRepository.findById(post.getMember().getMemberId()).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
-        //포스트가 삭제되었으면 에러
-        if(post == null || post.getStatus().equals(PostStatus.DELETED)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
+        PostSimpleInfoDto simplePostInfo = postRepository.getPostSimpleInfo(postId).orElseThrow(() -> new NotFoundException(ResponseMessages.POST_NOT_FOUND.getMessage()));
+        MemberSimpleInfoDto simpleMemberInfo = memberRepository.getMemberSimpleInfo(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
+        //포스트나 멤버가 조회 가능한 상태가 아니면 에러
+        if(!simplePostInfo.getStatus().equals(PostStatus.ACTIVE)) throw new NotFoundException(ResponseMessages.POST_NOT_FOUND.getMessage());
+        if(!simpleMemberInfo.getStatus().equals(MemberStatus.ACTIVE)) throw new NotFoundException(ResponseMessages.MEMBER_NOT_FOUND.getMessage());
+
+        //캐싱된 정보가 있으면 캐싱 정보 전달
+        PostInfoCachingDto cachingPostInfo = redisService.getCachingPostInfo(postId);
+        if(cachingPostInfo != null) {
+            log.info("캐싱된 포스트 정보 전달 = {}",postId);
+            PostGoodId postGoodId = new PostGoodId(memberId, postId);
+            boolean isMemberGood = postGoodRepository.existsById(postGoodId);
+            PostMemberInfoDto postMemberInfo = memberRepository.getPostMemberInfoByMemberId(memberId);
+
+            redisService.addPostView(postId, memberId);
+            return ResponseEntity.ok(new PostInfoDto(
+                    cachingPostInfo.getTitle(),
+                    isMemberGood,
+                    postMemberInfo,
+                    cachingPostInfo.getRoutePoint(),
+                    cachingPostInfo.getGoodNumber(),
+                    cachingPostInfo.getThumbnailIndex(),
+                    cachingPostInfo.getConcept(),
+                    cachingPostInfo.getRegion(),
+                    cachingPostInfo.getUpdatedTime(),
+                    cachingPostInfo.getCards(),
+                    cachingPostInfo.getPostHashtags()));
+
+
+        }
+
+        PostInfoDto postInfoDto = postRepository.getPostInfoById(postId, memberId);
         redisService.addPostView(postId, memberId);
-        return ResponseEntity.ok(toPostInfoDto(post,memberId));
+        return ResponseEntity.ok(postInfoDto);
     }
 
     /**
@@ -294,6 +331,37 @@ public class PostService {
     }
 
     /**
+     * post 객체를 캐싱 객체로 매핑
+     */
+    private PostInfoCachingDto toPostInfoCachingDto(Post post) {
+        return new PostInfoCachingDto(
+                post.getTitle(),
+                post.getMember().getMemberId(),
+                post.getRoutePoint(),
+                post.getGoodNumber(),
+                post.getThumbnailIndex(),
+                post.getConcept(),
+                post.getRegion(),
+                post.getUpdatedTime(),
+                post.getCards().stream()
+                        .map(card -> new CardInfoDto(
+                                card.getCardId(),
+                                card.getCardIndex(),
+                                card.getLatitude(),
+                                card.getLongitude(),
+                                card.getLocation(),
+                                card.getImage(),
+                                card.getContent()))
+                        .toList(),
+                post.getPostHashtags().stream()
+                        .map(postHashtag -> new PostHashtagInfoDto(
+                                postHashtag.getHashtag().getHashtagId(),
+                                postHashtag.getHashtag().getName()))
+                        .toList()
+        );
+    }
+
+    /**
      * 포스트랑 멤버를 포스트 내용 조회 ResponseDto로 변환
      */
     private PostInfoDto toPostInfoDto(Post post, Long memberId) {
@@ -324,6 +392,7 @@ public class PostService {
                 post.getThumbnailIndex(),
                 post.getConcept(),
                 post.getRegion(),
+                post.getUpdatedTime(),
                 cardDtos,
                 hashtagDtos
         );

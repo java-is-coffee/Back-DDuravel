@@ -26,7 +26,7 @@ import java.util.List;
         property = "postId"
 )
 @Builder
-@ToString(exclude = "member")
+@ToString(exclude = {"member","cards","postHashtags"})
 public class Post {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long postId;

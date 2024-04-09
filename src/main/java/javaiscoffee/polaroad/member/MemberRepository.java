@@ -1,5 +1,7 @@
 package javaiscoffee.polaroad.member;
 
+import javaiscoffee.polaroad.post.PostMemberInfoDto;
+
 import java.util.Optional;
 
 public interface MemberRepository {
@@ -22,6 +24,8 @@ public interface MemberRepository {
 
     //간략하게 정보 조회할 때 사용하는 메서드
     public Optional<MemberSimpleInfoDto> getMemberSimpleInfo(Long memberId);
+    //포스트 멤버 정보 조회할 때 사용하는 메서드
+    public PostMemberInfoDto getPostMemberInfoByMemberId(Long memberId);
     public void addMemberPostNumber(Long memberId, int changeNumber);
 
 }

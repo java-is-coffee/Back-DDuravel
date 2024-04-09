@@ -16,6 +16,8 @@ public enum ResponseMessages {
     REVIEW_GOOD_FAILED("자신이 작성한 댓글은 추천할 수 없습니다."),
     BAD_REQUEST("잘못된 요청입니다."),
     NOT_FOUND("찾을 수 없음"),
+    POST_NOT_FOUND("포스트를 찾을 수 없습니다."),
+    MEMBER_NOT_FOUND("멤버를 찾을 수 없습니다."),
     SEND_FAILED("메세지를 전달할 수 없습니다."),
     SESSION_CLOSED("연결이 종료되어 있어 실패했습니다."),
     ERROR("서버 오류");

@@ -5,24 +5,20 @@ import javaiscoffee.polaroad.post.card.CardInfoDto;
 import javaiscoffee.polaroad.post.hashtag.PostHashtagInfoDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * 포스트 내용 조회 ResponseDto
- */
-
 @Data
 @AllArgsConstructor
-@Schema(description = "포스트 내용 조회할 때 사용되는 응답Dto")
-public class PostInfoDto {
+@NoArgsConstructor
+@Schema(description = "포스트 내용 캐싱할 때 사용되는 Dto")
+public class PostInfoCachingDto {
     @Schema(description = "포스트 제목", example = "한강 물 수제비 맛집")
     private String title;
-    @Schema(description = "멤버가 해당 포스트를 추천했는지 유무", example = "false")
-    private boolean isMemberGood;
-    @Schema(description = "포스트를 적은 멤버의 정보가 담긴 Dto")
-    private PostMemberInfoDto memberInfo;
+    @Schema(description = "글 작성자 고유 아이디", example = "1")
+    private Long memberId;
     @Schema(description = "포스트 경로 좌표 직렬화", example = "프론트에서 알아서")
     private String routePoint;
     @Schema(description = "포스트 추천 수", example = "7")
@@ -40,18 +36,4 @@ public class PostInfoDto {
     @Schema(description = "포스트 해쉬태그")
     private List<PostHashtagInfoDto> postHashtags;
 
-    // getPostInfoById 메서드에서 사용하는 생성자
-    public PostInfoDto(String title, boolean isMemberGood, PostMemberInfoDto memberInfo, String routePoint, int goodNumber, int thumbnailIndex, PostConcept concept, PostRegion region, LocalDateTime updatedTime) {
-        this.title = title;
-        this.isMemberGood = isMemberGood;
-        this.memberInfo = memberInfo;
-        this.routePoint = routePoint;
-        this.goodNumber = goodNumber;
-        this.thumbnailIndex = thumbnailIndex;
-        this.concept = concept;
-        this.region = region;
-        this.updatedTime = updatedTime;
-        this.cards = null;
-        this.postHashtags = null;
-    }
 }

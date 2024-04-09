@@ -27,6 +27,9 @@ public interface PostRepository extends JpaRepository<Post, Long>, QueryPostRepo
     @Query("update Post p set p.goodNumber = p.goodNumber + :changeNumber where p.postId = :postId")
     void updatePostGoodNumber(@Param("changeNumber") int changeNumber,@Param("postId") Long postId);
 
+    @Query("select p.goodNumber from Post p where p.postId = :postId")
+    int getPostGoodNumber(Long postId);
+
     // 포스트 간단 정보만 조회하는 메서드
     @Query("select new javaiscoffee.polaroad.post.PostSimpleInfoDto(p.postId, p.member.memberId, p.status) from Post p where p.postId = :postId")
     Optional<PostSimpleInfoDto> getPostSimpleInfo(@Param("postId") Long postId);
