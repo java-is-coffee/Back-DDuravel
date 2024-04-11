@@ -10,34 +10,7 @@ import java.util.List;
  */
 @Data
 public class SliceResponseDto<T> {
-    @Schema(description = "## 댓글 리스트",
-            example =
-                    "[\n" +
-                    "    {\n" +
-                    "        \"reviewId\": 2,\n" +
-                    "        \"postId\": 1,\n" +
-                    "        \"memberId\": 1,\n" +
-                    "        \"profileImage\": \"\",\n" +
-                    "        \"nickname\": \"폴라곰곰\",\n" +
-                    "        \"content\": \"저도 다녀왔는데 너무 좋았어요.\",\n" +
-                    "        \"reviewPhotoList\": [\n" +
-                    "            \"https://lh5.googleusercontent.com/p/AF1QipM1QxKKnGOYaD3DadUkr3fJrxTquvyGP2eRhjR2=w1080-h624-n-k-no\"\n" +
-                    "        ],\n" +
-                    "        \"updatedTime\": \"2024-03-18T11:26:13.117278\"\n" +
-                    "    },\n" +
-                    "    {\n" +
-                    "        \"reviewId\": 1,\n" +
-                    "        \"postId\": 1,\n" +
-                    "        \"memberId\": 1,\n" +
-                    "        \"profileImage\": \"\",\n" +
-                    "        \"nickname\": \"폴라곰곰\",\n" +
-                    "        \"content\": \"저도 다녀왔는데 너무 좋았어요.\",\n" +
-                    "        \"reviewPhotoList\": [\n" +
-                    "            \"https://lh5.googleusercontent.com/p/AF1QipM1QxKKnGOYaD3DadUkr3fJrxTquvyGP2eRhjR2=w1080-h624-n-k-no\"\n" +
-                    "        ],\n" +
-                    "        \"updatedTime\": \"2024-03-18T11:26:10.492205\"\n" +
-                    "    }\n" +
-                    "]")
+    @Schema(description = "## 댓글 리스트")
     private List<ResponseReviewDto> content;
     @Schema(description = "## 다음 페이지가 있는지 여부", example ="true")
     private boolean hasNext;

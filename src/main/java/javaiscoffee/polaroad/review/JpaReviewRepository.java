@@ -5,9 +5,11 @@ import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
 import javaiscoffee.polaroad.member.Member;
 import javaiscoffee.polaroad.post.Post;
+import javaiscoffee.polaroad.review.reviewPhoto.ReviewPhotoInfoDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -110,4 +112,38 @@ public class JpaReviewRepository implements ReviewRepository{
                 .getSingleResult();
     }
 
+    // 배치 처리로 좋아요 변동 업데이트
+    @Override
+    @Transactional
+    public void updateReviewGoodNumber(int changeNumber, Long reviewId) {
+        Query query = em.createQuery("update Review r set r.goodNumber = r.goodNumber + :changeNumber where r.reviewId = :reviewId")
+                .setParameter("changeNumber", changeNumber)
+                .setParameter("reviewId", reviewId);
+        query.executeUpdate();
+    }
+
+    @Override
+    public int getReviewGoodNumber(Long reviewId) {
+        Query query = em.createQuery("select r.goodNumber from Review r where r.reviewId = :reviewId", Integer.class)
+                .setParameter("reviewId", reviewId);
+        return (Integer) query.getSingleResult();
+    }
+
+    @Override
+    public ReviewInfoCachingDto getReviewCachingDto(Long reviewId, ReviewStatus status) {
+        ReviewInfoCachingDto reviewInfoDto = em.createQuery("SELECT NEW javaiscoffee.polaroad.review.ReviewInfoCachingDto(" +
+                        "review.reviewId, review.post.postId, review.member.memberId, review.member.profileImage, review.nickname, review.content, review.updatedTime, review.goodNumber)" +
+                        "FROM Review review LEFT JOIN review.post post LEFT JOIN review.member member WHERE review.reviewId = :reviewId", ReviewInfoCachingDto.class)
+                .setParameter("reviewId", reviewId)
+                .getSingleResult();
+
+        List<ReviewPhotoInfoDto> reviewPhotos = em.createQuery("SELECT NEW javaiscoffee.polaroad.review.ReviewPhotoInfoDto(" +
+                        "reviewPhoto.reviewPhotoId, reviewPhoto.image) FROM ReviewPhoto rp WHERE rp.review.reviewId = :reviewId AND rp.review.status = :status", ReviewPhotoInfoDto.class)
+                .setParameter("reviewId", reviewId)
+                .setParameter("status", status)
+                .getResultList();
+
+        reviewInfoDto.setReviewPhotoList(reviewPhotos);
+        return reviewInfoDto;
+    }
 }

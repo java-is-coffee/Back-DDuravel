@@ -11,6 +11,7 @@ import javaiscoffee.polaroad.post.PostRepository;
 import javaiscoffee.polaroad.post.PostStatus;
 import javaiscoffee.polaroad.response.ResponseMessages;
 import javaiscoffee.polaroad.review.reviewGood.ReviewGood;
+import javaiscoffee.polaroad.review.reviewGood.ReviewGoodBatchUpdater;
 import javaiscoffee.polaroad.review.reviewGood.ReviewGoodId;
 import javaiscoffee.polaroad.review.reviewGood.ReviewGoodRepository;
 import javaiscoffee.polaroad.review.reviewPhoto.JpaReviewPhotoRepository;
@@ -39,6 +40,7 @@ public class ReviewService {
     private final ReviewPhotoService reviewPhotoService;
     private final JpaReviewPhotoRepository reviewPhotoRepository;
     private final ReviewGoodRepository reviewGoodRepository;
+    private final ReviewGoodBatchUpdater reviewGoodBatchUpdater;
 
     public ResponseReviewDto createReview(ReviewDto reviewDto, Long memberId, Long postId) {
         if (!memberId.equals(reviewDto.getMemberId())) {
@@ -225,17 +227,19 @@ public class ReviewService {
         // 좋아요
         if (reviewGood == null) {
             reviewGoodRepository.save(new ReviewGood(reviewGoodId, member, review));
-            review.setGoodNumber(review.getGoodNumber() + 1);
-            review.setGoodOrNot(true);
-            reviewRepository.update(review);
+//            review.setGoodNumber(review.getGoodNumber() + 1);
+//            review.setGoodOrNot(true);
+//            reviewRepository.update(review);
+            reviewGoodBatchUpdater.increaseReviewGoodCount(reviewId);
             log.info("좋아요");
         }
         // 좋아요 취소
         else {
             reviewGoodRepository.delete(reviewGood);
-            review.setGoodNumber(review.getGoodNumber() - 1);
-            review.setGoodOrNot(false);
-            reviewRepository.update(review);
+//            review.setGoodNumber(review.getGoodNumber() - 1);
+//            review.setGoodOrNot(false);
+//            reviewRepository.update(review);
+            reviewGoodBatchUpdater.decreaseReviewGoodCount(reviewId);
             log.info("좋아요 취소");
         }
 

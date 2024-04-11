@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javaiscoffee.polaroad.post.PostInfoCachingDto;
 import javaiscoffee.polaroad.post.PostRankingRange;
+import javaiscoffee.polaroad.review.ReviewInfoCachingDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -31,6 +32,7 @@ public class RedisService {
     private final static String POST_GOOD_WEEKLY_PREFIX = "pgw:";
     private final static String POST_GOOD_MONTHLY_PREFIX = "pgm:";
     private final static String POST_CACHING_PREFIX = "pc:";
+    private final static String REVIEW_CACHING_PREFIX = "rc:";
 
     @Autowired
     public RedisService(RedisTemplate<String, String> redisTemplate, ObjectMapper objectMapper) {
@@ -108,6 +110,21 @@ public class RedisService {
             redisTemplate.expire(cachingKey, 60, TimeUnit.MINUTES);
         } catch (JsonProcessingException e) {
             log.error("JSON 변환 오류 -> 캐싱 처리 실패 = {}", postId);
+        }
+    }
+
+    /**
+     * 리뷰 캐싱 Dto를 레디스에 저장
+     */
+    public void saveCachingReviewInfo(ReviewInfoCachingDto reviewDto, Long reviewId) {
+        log.info("댓글 캐싱 저장 = {}", reviewId);
+        String cachingKey = REVIEW_CACHING_PREFIX + reviewId;
+        try {
+            String json = objectMapper.writeValueAsString(reviewDto);
+            redisTemplate.opsForValue().set(cachingKey, json);
+            redisTemplate.expire(cachingKey, 60, TimeUnit.MINUTES);
+        } catch (JsonProcessingException e) {
+            log.error("JSON 변환 오류 => 캐시 처리 실패 = {}", reviewId);
         }
     }
 
