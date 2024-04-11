@@ -9,10 +9,7 @@ import javaiscoffee.polaroad.post.Post;
 import javaiscoffee.polaroad.response.ResponseMessages;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -83,5 +80,11 @@ public class CardService {
         Page<CardListDto> cardPage = cardRepository.findCardsByMemberAndStatusOrderByCreatedTimeDesc(memberInfo.getMemberId(), CardStatus.ACTIVE,pageable);
 
         return new CardListResponseDto(cardPage.getContent(), cardPage.getTotalPages());
+    }
+
+    public List<MapCardListDto> getMapCardList(double swLatitude, double neLatitude, double swLongitude, double neLongitude, int pageSize) {
+        Pageable pageable = PageRequest.of(0, pageSize);
+        Slice<MapCardListDto> mapCardList = cardRepository.getMapCardList(swLatitude, neLatitude, swLongitude, neLongitude, pageable);
+        return mapCardList.getContent();
     }
 }
