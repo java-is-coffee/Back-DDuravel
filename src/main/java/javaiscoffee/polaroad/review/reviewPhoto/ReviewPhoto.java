@@ -5,21 +5,24 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import javaiscoffee.polaroad.review.Review;
 import lombok.*;
+
+import java.beans.ConstructorProperties;
 
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString(exclude = "reviewId")
+@ToString/*(exclude = "review")*/
 @JsonIdentityInfo(
         generator = ObjectIdGenerators.PropertyGenerator.class,
         property = "reviewPhotoId"
 )
 @Entity
 @Getter
-//@Setter //NOTE: 테스트시 사용 주석 처리 할 것
 @Table(name = "review_photo")
 public class ReviewPhoto {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,4 +33,11 @@ public class ReviewPhoto {
     private Review review;
     @Setter
     private String image;   // 사진 url
+
+    @ConstructorProperties({"reviewPhotoId","image"})
+    public ReviewPhoto(Long reviewPhotoId, String image) {
+        this.reviewPhotoId = reviewPhotoId;
+        this.image = image;
+    }
+
 }

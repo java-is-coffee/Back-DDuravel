@@ -4,14 +4,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
+import java.beans.ConstructorProperties;
 import java.util.List;
 
 
 @Data
 public class ReviewDto {
     @NotNull
-    @Min(1L)
-    @Max(10L)
     @Schema(description = "## 포스트 Id", example = "1")
     private Long postId;
     @NotNull
@@ -22,5 +21,13 @@ public class ReviewDto {
     @NotNull
     @Size(min = 1,max = 5)
     @Schema(description = "## 사진 url 리스트")
-    private List<@NotBlank String> reviewPhotoList;
+    private List<String> reviewPhotoList;
+
+    @ConstructorProperties({"postId","memberId","content","reviewPhotoList"})
+    public ReviewDto(Long postId, Long memberId, String content, List<String> reviewPhotoList) {
+        this.postId = postId;
+        this.memberId = memberId;
+        this.content = content;
+        this.reviewPhotoList = reviewPhotoList;
+    }
 }
