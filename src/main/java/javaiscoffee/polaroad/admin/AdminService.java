@@ -75,9 +75,10 @@ public class AdminService {
     @Transactional
     public PostInfoDto getPostInfoById(Long adminId, Long postId) {
         Member admin = checkAdmin(adminId);
-        Post post = postRepository.findById(postId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
+        postRepository.getPostSimpleInfo(postId).orElseThrow(() -> new NotFoundException(ResponseMessages.POST_NOT_FOUND.getMessage()));
+        PostInfoDto postInfo = postRepository.getPostInfoById(postId, adminId);
         saveAdminLog(admin, postId, AdminTargetType.POST, AdminActionType.GET, null, null);
-        return toPostInfoDto(post);
+        return postInfo;
     }
 
     /**
@@ -164,6 +165,7 @@ public class AdminService {
                 post.getThumbnailIndex(),
                 post.getConcept(),
                 post.getRegion(),
+                post.getUpdatedTime(),
                 cardDtos,
                 hashtagDtos
         );

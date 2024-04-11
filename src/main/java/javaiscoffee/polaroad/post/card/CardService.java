@@ -3,6 +3,7 @@ package javaiscoffee.polaroad.post.card;
 import javaiscoffee.polaroad.exception.NotFoundException;
 import javaiscoffee.polaroad.member.Member;
 import javaiscoffee.polaroad.member.MemberRepository;
+import javaiscoffee.polaroad.member.MemberSimpleInfoDto;
 import javaiscoffee.polaroad.member.MemberStatus;
 import javaiscoffee.polaroad.post.Post;
 import javaiscoffee.polaroad.response.ResponseMessages;
@@ -75,15 +76,12 @@ public class CardService {
         }
     }
 
-    public List<CardListDto> getCardListByMember(Long memberId,int page, int pageSize) {
-        Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
-        if(member.getStatus() == MemberStatus.DELETED) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
-        Pageable pageable = PageRequest.of(page, pageSize, Sort.Direction.DESC, "createdTime");
-        Page<Card> cardPage = cardRepository.findCardsByMemberAndStatusOrderByCreatedTimeDesc(member, CardStatus.ACTIVE,pageable);
+    public CardListResponseDto getCardListByMember(Long memberId,int page, int pageSize) {
+        MemberSimpleInfoDto memberInfo = memberRepository.getMemberSimpleInfo(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
+        if(memberInfo.getStatus() == MemberStatus.DELETED) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
+        Pageable pageable = PageRequest.of(page - 1, pageSize, Sort.Direction.DESC, "createdTime");
+        Page<CardListDto> cardPage = cardRepository.findCardsByMemberAndStatusOrderByCreatedTimeDesc(memberInfo.getMemberId(), CardStatus.ACTIVE,pageable);
 
-        List<Card> memberCardList = cardPage.getContent();
-        return memberCardList.stream()
-                .map(card -> new CardListDto(card.getCardId(), card.getLocation(), card.getImage()))
-                .toList();
+        return new CardListResponseDto(cardPage.getContent(), cardPage.getTotalPages());
     }
 }

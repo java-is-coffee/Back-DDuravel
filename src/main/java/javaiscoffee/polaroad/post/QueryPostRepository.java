@@ -12,7 +12,9 @@ public interface QueryPostRepository {
 
     PostListResponseDto searchPostByHashtag(int page, int pageSize, Long hashtagId, PostListSort order, PostConcept concept, PostRegion region, PostStatus status);
 
-    Post getPostInfoById(Long postId);
+    PostInfoDto getPostInfoById(Long postId, Long memberId);
 
-    PostListResponseDto getFollowingMembersPostByMember(Member member,int page, int pageSize, PostStatus status);
+    PostInfoCachingDto getPostCachingDtoById(Long postId);
+
+    PostListResponseDto getFollowingMembersPostByMember(Long memberId,int page, int pageSize, PostStatus status);
 }

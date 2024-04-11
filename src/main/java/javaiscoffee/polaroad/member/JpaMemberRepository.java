@@ -1,11 +1,10 @@
 package javaiscoffee.polaroad.member;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.NoResultException;
-import jakarta.persistence.Table;
-import jakarta.persistence.TypedQuery;
+import jakarta.persistence.*;
+import javaiscoffee.polaroad.post.PostMemberInfoDto;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -55,7 +54,8 @@ public class JpaMemberRepository implements MemberRepository {
     public Optional<Member> findByMemberId(Long memberId) {
         TypedQuery<Member> query = em.createQuery("SELECT m FROM Member m WHERE m.memberId = :memberId", Member.class);
         query.setParameter("memberId", memberId);
-        return Optional.ofNullable(query.getSingleResult());
+        List<Member> results = query.getResultList();
+        return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
     }
 
     @Override
@@ -84,5 +84,30 @@ public class JpaMemberRepository implements MemberRepository {
     public Member updateMember(Member updatedMember) {
         em.merge(updatedMember);
         return updatedMember;
+    }
+
+    @Override
+    public Optional<MemberSimpleInfoDto> getMemberSimpleInfo(Long memberId) {
+        List<MemberSimpleInfoDto> results = em.createQuery("SELECT new javaiscoffee.polaroad.member.MemberSimpleInfoDto(m.memberId, m.status) " +
+                        "FROM Member m WHERE m.memberId = :memberId", MemberSimpleInfoDto.class)
+                .setParameter("memberId", memberId)
+                .getResultList();
+        return results.stream().findFirst();
+    }
+
+    @Override
+    public PostMemberInfoDto getPostMemberInfoByMemberId(Long memberId) {
+        TypedQuery<PostMemberInfoDto> query = em.createQuery("SELECT m.memberId, m.name, m.nickname, m.profileImage FROM Member m WHERE m.memberId = :memberId", PostMemberInfoDto.class);
+        query.setParameter("memberId", memberId);
+        List<PostMemberInfoDto> results = query.getResultList();
+        return results.get(0);
+    }
+
+    @Override
+    public void addMemberPostNumber(Long memberId, int changeNumber) {
+        em.createQuery("UPDATE Member m Set m.postNumber = m.postNumber + :changeNumber WHERE m.memberId = :memberId")
+                .setParameter("changeNumber", changeNumber)
+                .setParameter("memberId", memberId)
+                .executeUpdate();
     }
 }

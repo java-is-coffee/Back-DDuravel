@@ -14,6 +14,7 @@ import javaiscoffee.polaroad.post.Post;
 import javaiscoffee.polaroad.post.card.Card;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -33,6 +34,16 @@ public class QueryWishListRepositoryImpl implements QueryWishListRepository{
         QCard card = QCard.card;
         QWishList wishList = QWishList.wishList;
         QWishListPost wishListPost = QWishListPost.wishListPost;
+
+        //검색 결과 최대 개수 구하기
+        Long totalPostsCount = queryFactory
+                .select(post.count())
+                .leftJoin(post.wishListPosts, wishListPost)
+                .leftJoin(wishListPost.wishList, wishList)
+                .where(wishListPost.wishList.wishListId.eq(wishListId))
+                .fetchOne();
+        //검색 결과가 없으므로 빈 배열 반환
+        if(totalPostsCount == null) return new WishListPostListResponseDto(new ArrayList<>(),0);
 
         // 주요 변경: fetchJoin 제거, DTO 직접 조회
         JPAQuery<WishListPostDto> query = queryFactory
@@ -55,13 +66,6 @@ public class QueryWishListRepositoryImpl implements QueryWishListRepository{
                 .offset(getOffset(page, pageSize))
                 .limit(pageSize);
 
-        //검색 결과 최대 개수 구하기
-        long totalPostsCount = queryFactory
-                .selectFrom(post)
-                .leftJoin(post.wishListPosts, wishListPost)
-                .leftJoin(wishListPost.wishList, wishList)
-                .where(wishListPost.wishList.wishListId.eq(wishListId))
-                .fetchCount();
         int maxPage = (int) Math.ceil((double) totalPostsCount / pageSize);
 
         return new WishListPostListResponseDto(query.fetch(), maxPage);

@@ -1,6 +1,10 @@
 package javaiscoffee.polaroad.redis;
 
-import javaiscoffee.polaroad.post.PostRankingDto;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import javaiscoffee.polaroad.post.PostInfoCachingDto;
+import javaiscoffee.polaroad.post.PostRankingRange;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -13,10 +17,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @Service
 public class RedisService {
 
     private final RedisTemplate<String, String> redisTemplate;
+    private final ObjectMapper objectMapper;
     private final static String MEMBER_VIEW_PREFIX = "mv:";
     private final static String POST_VIEW_DAILY_PREFIX = "pvd:";
     private final static String POST_VIEW_WEEKLY_PREFIX = "pvw:";
@@ -24,10 +30,12 @@ public class RedisService {
     private final static String POST_GOOD_DAILY_PREFIX = "pgd:";
     private final static String POST_GOOD_WEEKLY_PREFIX = "pgw:";
     private final static String POST_GOOD_MONTHLY_PREFIX = "pgm:";
+    private final static String POST_CACHING_PREFIX = "pc:";
 
     @Autowired
-    public RedisService(RedisTemplate<String, String> redisTemplate) {
+    public RedisService(RedisTemplate<String, String> redisTemplate, ObjectMapper objectMapper) {
         this.redisTemplate = redisTemplate;
+        this.objectMapper = objectMapper;
     }
 
     public void setValue(String key, String value) {
@@ -89,14 +97,59 @@ public class RedisService {
     }
 
     /**
+     * 포스트 캐싱 Dto 레디스에 저장
+     */
+    public void saveCachingPostInfo(PostInfoCachingDto postDto,Long postId) {
+        log.info("게시글 캐싱 저장 = {}",postId);
+        String cachingKey = POST_CACHING_PREFIX + postId;
+        try {
+            String json = objectMapper.writeValueAsString(postDto); // 객체를 JSON 문자열로 변환
+            redisTemplate.opsForValue().set(cachingKey, json);
+            redisTemplate.expire(cachingKey, 60, TimeUnit.MINUTES);
+        } catch (JsonProcessingException e) {
+            log.error("JSON 변환 오류 -> 캐싱 처리 실패 = {}", postId);
+        }
+    }
+
+    /**
+     * 캐싱되어 있는 포스트 조회
+     */
+    public PostInfoCachingDto getCachingPostInfo(Long postId) {
+        String postKey = POST_CACHING_PREFIX + postId;
+        String json = redisTemplate.opsForValue().get(postKey);
+        log.info("캐싱된 json = {}",json);
+        if (json == null) return null;
+        try {
+            return objectMapper.readValue(json, PostInfoCachingDto.class);
+        } catch (JsonProcessingException e) {
+            log.error("JSON -> cachingDto 변환 오류 -> 캐싱 조회 실패 = {}", e);
+            return null;
+        }
+    }
+
+    /**
+     * 캐싱되어 있는 포스트 업데이트
+     */
+    public void updateCachingPost(PostInfoCachingDto postDto, Long postId) {
+        log.info("게시글 캐싱 업데이트 = {}",postId);
+        String postKey = POST_CACHING_PREFIX + postId;
+        try {
+            String json = objectMapper.writeValueAsString(postDto); // 객체를 JSON 문자열로 변환
+            redisTemplate.opsForValue().set(postKey, json);
+        } catch (JsonProcessingException e) {
+            log.error("JSON 변환 오류 -> 캐싱 처리 실패 = {}", postId);
+        }
+    }
+
+    /**
      * 일일 조회 수 상위 게시물 조회
      */
-    public List<String> getViewRankingList(int page, int pageSize, PostRankingDto range) {
+    public List<String> getViewRankingList(int page, int pageSize, PostRankingRange range) {
         String key;
-        if(range.equals(PostRankingDto.DAILY)) {
+        if(range.equals(PostRankingRange.DAILY)) {
             key = POST_VIEW_DAILY_PREFIX + LocalDate.now();
         }
-        else if(range.equals(PostRankingDto.WEEKLY)) {
+        else if(range.equals(PostRankingRange.WEEKLY)) {
             key = POST_VIEW_WEEKLY_PREFIX + LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         }
         else {
@@ -109,12 +162,12 @@ public class RedisService {
         return results.stream().toList();
     }
 
-    public int getViewRankingMaxPageSize(int pageSize, PostRankingDto range) {
+    public int getViewRankingMaxPageSize(int pageSize, PostRankingRange range) {
         String key;
-        if(range.equals(PostRankingDto.DAILY)) {
+        if(range.equals(PostRankingRange.DAILY)) {
             key = POST_VIEW_DAILY_PREFIX + LocalDate.now();
         }
-        else if(range.equals(PostRankingDto.WEEKLY)) {
+        else if(range.equals(PostRankingRange.WEEKLY)) {
             key = POST_VIEW_WEEKLY_PREFIX + LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         }
         else {

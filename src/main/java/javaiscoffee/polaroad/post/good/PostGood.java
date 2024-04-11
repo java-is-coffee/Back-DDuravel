@@ -21,12 +21,12 @@ public class PostGood {
     private PostGoodId postGoodId;
 
     @MapsId("memberId")
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
 
     @MapsId("postId")
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
     private Post post;
 
