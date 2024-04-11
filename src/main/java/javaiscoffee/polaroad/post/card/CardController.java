@@ -30,7 +30,7 @@ public class CardController {
     @Parameter(name = "neLongitude", description = "북동쪽 경도 좌표", required = true, example = "126.58191440427356")
     @Parameter(name = "pageSize", description = "최대로 조회할 카드 개수", required = true, example = "40")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "포스트 생성에 성공했을 경우")
+            @ApiResponse(responseCode = "200", description = "카드 조회에 성공했을 경우")
     })
     @GetMapping("/map/list")
     public ResponseEntity<List<MapCardListDto>> getMapCardList(@RequestParam(name = "swLatitude") double swLatitude,

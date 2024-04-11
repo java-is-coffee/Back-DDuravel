@@ -25,6 +25,6 @@ public interface CardRepository extends JpaRepository<Card, Long> {
     @Query("select new javaiscoffee.polaroad.post.card.MapCardListDto(c.post.postId, c.cardId, c.image, c.content, c.location, c.latitude, c.longitude) " +
             "from Card c " +
             "where c.latitude >= :swLatitude and c.latitude <= :neLatitude and c.longitude >= :swLongitude and c.longitude <= :neLongitude " +
-            "order by c.post.goodNumber desc, c.post.postId desc ")
+            "order by c.post.goodNumber desc, c.post.postId desc")
     Slice<MapCardListDto> getMapCardList(double swLatitude, double neLatitude, double swLongitude, double neLongitude, Pageable pageable);
 }
