@@ -6,6 +6,7 @@ import javaiscoffee.polaroad.member.Member;
 import javaiscoffee.polaroad.review.Review;
 import lombok.*;
 
+import java.beans.ConstructorProperties;
 import java.time.LocalDateTime;
 
 @Entity
@@ -13,6 +14,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
+@Builder
 @Table(name = "goods_review")
 public class ReviewGood {
     @EmbeddedId

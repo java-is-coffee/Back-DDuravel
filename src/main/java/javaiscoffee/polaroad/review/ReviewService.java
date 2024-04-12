@@ -91,13 +91,12 @@ public class ReviewService {
         List<ReviewPhoto> reviewPhotosByReviewId = reviewRepository.findByReviewId(findedReview.getReviewId()).getReviewPhoto();
         List<ReviewPhotoInfoDto> reviewPhotoDtoList = toReviewPhotoInfoDtoList(reviewPhotosByReviewId);
 
-        Review likedReview = reviewRepository.findLikedReviewByMemberIdAndReviewId(memberId, reviewId);
         // 좋아요의 존재 여부를 확인
         boolean good = reviewGoodRepository.existsByReviewIdAndMemberId(reviewId, memberId);
-        likedReview.setGoodOrNot(good);
 
-        // 찾은 댓글 + 해당 댓글에 속한 모든 사진 반환
-        return toResponseGetReviewDto(findedReview, reviewPhotoDtoList);
+        ResponseGetReviewDto responseGetReviewDto = toResponseGetReviewDto(findedReview, reviewPhotoDtoList);
+        responseGetReviewDto.setMemberIsLiked(good);
+        return responseGetReviewDto;
     }
 
     public ResponseReviewDto editReview(EditeRequestReviewDto editReviewDto, Long reviewId, Long memberId) {
@@ -177,15 +176,13 @@ public class ReviewService {
         Slice<Review> reviewSlice = reviewRepository.findReviewSlicedByPostId(getPost, pageable, ReviewStatus.ACTIVE);
         // 조회된 리뷰 페이지에서 실제 데이터 가져옴
         List<Review> reviewList = reviewSlice.getContent();
-        // 해당 멤버의 댓글 좋아요 여부 설정
-        for (Review review : reviewList) {
-            Review likedReview = reviewRepository.findLikedReviewByMemberIdAndReviewId(memberId, review.getReviewId());
-            boolean good = reviewGoodRepository.existsByReviewIdAndMemberId(review.getReviewId(), memberId);
-            likedReview.setGoodOrNot(good);
-        }
-
         // 가져온 리뷰 데이터를 ResponseReviewDto로 변환
         List<ResponseReviewDto> responseReviewDtoList = toResponseReviewDtoList(reviewList);
+        for (ResponseReviewDto responseReviewDto : responseReviewDtoList) {
+            // 해당 멤버의 댓글 좋아요 여부 설정
+            boolean good = reviewGoodRepository.existsByReviewIdAndMemberId(responseReviewDto.getReviewId(), memberId);
+            responseReviewDto.setMemberIsLiked(good);
+        }
 
         // [{리뷰 리스트}, 다음 페이지가 있는지] 반환
         return new SliceResponseDto<>(responseReviewDtoList, reviewSlice.hasNext());
@@ -227,19 +224,17 @@ public class ReviewService {
         // 좋아요
         if (reviewGood == null) {
             reviewGoodRepository.save(new ReviewGood(reviewGoodId, member, review));
-//            review.setGoodNumber(review.getGoodNumber() + 1);
-//            review.setGoodOrNot(true);
-//            reviewRepository.update(review);
-            reviewGoodBatchUpdater.increaseReviewGoodCount(reviewId);
+            review.setGoodNumber(review.getGoodNumber() + 1);
+            reviewRepository.update(review);
+//            reviewGoodBatchUpdater.increaseReviewGoodCount(reviewId);
             log.info("좋아요");
         }
         // 좋아요 취소
         else {
             reviewGoodRepository.delete(reviewGood);
-//            review.setGoodNumber(review.getGoodNumber() - 1);
-//            review.setGoodOrNot(false);
-//            reviewRepository.update(review);
-            reviewGoodBatchUpdater.decreaseReviewGoodCount(reviewId);
+            review.setGoodNumber(review.getGoodNumber() - 1);
+            reviewRepository.update(review);
+//            reviewGoodBatchUpdater.decreaseReviewGoodCount(reviewId);
             log.info("좋아요 취소");
         }
 
@@ -247,9 +242,10 @@ public class ReviewService {
         Review likedReview = reviewRepository.findLikedReviewByMemberIdAndReviewId(memberId, reviewId);
         // 좋아요의 존재 여부를 확인
         boolean good = reviewGoodRepository.existsByReviewIdAndMemberId(reviewId, memberId);
-        likedReview.setGoodOrNot(good);
 
-        return toResponseReviewDto(likedReview, reviewPhotoUrls);
+        ResponseReviewDto responseReviewDto = toResponseReviewDto(likedReview, reviewPhotoUrls);
+        responseReviewDto.setMemberIsLiked(good);
+        return responseReviewDto;
     }
 
     // Review 객체와 댓글 사진 리스트를 ResponseReviewDto 객체로 매핑하는 메서드
@@ -268,7 +264,6 @@ public class ReviewService {
         responseReviewDto.setUpdatedTime(review.getUpdatedTime());
         responseReviewDto.setReviewPhotoList(reviewPhotos);
         responseReviewDto.setGoodNumber(review.getGoodNumber());
-        responseReviewDto.setMemberIsLiked(review.isGoodOrNot());
 
         return responseReviewDto;
     }
@@ -324,7 +319,6 @@ public class ReviewService {
         responseGetReviewDto.setUpdatedTime(review.getUpdatedTime());
         responseGetReviewDto.setReviewPhotoInfoList(reviewPhotoInfoList);
         responseGetReviewDto.setGoodNumber(review.getGoodNumber());
-        responseGetReviewDto.setMemberIsLiked(review.isGoodOrNot());
 
         return responseGetReviewDto;
     }

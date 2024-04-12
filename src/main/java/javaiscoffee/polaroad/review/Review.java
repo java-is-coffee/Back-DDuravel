@@ -43,8 +43,6 @@ public class Review {
     private String content;
     @NotNull @Setter
     private int goodNumber; // 좋아요 수
-    @NotNull @Setter
-    private boolean goodOrNot; // 좋아요 여부
     @Setter @NotNull
     @Enumerated(EnumType.STRING)
     private ReviewStatus status;
@@ -67,15 +65,14 @@ public class Review {
     }
 
     //NOTE: 테스트 코드에서 사용하기 위해서 작성
-    @ConstructorProperties({"reviewId","post","member","content","goodNumber","goodOrNot","status","reviewPhoto","reviewGoods"})
-    public Review(Long reviewId, Post post, Member member, String content, int goodNumber, boolean goodOrNot,
+    @ConstructorProperties({"reviewId","post","member","content","goodNumber","status","reviewPhoto","reviewGoods"})
+    public Review(Long reviewId, Post post, Member member, String content, int goodNumber,
                   ReviewStatus status, List<ReviewPhoto> reviewPhoto, List<ReviewGood> reviewGoods) {
         this.reviewId = reviewId;
         this.post = post;
         this.member = member;
         this.content = content;
         this.goodNumber = goodNumber;
-        this.goodOrNot = goodOrNot;
         this.status = status;
         this.reviewPhoto = reviewPhoto;
         this.reviewGoods = reviewGoods;
