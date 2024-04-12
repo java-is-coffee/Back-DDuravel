@@ -14,6 +14,8 @@ import javaiscoffee.polaroad.review.Review;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -28,39 +30,62 @@ import java.util.List;
         property = "postId"
 )
 @Builder
-@ToString(exclude = {"member","cards","postHashtags"})
+@ToString(exclude = {"member", "cards", "postHashtags"})
 public class ElasticPost {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Field(type = FieldType.Long)
     private Long postId;
-    @NotNull @Setter
+
+    @Setter
+    @Field(type = FieldType.Text, analyzer = "nori")
     private String title;
+
     @Setter
-    private Member member;
+    @Field(type = FieldType.Long)
+    private Long memberId;  // Consider flattening to store only relevant member details
+
     @Setter
-    private String routePoint;  //경로 좌표 저장
-    @NotNull @Setter
-    private int goodNumber;     //하트 개수
-    @NotNull @Setter
-    private int reviewNumber;   //리뷰 개수
-    @NotNull @Setter
-    private int thumbnailIndex; //썸네일 카드 번호
-    @NotNull @Setter
-    private PostConcept concept;//여행 테마
-    @NotNull @Setter
-    private PostRegion region;  //여행 지역
+    @Field(type = FieldType.Keyword)
+    private PostConcept concept;
+
+    @Setter
+    @Field(type = FieldType.Keyword)
+    private PostRegion region;
+
+    @Setter @NotNull
+    @Field(type = FieldType.Keyword)
+    private PostStatus status;
+
+    @Setter
+    @Field(type = FieldType.Text, index = false) // Store but do not index routePoint
+    private String routePoint;
 
     @NotNull @Setter
-    private PostStatus status;
+    @Field(type = FieldType.Integer, index = false) // Not used for searching or sorting
+    private int goodNumber;
+
+    @NotNull @Setter
+    @Field(type = FieldType.Integer, index = false) // Not used for searching or sorting
+    private int reviewNumber;
+
+    @NotNull @Setter
+    @Field(type = FieldType.Integer, index = false) // Not used for searching or sorting
+    private int thumbnailIndex;
+
     private LocalDateTime createdTime;
     @Setter
     private LocalDateTime updatedTime;
 
     @NotNull
+    @Field(type = FieldType.Nested)  // Use nested for complex objects if needed
     private List<Card> cards;
+
     @NotNull
+    @Field(type = FieldType.Nested)
     private List<PostHashtag> postHashtags;
+
     @NotNull
+    @Field(type = FieldType.Nested)
     private List<Review> reviews;
 
     @PrePersist

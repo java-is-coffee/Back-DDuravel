@@ -14,6 +14,7 @@ import org.springframework.test.context.TestPropertySource;
 		"GOOGLE_CLIENT_ID=ta555412333i40l2s289a111c2223lg4vx",
 		"GOOGLE_CLIENT_SECRET=ta555412333i40l2s289a111c2223lg4vx",
 		"GOOGLE_REDIRECT_URI=http://localhost:3000/explore",
+		"ELASTIC_PASSWORD=a123123!"
 })
 class PolaRoadApplicationTest {
 

@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: elasticsearch
-          image: docker.elastic.co/elasticsearch/elasticsearch:7.17.9
+          image: docker.elastic.co/elasticsearch/elasticsearch:8.7.1
           resources:
             limits:
               cpu: "1000m"
@@ -37,6 +37,11 @@ spec:
               value: "elasticsearch-0,elasticsearch-1,elasticsearch-2"
             - name: "ES_JAVA_OPTS"
               value: "-Xmx1g -Xms1g"
+            - name: "ELASTIC_PASSWORD"
+              valueFrom:
+                secretKeyRef:
+                  name: db-secrets
+                  key: ELASTIC_PASSWORD
           volumeMounts:
             - name: elasticsearch-data
               mountPath: /usr/share/elasticsearch/data
