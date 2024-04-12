@@ -38,7 +38,7 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 
 	//elasticsearch를 위한 설정
-//	implementation 'org.springframework.data:spring-data-elasticsearch:4.2.2'
+	implementation 'org.springframework.data:spring-data-elasticsearch:4.2.2'
 
 	//Querydsl 사용을 위한 설정
 	implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
