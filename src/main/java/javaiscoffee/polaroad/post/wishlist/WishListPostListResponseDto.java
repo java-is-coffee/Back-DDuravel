@@ -11,5 +11,5 @@ import java.util.List;
 @NoArgsConstructor
 public class WishListPostListResponseDto {
     private List<WishListPostDto> posts;
-    private int maxPage;
+    private boolean hasNext;
 }
