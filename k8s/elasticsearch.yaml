@@ -19,6 +19,11 @@ spec:
         - name: install-plugins
           image: docker.elastic.co/elasticsearch/elasticsearch:8.7.1
           command: ["sh", "-c", "bin/elasticsearch-plugin install analysis-nori && bin/elasticsearch-plugin list"]
+          env:
+            - name: http_proxy
+              value: "http://krmp-proxy.9rum.cc:3128"
+            - name: https_proxy
+              value: "https://krmp-proxy.9rum.cc:3128"
           volumeMounts:
             - name: elasticsearch-data
               mountPath: /usr/share/elasticsearch/data
@@ -49,6 +54,10 @@ spec:
                 secretKeyRef:
                   name: db-secrets
                   key: ELASTIC_PASSWORD
+            - name: http_proxy
+              value: "http://krmp-proxy.9rum.cc:3128"
+            - name: https_proxy
+              value: "https://krmp-proxy.9rum.cc:3128"
           volumeMounts:
             - name: elasticsearch-data
               mountPath: /usr/share/elasticsearch/data
