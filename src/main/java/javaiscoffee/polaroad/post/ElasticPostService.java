@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 @Service
-@Profile("prod")
+@Profile("prod2")
 public class ElasticPostService {
     private final ElasticPostRepository elasticPostRepository;
 

@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@Profile("prod")
+@Profile("prod2")
 public class ElasticPostController {
     private final ElasticPostService postService;
 

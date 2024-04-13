@@ -8,7 +8,7 @@ import org.springframework.data.elasticsearch.client.ClientConfiguration;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchConfiguration;
 
 @Configuration
-@Profile("prod")
+@Profile("prod2")
 public class ElasticSearchConfig extends ElasticsearchConfiguration {
     @Value("${spring.elasticsearch.uris}")
     private String elasticSearchUris;
