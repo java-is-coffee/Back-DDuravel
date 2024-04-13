@@ -23,7 +23,7 @@ spec:
             - name: http_proxy
               value: "http://krmp-proxy.9rum.cc:3128"
             - name: https_proxy
-              value: "https://krmp-proxy.9rum.cc:3128"
+              value: "http://krmp-proxy.9rum.cc:3128"
           volumeMounts:
             - name: elasticsearch-data
               mountPath: /usr/share/elasticsearch/data
@@ -57,7 +57,7 @@ spec:
             - name: http_proxy
               value: "http://krmp-proxy.9rum.cc:3128"
             - name: https_proxy
-              value: "https://krmp-proxy.9rum.cc:3128"
+              value: "http://krmp-proxy.9rum.cc:3128"
           volumeMounts:
             - name: elasticsearch-data
               mountPath: /usr/share/elasticsearch/data
