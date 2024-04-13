@@ -2,6 +2,8 @@ package javaiscoffee.polaroad;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Profile;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 @SpringBootTest
@@ -16,6 +18,7 @@ import org.springframework.test.context.TestPropertySource;
 		"GOOGLE_REDIRECT_URI=http://localhost:3000/explore",
 		"ELASTIC_PASSWORD=a123123!"
 })
+@ActiveProfiles("test")
 class PolaRoadApplicationTest {
 
 	@Test

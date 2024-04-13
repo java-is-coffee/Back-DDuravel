@@ -13,9 +13,7 @@ import javaiscoffee.polaroad.post.wishlist.WishListPost;
 import javaiscoffee.polaroad.review.Review;
 import lombok.*;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.elasticsearch.annotations.Document;
-import org.springframework.data.elasticsearch.annotations.Field;
-import org.springframework.data.elasticsearch.annotations.FieldType;
+import org.springframework.data.elasticsearch.annotations.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -31,6 +29,7 @@ import java.util.List;
 )
 @Builder
 @ToString(exclude = {"member", "cards", "postHashtags"})
+@Setting(settingPath = "/static/elastic/elastic-settings.json")
 public class ElasticPost {
     @Id
     @Field(type = FieldType.Long)
@@ -42,7 +41,7 @@ public class ElasticPost {
 
     @Setter
     @Field(type = FieldType.Long)
-    private Long memberId;  // Consider flattening to store only relevant member details
+    private Long memberId;
 
     @Setter
     @Field(type = FieldType.Keyword)
@@ -72,8 +71,10 @@ public class ElasticPost {
     @Field(type = FieldType.Integer, index = false) // Not used for searching or sorting
     private int thumbnailIndex;
 
+    @Field(type = FieldType.Date, format = DateFormat.date_hour_minute_second)
     private LocalDateTime createdTime;
     @Setter
+    @Field(type = FieldType.Date, format = DateFormat.date_hour_minute_second)
     private LocalDateTime updatedTime;
 
     @NotNull
@@ -87,6 +88,12 @@ public class ElasticPost {
     @NotNull
     @Field(type = FieldType.Nested)
     private List<Review> reviews;
+    @NotNull
+    @Field(type = FieldType.Nested)
+    private List<PostGood> postGoods;
+    @NotNull
+    @Field(type = FieldType.Nested)
+    private List<WishListPost> wishListPosts;
 
     @PrePersist
     public void PrePersist() {
