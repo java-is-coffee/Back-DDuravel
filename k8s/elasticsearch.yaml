@@ -56,7 +56,7 @@ spec:
           volumeMounts:
             - name: config-volume
               mountPath: /usr/share/elasticsearch/config
-              subPath: elasticsearch.yml
+              readOnly: false
       volumes:
         - name: config-volume
           configMap:
