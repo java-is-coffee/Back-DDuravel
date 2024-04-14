@@ -21,9 +21,9 @@ spec:
           command: ["sh", "-c", "bin/elasticsearch-plugin install analysis-nori && bin/elasticsearch-plugin list"]
           env:
             - name: HTTP_PROXY
-              value: "http://krmp-proxy.9rum.cc:3128"
+              value: "krmp-proxy.9rum.cc:3128"
             - name: HTTPS_PROXY
-              value: "http://krmp-proxy.9rum.cc:3128"
+              value: "krmp-proxy.9rum.cc:3128"
           resources:
             requests:
               memory: "500Mi"
@@ -62,9 +62,9 @@ spec:
                   name: db-secrets
                   key: ELASTIC_PASSWORD
             - name: HTTP_PROXY
-              value: "http://krmp-proxy.9rum.cc:3128"
+              value: "krmp-proxy.9rum.cc:3128"
             - name: HTTPS_PROXY
-              value: "http://krmp-proxy.9rum.cc:3128"
+              value: "krmp-proxy.9rum.cc:3128"
           volumeMounts:
             - name: elasticsearch-data
               mountPath: /usr/share/elasticsearch/data
