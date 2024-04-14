@@ -15,4 +15,4 @@ configMapGenerator:
       - configs/init.sql
   - name: elasticsearch-config
     files:
-      - configs/elasticsearch-config.yaml
+      - configs/elasticsearch-config.yml
