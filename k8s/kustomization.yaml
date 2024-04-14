@@ -17,3 +17,5 @@ configMapGenerator:
   - name: elasticsearch-config
     files:
       - configs/elasticsearch-config.yml
+    options:
+      disableNameSuffixHash: true
