@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: elasticsearch-config
+  namespace: default
+data:
+  elasticsearch.yml: |
+    cluster.name: "elastic-cluster"
+    node.name: "elasticsearch"
+    xpack.security.enabled: false
