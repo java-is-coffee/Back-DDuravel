@@ -21,10 +21,10 @@ spec:
           resources:
             limits:
               cpu: "1000m"
-              memory: "1Gi"
+              memory: "2Gi"
             requests:
               cpu: "100m"
-              memory: "1Gi"
+              memory: "2Gi"
           ports:
             - containerPort: 9200
               name: es-http
@@ -36,7 +36,7 @@ spec:
             - name: "cluster.initial_master_nodes"
               value: "elasticsearch-0,elasticsearch-1,elasticsearch-2"
             - name: "ES_JAVA_OPTS"
-              value: "-Xmx1g -Xms1g"
+              value: "-Xmx512m -Xms512m"
             - name: "ELASTIC_PASSWORD"
               valueFrom:
                 secretKeyRef:
