@@ -24,6 +24,13 @@ spec:
               value: "http://krmp-proxy.9rum.cc:3128"
             - name: https_proxy
               value: "http://krmp-proxy.9rum.cc:3128"
+          resources:
+            requests:
+              memory: "500Mi"
+              cpu: "200m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
           volumeMounts:
             - name: elasticsearch-data
               mountPath: /usr/share/elasticsearch/data
