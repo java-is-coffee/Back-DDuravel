@@ -54,9 +54,12 @@ spec:
             - name: HTTPS_PROXY
               value: "krmp-proxy.9rum.cc:3128"
           volumeMounts:
-            - name: config-volume
-              mountPath: /usr/share/elasticsearch/config
-              readOnly: false
+            - name: elasticsearch-config
+              mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
+              subPath: elasticsearch.yml
+              readOnly: true  # 설정 파일은 읽기 전용
+            - name: elasticsearch-data
+              mountPath: /usr/share/elasticsearch/data  # 데이터 저장용 볼륨, 쓰기 가능
       volumes:
         - name: config-volume
           configMap:
