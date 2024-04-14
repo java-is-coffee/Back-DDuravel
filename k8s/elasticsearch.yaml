@@ -55,7 +55,7 @@ spec:
               value: "krmp-proxy.9rum.cc:3128"
           volumeMounts:
             - name: config-volume
-              mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
+              mountPath: /usr/share/elasticsearch/config
               subPath: elasticsearch.yml
       volumes:
         - name: config-volume
