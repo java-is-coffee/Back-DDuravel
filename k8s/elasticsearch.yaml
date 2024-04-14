@@ -18,8 +18,11 @@ spec:
       initContainers:
         - name: fix-permissions
           image: busybox
-          command: [ "sh", "-c", "chown -R 1000:1000 /usr/share/elasticsearch/data" ]
+          command: ["sh", "-c", "chown -R 1000:1000 /usr/share/elasticsearch/config /usr/share/elasticsearch/data"]
           volumeMounts:
+            - name: config-volume
+              mountPath: /usr/share/elasticsearch/config
+              readOnly: false
             - name: elasticsearch-data
               mountPath: /usr/share/elasticsearch/data
       containers:
@@ -56,8 +59,6 @@ spec:
           volumeMounts:
             - name: config-volume
               mountPath: /usr/share/elasticsearch/config
-              subPath: elasticsearch.yml
-              readOnly: true
             - name: elasticsearch-data
               mountPath: /usr/share/elasticsearch/data
       volumes:
