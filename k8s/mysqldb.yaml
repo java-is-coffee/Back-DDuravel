@@ -33,7 +33,7 @@ spec:
               subPath: mysql
             - mountPath: /docker-entrypoint-initdb.d
               name: init-db
-            - mountPath: /etc/my.cnf
+            - mountPath: /etc/mysql/my.cnf
               name: config-volume
               subPath: my.cnf
           resources:
@@ -65,7 +65,7 @@ metadata:
   name: mysqldb
 spec:
   type: ClusterIP
-  clusterIP: None
+  clusterIP: None # Headless
   ports:
     - port: 3306
   selector:
