@@ -1,3 +1,4 @@
+---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -14,27 +15,28 @@ spec:
     spec:
       containers:
         - name: mysqldb
-          image: mysql:5.7 # 명시적인 버전 사용 권장
+          # 여러분의 mysqldb image 주소를 입력해주세요.
+          image: mysql
           env:
             - name: TZ
               value: Asia/Seoul
-            - name: MYSQL_ROOT_PASSWORD
+            - name: MYSQLDB_ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: db-secrets
                   key: MYSQLDB_ROOT_PASSWORD
-            - name: MYSQL_DATABASE
+            - name: MYSQLDB_DATABASE
               value: krampoline
-            - name: MYSQL_DISABLE_UPGRADE_BACKUP
+            - name: mysqldb_DISABLE_UPGRADE_BACKUP
               value: '1'
           volumeMounts:
             - mountPath: /var/lib/mysql
               name: data
               subPath: mysql
-            - mountPath: /etc/mysql/conf.d
-              name: config-volume
             - mountPath: /docker-entrypoint-initdb.d
               name: init-db
+            - mountPath: /etc/mysql/conf.d
+              name: config-volume
           resources:
             limits:
               memory: 1Gi
