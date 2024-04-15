@@ -14,11 +14,6 @@ configMapGenerator:
   - name: init-db
     files:
       - configs/init.sql
-  - name: mysql-config
-    files:
-      - configs/my.cnf
-    options:
-      disableNameSuffixHash: true
   - name: elasticsearch-config
     files:
       - configs/elasticsearch-config.yml
