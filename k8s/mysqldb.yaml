@@ -20,11 +20,11 @@ spec:
           env:
             - name: TZ
               value: Asia/Seoul
-            - name: MYSQLDB_ROOT_PASSWORD
+            - name: MYSQL_ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: db-secrets
-                  key: MYSQLDB_ROOT_PASSWORD
+                  key: MYSQL_ROOT_PASSWORD
             - name: MYSQLDB_DATABASE
               value: krampoline
             - name: mysqldb_DISABLE_UPGRADE_BACKUP
