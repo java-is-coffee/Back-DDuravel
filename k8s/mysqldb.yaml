@@ -1,4 +1,3 @@
----
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -15,7 +14,6 @@ spec:
     spec:
       containers:
         - name: mysqldb
-          # 여러분의 mysqldb image 주소를 입력해주세요.
           image: mysql
           env:
             - name: TZ
@@ -35,9 +33,8 @@ spec:
               subPath: mysql
             - mountPath: /docker-entrypoint-initdb.d
               name: init-db
-            - mountPath: /etc/mysql/my.cnf
+            - mountPath: /etc/mysql/conf.d
               name: config-volume
-              subPath: my.cnf
           resources:
             limits:
               memory: 1Gi
@@ -67,7 +64,7 @@ metadata:
   name: mysqldb
 spec:
   type: ClusterIP
-  clusterIP: None # Headless
+  clusterIP: None
   ports:
     - port: 3306
   selector:
