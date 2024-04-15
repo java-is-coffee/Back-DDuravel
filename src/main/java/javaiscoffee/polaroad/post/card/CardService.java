@@ -90,7 +90,7 @@ public class CardService {
     }
 
     public List<MapCardListDto> getMapCardList(PostSearchType searchType, String searchKeyword, PostConcept concept, double swLatitude, double neLatitude, double swLongitude, double neLongitude, int pageSize) {
-        if(searchType.equals(PostSearchType.HASHTAG) && searchKeyword != null) {
+        if(searchType!=null && searchType.equals(PostSearchType.HASHTAG) && searchKeyword != null) {
             Long hashtagId = hashtagService.getHashtagIdByName(searchKeyword);
             if(hashtagId == null) return new ArrayList<>();
             return cardRepository.getMapCardListByHashtag(hashtagId, concept, swLatitude, neLatitude, swLongitude, neLongitude, pageSize);
