@@ -16,7 +16,7 @@ configMapGenerator:
       - configs/init.sql
   - name: mysql-config
     files:
-      - configs/my.cnf
+      - configs/mysql.yml
   - name: elasticsearch-config
     files:
       - configs/elasticsearch-config.yml
