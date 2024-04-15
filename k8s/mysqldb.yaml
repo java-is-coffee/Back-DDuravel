@@ -45,6 +45,9 @@ spec:
         - name: init-db
           configMap:
             name: init-db
+        - name: config-volume
+          configMap:
+            name: mysql-config
   volumeClaimTemplates:
     - metadata:
         name: data
