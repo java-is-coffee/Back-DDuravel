@@ -71,11 +71,6 @@ spec:
                 secretKeyRef:
                   name: db-secrets
                   key: GOOGLE_REDIRECT_URI
-            - name: ELASTIC_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: db-secrets
-                  key: ELASTIC_PASSWORD
           resources:
             requests:
               memory: 1Gi
