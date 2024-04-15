@@ -32,6 +32,9 @@ spec:
             - name: mysqldb_DISABLE_UPGRADE_BACKUP
               value: '1'
           volumeMounts:
+            - name: config-volume
+              mountPath: /etc/mysql/my.cnf
+              subPath: my.cnf
             - mountPath: /var/lib/mysql
               name: data
               subPath: mysql
@@ -44,6 +47,9 @@ spec:
             tcpSocket:
               port: 3306
       volumes:
+        - name: config-volume
+          configMap:
+            name: mysql-config
         - name: init-db
           configMap:
             name: init-db
