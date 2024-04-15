@@ -44,7 +44,7 @@ public class QueryCardRepositoryImpl implements QueryCardRepository{
 
         // 검색어가 있는 경우 풀 텍스트 검색 조건 추가
         if (searchKeyword != null && !searchKeyword.isEmpty()) {
-            sql += " AND MATCH(p.title, c.content, m.nickname) AGAINST(:keyword IN BOOLEAN MODE)";
+            sql += " AND (MATCH(p.title) AGAINST(:keyword IN BOOLEAN MODE) OR MATCH(c.content) AGAINST(:keyword IN BOOLEAN MODE) OR MATCH(m.nickname) AGAINST(:keyword IN BOOLEAN MODE))";
         }
 
         // 결과 정렬 및 페이지 제한
