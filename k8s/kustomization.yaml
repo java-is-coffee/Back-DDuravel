@@ -6,7 +6,6 @@ resources:
   - mysqldb.yaml
   - backend.yaml
   - redis.yaml
-  - elasticsearch.yaml
 configMapGenerator:
   - name: nginx
     files:
