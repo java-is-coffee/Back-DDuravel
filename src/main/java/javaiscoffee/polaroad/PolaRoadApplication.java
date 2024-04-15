@@ -11,11 +11,11 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 
 @Import(JpaConfig.class)
 @SpringBootApplication(exclude = SecurityAutoConfiguration.class)	//스프링 시큐리티 기본 로그인 화면 제거
-//@OpenAPIDefinition(
-//		servers = {
-//				@Server(url = "https://k218cb89f724ba.user-app.krampoline.com", description = "Default Server url")
-//		}
-//)
+@OpenAPIDefinition(
+		servers = {
+				@Server(url = "https://k218cb89f724ba.user-app.krampoline.com", description = "Default Server url")
+		}
+)
 @EnableWebSecurity
 public class PolaRoadApplication {
 
