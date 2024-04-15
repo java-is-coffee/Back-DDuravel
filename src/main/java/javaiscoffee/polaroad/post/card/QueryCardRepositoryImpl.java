@@ -50,7 +50,7 @@ public class QueryCardRepositoryImpl implements QueryCardRepository{
         // 결과 정렬 및 페이지 제한
         sql += " ORDER BY p.good_number DESC, c.card_id DESC LIMIT :pageSize";
 
-        Query query = em.createNativeQuery(sql, MapCardListDto.class)
+        Query query = em.createNativeQuery(sql, "MapCardListDtoMapping")
                 .setParameter("swLatitude", swLatitude)
                 .setParameter("neLatitude", neLatitude)
                 .setParameter("swLongitude", swLongitude)
