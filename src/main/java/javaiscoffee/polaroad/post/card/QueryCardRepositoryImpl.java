@@ -26,11 +26,11 @@ public class QueryCardRepositoryImpl implements QueryCardRepository{
         // 기본 쿼리 구성
         String sql = "SELECT c.post_id, c.card_id, c.image, c.content, c.location, c.latitude, c.longitude " +
                 "FROM cards c " +
-                "JOIN posts p ON c.post_id = p.id ";
+                "JOIN posts p ON c.post_id = p.post_id ";
 
         // 검색어가 있을 경우 멤버와 조인
         if (searchKeyword != null && !searchKeyword.isEmpty()) {
-            sql += "JOIN member m ON c.member_id = m.id ";
+            sql += "JOIN member m ON c.member_id = m.member_id ";
         }
 
         // 위치 기반 검색 조건 추가
