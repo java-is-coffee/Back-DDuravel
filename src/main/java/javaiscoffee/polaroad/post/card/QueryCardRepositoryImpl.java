@@ -23,18 +23,31 @@ public class QueryCardRepositoryImpl implements QueryCardRepository{
     }
     @Override
     public List<MapCardListDto> getMapCardListByKeyword(String searchKeyword, PostConcept concept, double swLatitude, double neLatitude, double swLongitude, double neLongitude, int pageSize) {
+        // 기본 쿼리 구성
         String sql = "SELECT c.post_id, c.card_id, c.image, c.content, c.location, c.latitude, c.longitude " +
-                "FROM Cards c JOIN Posts p ON c.post_id = p.id " +
-                "WHERE c.latitude BETWEEN :swLatitude AND :neLatitude " +
+                "FROM Cards c " +
+                "JOIN Posts p ON c.post_id = p.id ";
+
+        // 검색어가 있을 경우 멤버와 조인
+        if (searchKeyword != null && !searchKeyword.isEmpty()) {
+            sql += "JOIN Member m ON c.member_id = m.id ";
+        }
+
+        // 위치 기반 검색 조건 추가
+        sql += "WHERE c.latitude BETWEEN :swLatitude AND :neLatitude " +
                 "AND c.longitude BETWEEN :swLongitude AND :neLongitude";
 
+        // 개념이 있을 경우 조건 추가
         if (concept != null) {
             sql += " AND p.concept = :concept";
         }
+
+        // 검색어가 있는 경우 풀 텍스트 검색 조건 추가
         if (searchKeyword != null && !searchKeyword.isEmpty()) {
             sql += " AND MATCH(p.title, c.content, m.nickname) AGAINST(:keyword IN BOOLEAN MODE)";
-            sql += " JOIN Member m ON c.member_id = m.id";
         }
+
+        // 결과 정렬 및 페이지 제한
         sql += " ORDER BY p.good_number DESC, c.card_id DESC LIMIT :pageSize";
 
         Query query = em.createNativeQuery(sql, MapCardListDto.class)
