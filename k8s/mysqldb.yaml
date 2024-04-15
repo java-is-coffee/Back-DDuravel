@@ -35,8 +35,8 @@ spec:
               subPath: mysql
             - mountPath: /docker-entrypoint-initdb.d
               name: init-db
-            - name: config-volume
-              mountPath: /etc/mysql/my.cnf
+            - mountPath: /etc/mysql/my.cnf
+              name: config-volume
               subPath: my.cnf
           resources:
             limits:
