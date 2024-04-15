@@ -6,10 +6,15 @@ import javaiscoffee.polaroad.member.MemberRepository;
 import javaiscoffee.polaroad.member.MemberSimpleInfoDto;
 import javaiscoffee.polaroad.member.MemberStatus;
 import javaiscoffee.polaroad.post.Post;
+import javaiscoffee.polaroad.post.PostConcept;
+import javaiscoffee.polaroad.post.PostListResponseDto;
+import javaiscoffee.polaroad.post.PostSearchType;
+import javaiscoffee.polaroad.post.hashtag.HashtagService;
 import javaiscoffee.polaroad.response.ResponseMessages;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -20,11 +25,13 @@ import java.util.Optional;
 @Service
 public class CardService {
     private final CardRepository cardRepository;
+    private final HashtagService hashtagService;
     private final MemberRepository memberRepository;
 
     @Autowired
-    public CardService(CardRepository cardRepository, MemberRepository memberRepository) {
+    public CardService(CardRepository cardRepository,HashtagService hashtagService, MemberRepository memberRepository) {
         this.cardRepository = cardRepository;
+        this.hashtagService = hashtagService;
         this.memberRepository = memberRepository;
     }
 
@@ -82,9 +89,12 @@ public class CardService {
         return new CardListResponseDto(cardPage.getContent(), cardPage.getTotalPages());
     }
 
-    public List<MapCardListDto> getMapCardList(double swLatitude, double neLatitude, double swLongitude, double neLongitude, int pageSize) {
-        Pageable pageable = PageRequest.of(0, pageSize);
-        Slice<MapCardListDto> mapCardList = cardRepository.getMapCardList(swLatitude, neLatitude, swLongitude, neLongitude, pageable);
-        return mapCardList.getContent();
+    public List<MapCardListDto> getMapCardList(PostSearchType searchType, String searchKeyword, PostConcept concept, double swLatitude, double neLatitude, double swLongitude, double neLongitude, int pageSize) {
+        if(searchType.equals(PostSearchType.HASHTAG) && searchKeyword != null) {
+            Long hashtagId = hashtagService.getHashtagIdByName(searchKeyword);
+            if(hashtagId == null) return new ArrayList<>();
+            return cardRepository.getMapCardListByHashtag(hashtagId, concept, swLatitude, neLatitude, swLongitude, neLongitude, pageSize);
+        }
+        return cardRepository.getMapCardListByKeyword(searchKeyword, concept, swLatitude, neLatitude, swLongitude, neLongitude, pageSize);
     }
 }
