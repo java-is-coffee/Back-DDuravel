@@ -62,6 +62,7 @@ public class Review {
         this.status = ReviewStatus.ACTIVE;
         this.reviewPhoto = new ArrayList<>();
         this.goodNumber = 0;
+        this.reviewGoods = new ArrayList<>();
     }
 
     //NOTE: 테스트 코드에서 사용하기 위해서 작성

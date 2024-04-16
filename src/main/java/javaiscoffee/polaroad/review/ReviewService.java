@@ -53,16 +53,21 @@ public class ReviewService {
         if (creatorMember.getStatus() == MemberStatus.DELETED || post.getStatus() == PostStatus.DELETED) {
             throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
         }
-    //포스트 리뷰 개수 + 1
+        //포스트 리뷰 개수 + 1
         post.setReviewNumber(post.getReviewNumber() + 1);
 
-    // 댓글 저장
+        // 댓글 저장
         newReview.setMember(creatorMember);
         newReview.setPost(post);
-    Review savedReview = reviewRepository.save(newReview);
+        Review savedReview = reviewRepository.save(newReview);
 
-    List<String> savedReviewPhotos = new ArrayList<>();
-    List<String> photos = reviewDto.getReviewPhotoList();
+        List<String> savedReviewPhotos = new ArrayList<>();
+//        // 사진 저장
+//        reviewDto.getReviewPhotoList().forEach(reviewPhotoUrl ->{
+//            ReviewPhoto newReviewPhoto = reviewPhotoService.saveReviewPhoto(reviewPhotoUrl, savedReview);
+//            savedReviewPhotos.add(newReviewPhoto.getImage());
+//        } );
+        List<String> photos = reviewDto.getReviewPhotoList();
         if (photos != null) {
             // 사진 저장
             photos.forEach(reviewPhotoUrl ->{

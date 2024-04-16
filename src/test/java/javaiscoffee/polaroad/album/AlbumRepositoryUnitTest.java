@@ -1,10 +1,8 @@
 package javaiscoffee.polaroad.album;
 
-import javaiscoffee.polaroad.album.albumCard.AlbumCard;
 import javaiscoffee.polaroad.config.JpaConfigTest;
 import javaiscoffee.polaroad.member.JpaMemberRepository;
 import javaiscoffee.polaroad.member.Member;
-import javaiscoffee.polaroad.post.PostRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,13 +11,10 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
 @DataJpaTest
 @Import(JpaConfigTest.class)
-public class AlbumRepositoryTest {
+public class AlbumRepositoryUnitTest {
     @Autowired
     private JpaMemberRepository memberRepository;
     @Autowired
@@ -67,5 +62,19 @@ public class AlbumRepositoryTest {
         assertThat(savedAlbum.getName()).isEqualTo("제목 1");
         assertThat(savedAlbum.getDescription()).isEqualTo("설명 1");
         assertThat(savedAlbum.getAlbumCards().size()).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("앨범 수정")
+    public void updateAlbum() {
+        Album album = albumRepository.findById(this.savedAlbum1).get();
+
+        album.setName("수정된 앨범");
+        album.setDescription("수정된 설명");
+        albumRepository.flush();
+        Album updatedAlbum = albumRepository.findById(this.savedAlbum1).get();
+
+        assertThat(updatedAlbum.getName()).isEqualTo("수정된 앨범");
+        assertThat(updatedAlbum.getDescription()).isEqualTo("수정된 설명");
     }
 }

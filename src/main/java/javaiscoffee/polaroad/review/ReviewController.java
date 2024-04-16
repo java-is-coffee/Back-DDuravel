@@ -24,6 +24,8 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/review")
 @Tag(name = "댓글 관련 API", description = "댓글에 관련된 API 모음  - 담당자 문경미")
 public class ReviewController {
+    private final ReviewService reviewService;
+
     @Operation(summary = "댓글 작성 API", description = "댓글 작성할 때 사용하는 API")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "댓글 작성을 성공한 경우"),
@@ -45,8 +47,6 @@ public class ReviewController {
             return ResponseEntity.ok(savedReview);
         }
     }
-
-    private final ReviewService reviewService;
 
     @Operation(summary = "단일 댓글 조회 API", description = "단일 댓글 조회시 사용하 API")
     @ApiResponses({

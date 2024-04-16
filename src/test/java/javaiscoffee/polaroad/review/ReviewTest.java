@@ -36,7 +36,6 @@ public class ReviewTest {
                 .member(member)
                 .content("댓글 테스트입니다.")
                 .goodNumber(1)
-                .goodOrNot(false)
                 .status(ReviewStatus.ACTIVE)
                 .createdTime(LocalDateTime.now())
                 .updatedTime(LocalDateTime.now())
@@ -49,7 +48,6 @@ public class ReviewTest {
         assertThat(review.getMember()).isEqualTo(member);
         assertThat(review.getContent()).isEqualTo("댓글 테스트입니다.");
         assertThat(review.getGoodNumber()).isEqualTo(1);
-        assertThat(review.isGoodOrNot()).isEqualTo(false);
         assertThat(review.getStatus()).isEqualTo(ReviewStatus.ACTIVE);
         assertThat(review.getReviewPhoto()).isEqualTo(reviewPhotos);
         assertThat(review.getReviewGoods()).isEqualTo(reviewGoods);
@@ -66,7 +64,6 @@ public class ReviewTest {
                 .member(member)
                 .content("댓글 테스트입니다.")
                 .goodNumber(1)
-                .goodOrNot(false)
                 .status(ReviewStatus.ACTIVE)
                 .createdTime(LocalDateTime.now())
                 .updatedTime(LocalDateTime.now())
@@ -77,7 +74,6 @@ public class ReviewTest {
         //when
         review.setContent("댓글 수정");
         review.setGoodNumber(2);
-        review.setGoodOrNot(true);
 
         //then
         then(review).extracting(Review::getReviewId).isEqualTo(1L);
@@ -85,7 +81,6 @@ public class ReviewTest {
         then(review).extracting(Review::getMember).isEqualTo(member);
         then(review).extracting(Review::getContent).isEqualTo("댓글 수정");
         then(review).extracting(Review::getGoodNumber).isEqualTo(2);
-        then(review).extracting(Review::isGoodOrNot).isEqualTo(true);
         then(review).extracting(Review::getStatus).isEqualTo(ReviewStatus.ACTIVE);
         then(review).extracting(Review::getReviewPhoto).isEqualTo(reviewPhotos);
         then(review).extracting(Review::getReviewGoods).isEqualTo(reviewGoods);

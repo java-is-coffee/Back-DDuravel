@@ -8,6 +8,7 @@ import javaiscoffee.polaroad.album.albumCard.AlbumCard;
 import javaiscoffee.polaroad.member.Member;
 import lombok.*;
 
+import java.beans.ConstructorProperties;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +22,7 @@ import java.util.List;
         property = "albumId"
 )
 @Builder
-@ToString(exclude = "member")
+@ToString/*(exclude = "member")*/
 @Table(name = "albums")
 public class Album {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -46,5 +47,14 @@ public class Album {
         this.createdTime = LocalDateTime.now();
         this.updatedTime = LocalDateTime.now();
         this.albumCards = new ArrayList<>();
+    }
+
+    @ConstructorProperties({"albumId", "member", "name", "description", "albumCards"})
+    public Album(Long albumId, Member member, String name, String description, List<AlbumCard> albumCards) {
+        this.albumId = albumId;
+        this.member = member;
+        this.name = name;
+        this.description = description;
+        this.albumCards = albumCards;
     }
 }

@@ -16,7 +16,7 @@ import java.beans.ConstructorProperties;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString/*(exclude = "review")*/
+@ToString(exclude = "review")
 @JsonIdentityInfo(
         generator = ObjectIdGenerators.PropertyGenerator.class,
         property = "reviewPhotoId"
@@ -34,9 +34,10 @@ public class ReviewPhoto {
     @Setter
     private String image;   // 사진 url
 
-    @ConstructorProperties({"reviewPhotoId","image"})
-    public ReviewPhoto(Long reviewPhotoId, String image) {
+    @ConstructorProperties({"reviewPhotoId","image","review"})
+    public ReviewPhoto(Long reviewPhotoId, String image, Review review) {
         this.reviewPhotoId = reviewPhotoId;
+        this.review = review;
         this.image = image;
     }
 
