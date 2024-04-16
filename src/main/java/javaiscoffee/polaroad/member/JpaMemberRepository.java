@@ -110,4 +110,17 @@ public class JpaMemberRepository implements MemberRepository {
                 .setParameter("memberId", memberId)
                 .executeUpdate();
     }
+
+    public FollowingMemberResponseDto getFollowingMemberInfo(Long followingMemberId, int page, int pageSize) {
+        List<FollowingMemberInfoDto> memberInfoDtoList = em.createQuery(
+                        "select new javaiscoffee.polaroad.member.FollowingMemberInfoDto(f.followedMember.memberId, f.followedMember.nickname, f.followedMember.profileImage, f.createdTime) " +
+                                "from Follow f " +
+                                "where f.followingMember.memberId = :followingMemberId order by f.createdTime desc", FollowingMemberInfoDto.class)
+                .setParameter("followingMemberId", followingMemberId)
+                .setFirstResult((page - 1) * pageSize)
+                .setMaxResults(pageSize + 1)
+                .getResultList();
+        boolean hasNext = memberInfoDtoList.size() == pageSize + 1;
+        return new FollowingMemberResponseDto(memberInfoDtoList, hasNext);
+    }
 }

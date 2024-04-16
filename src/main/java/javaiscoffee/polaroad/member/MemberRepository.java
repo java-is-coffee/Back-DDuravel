@@ -27,7 +27,8 @@ public interface MemberRepository {
     //포스트 멤버 정보 조회할 때 사용하는 메서드
     public PostMemberInfoDto getPostMemberInfoByMemberId(Long memberId);
     public void addMemberPostNumber(Long memberId, int changeNumber);
-
+    //팔로잉하고 있는 멤버 리스트 조회
+    FollowingMemberResponseDto getFollowingMemberInfo(Long followingMemberId, int page, int pageSize);
 }
 
 

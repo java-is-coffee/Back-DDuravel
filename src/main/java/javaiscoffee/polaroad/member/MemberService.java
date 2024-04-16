@@ -144,4 +144,11 @@ public class MemberService {
         if(!member.getStatus().equals(MemberStatus.ACTIVE)) throw new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
         member.deleteMember();
     }
+
+    /**
+     * 팔로잉하고 있는 멤버들 정보 조회
+     */
+    public FollowingMemberResponseDto getFollowingMemberInfo (Long memberId,int page, int pageSize) {
+        return memberRepository.getFollowingMemberInfo(memberId,page,pageSize);
+    }
 }

@@ -197,7 +197,7 @@ public class PostController {
         Long memberId = userDetails.getMemberId();
         PostRegion[] regions = PostRegion.values();
         PostConcept[] concepts = PostConcept.values();
-        for(int i = 0; i < 200000; i++) {
+        for(int i = 0; i < 20000; i++) {
             PostSaveDto postSaveDto = new PostSaveDto();
             postSaveDto.setTitle(koreanTextGenerator.generateKoreanText(30));
             postSaveDto.setRoutePoint("");
@@ -207,7 +207,7 @@ public class PostController {
             postSaveDto.setCards(generateCardDummyList(random.nextInt(1,10)));
             postSaveDto.setHashtags(koreanTextGenerator.generateHashtags(random.nextInt(50),random.nextInt(10)));
             postService.savePost(postSaveDto, memberId);
-            sleep(5);
+            sleep(20);
         }
         return ResponseEntity.ok(true);
     }

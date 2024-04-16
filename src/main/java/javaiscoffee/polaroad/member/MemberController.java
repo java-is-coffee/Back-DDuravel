@@ -121,4 +121,18 @@ public class MemberController {
         log.info("회원 탈퇴 성공 memberId = {}",memberId);
         return ResponseEntity.ok(ResponseMessages.SUCCESS.getMessage());
     }
+
+    @Operation(summary = "내가 팔로잉하고 있는 멤버 목록 조회", description = "내가 팔로잉 리스트 멤버 목록 조회 API")
+    @Parameter(name = "page", description = "조회하려는 목록 페이지 번호", required = true, example = "1")
+    @Parameter(name = "pageSize", description = "한 페이지에 최대 몇 개까지 조회할 것인지 숫자", required = true, example = "10")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "팔로잉 목록 조회에 성공했을 경우")
+    })
+    @GetMapping("/my/following/list")
+    public ResponseEntity<FollowingMemberResponseDto> getFollowingMemberList(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                                             @RequestParam(name = "page") int page,
+                                                                             @RequestParam(name = "pageSize") int pageSize) {
+        Long memberId = userDetails.getMemberId();
+        return ResponseEntity.ok(memberService.getFollowingMemberInfo(memberId, page, pageSize));
+    }
 }
