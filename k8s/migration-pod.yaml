@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: migration-pod
+spec:
+  containers:
+    - name: migration-container
+      image: busybox
+      volumeMounts:
+        - name: old-data
+          mountPath: /old-data
+        - name: new-data
+          mountPath: /new-data
+  volumes:
+    - name: old-data
+      persistentVolumeClaim:
+        claimName: data-mysqldb-0
+    - name: new-data
+      persistentVolumeClaim:
+        claimName: mysqldb-data-new
+  restartPolicy: Never
