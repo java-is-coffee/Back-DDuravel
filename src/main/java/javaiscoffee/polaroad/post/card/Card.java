@@ -59,7 +59,7 @@ public class Card {
     @Column(length = 255)
     @NotNull @Setter
     private String location;//상세 위치
-    @Column(length = 255)
+    @Column(length = 1000)
     @NotNull @Setter
     private String image;    //이미지 주소
     @Setter

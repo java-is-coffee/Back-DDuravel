@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import javaiscoffee.polaroad.post.card.CardListResponseDto;
+import javaiscoffee.polaroad.post.card.CardSaveDto;
 import javaiscoffee.polaroad.post.card.CardService;
 import javaiscoffee.polaroad.security.CustomUserDetails;
 import javaiscoffee.polaroad.wrapper.RequestWrapperDto;
@@ -15,6 +16,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+import static java.lang.Thread.sleep;
+
 @Slf4j
 @RestController
 @RequestMapping("/api/post")
@@ -23,6 +30,8 @@ import org.springframework.web.bind.annotation.*;
 public class PostController {
     private final PostService postService;
     private final CardService cardService;
+    private final KoreanTextGenerator koreanTextGenerator;
+    private static final Random random = new Random();
 
     @Operation(summary = "포스트 생성", description = "포스트 생성하는 API")
     @ApiResponses({
@@ -180,5 +189,48 @@ public class PostController {
                                                                        @RequestParam(name = "pageSize") int pageSize,
                                                                        @RequestParam(name = "range") PostRankingRange range) {
         return postService.getPostRankingList(page, pageSize, range);
+    }
+
+    @Operation(summary = "포스트 더미데이터 1만개 생성")
+    @GetMapping("/dummy-create")
+    public ResponseEntity<Boolean> createDummyPost() throws InterruptedException {
+        PostRegion[] regions = PostRegion.values();
+        PostConcept[] concepts = PostConcept.values();
+        for(int i = 0; i < 10000; i++) {
+            PostSaveDto postSaveDto = new PostSaveDto();
+            postSaveDto.setTitle(koreanTextGenerator.generateKoreanText(30));
+            postSaveDto.setRoutePoint("");
+            postSaveDto.setThumbnailIndex(0);
+            postSaveDto.setConcept(concepts[random.nextInt(concepts.length)]);
+            postSaveDto.setRegion(regions[random.nextInt(regions.length)]);
+            postSaveDto.setCards(generateCardDummyList(random.nextInt(1,10)));
+            postSaveDto.setHashtags(koreanTextGenerator.generateHashtags(random.nextInt(50),random.nextInt(10)));
+            postService.savePost(postSaveDto, 1L);
+            sleep(50);
+        }
+        return ResponseEntity.ok(true);
+    }
+    private List<CardSaveDto> generateCardDummyList(int num) {
+        ArrayList<CardSaveDto> cardSaveDtos = new ArrayList<>();
+        for (int i = 0; i < num; i++) {
+            CardSaveDto cardSaveDto = new CardSaveDto();
+            cardSaveDto.setCardId(null); // 생성 시 null, 수정 시 실제 ID
+            cardSaveDto.setCardIndex(i); // 카드 순서 설정
+            cardSaveDto.setLocation("Some location"); // 임시 위치 데이터
+            cardSaveDto.setLatitude(random.nextDouble() * 300000); // 0 ~ 300,000 사이의 랜덤 위도
+            cardSaveDto.setLongitude(random.nextDouble() * 300000); // 0 ~ 300,000 사이의 랜덤 경도
+            cardSaveDto.setImage(generateImage());
+            cardSaveDto.setContent(koreanTextGenerator.generateKoreanText(800)); // 랜덤 한글 텍스트 생성
+            cardSaveDtos.add(cardSaveDto);
+        }
+        return cardSaveDtos;
+    }
+    private static String[] images = {"blob:http://polaroad.s3-website.ap-northeast-2.amazonaws.com/8b35cc35-f7a3-4f1c-98ce-2d84a9419610",
+    "blob:http://polaroad.s3-website.ap-northeast-2.amazonaws.com/ea999741-1d4a-4a06-9060-5227f2621400",
+    "blob:http://polaroad.s3-website.ap-northeast-2.amazonaws.com/9e86f811-40c8-4655-9abc-34a50075c8e8",
+    "blob:http://polaroad.s3-website.ap-northeast-2.amazonaws.com/e3996159-437b-4b91-8bcb-6f1cf64a3318",
+    "http://polaroad.s3-website.ap-northeast-2.amazonaws.com/logo512.png"};
+    private String generateImage() {
+        return images[random.nextInt(images.length)];
     }
 }
