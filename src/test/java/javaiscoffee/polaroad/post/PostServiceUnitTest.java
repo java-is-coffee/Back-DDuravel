@@ -15,7 +15,10 @@ import javaiscoffee.polaroad.post.good.PostGood;
 import javaiscoffee.polaroad.post.good.PostGoodBatchUpdator;
 import javaiscoffee.polaroad.post.good.PostGoodId;
 import javaiscoffee.polaroad.post.good.PostGoodRepository;
+import javaiscoffee.polaroad.post.hashtag.Hashtag;
 import javaiscoffee.polaroad.post.hashtag.HashtagService;
+import javaiscoffee.polaroad.post.hashtag.PostHashtag;
+import javaiscoffee.polaroad.post.hashtag.PostHashtagId;
 import javaiscoffee.polaroad.redis.RedisService;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
@@ -90,8 +93,8 @@ class PostServiceUnitTest {
         //when
         when(memberRepository.findById(any(Long.class))).thenReturn(Optional.of(testMember1));
         when(postRepository.save(any(Post.class))).thenReturn(testPost);
-        when(hashtagService.savePostHashtag(any(String.class),any(Post.class))).thenReturn(null);
-        when(cardService.saveCard(any(Card.class))).thenReturn(null);
+        when(hashtagService.savePostHashtag(any(String.class),any(Post.class))).thenReturn(new PostHashtag(new PostHashtagId(1L,1L),new Hashtag(),testPost));
+        when(cardService.saveCard(any(Card.class))).thenReturn(new Card());
         doNothing().when(redisService).saveCachingPostInfo(any(PostInfoCachingDto.class), any(Long.class));
         ResponseEntity<Post> response = postService.savePost(postSaveDto, 1L);
         //then
@@ -127,8 +130,8 @@ class PostServiceUnitTest {
         //when
         when(postRepository.findById(any(Long.class))).thenReturn(Optional.of(savedPost));
         when(memberRepository.findById(any(Long.class))).thenReturn(Optional.of(testMember1));
-        doNothing().when(hashtagService).editPostHashtags(any(List.class), eq(savedPost));
-        doNothing().when(cardService).editCards(any(List.class), eq(savedPost), eq(testMember1));
+        when(hashtagService.editPostHashtags(any(List.class), eq(savedPost))).thenReturn(new ArrayList<>());
+        when(cardService.editCards(any(List.class), eq(savedPost), eq(testMember1))).thenReturn(new ArrayList<>());
         doNothing().when(redisService).updateCachingPost(any(PostInfoCachingDto.class), any(Long.class));
         //then
         ResponseEntity<Post> response = postService.editPost(editPostDto, testMember1.getMemberId(), savedPost.getPostId());

@@ -135,4 +135,16 @@ public class MemberController {
         Long memberId = userDetails.getMemberId();
         return ResponseEntity.ok(memberService.getFollowingMemberInfo(memberId, page, pageSize));
     }
+
+    @Operation(summary = "멤버 미니프로필 조회", description = "멤버들의 미니프로필(이름,닉네임,프로필이미지,팔로우수,팔로잉수,최근 포스트 썸네일 3개) 조회 API")
+    @Parameter(name = "memberId", description = "조회하려는 멤버 ID", required = true, example = "1")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "멤버 미니프로필 조회에 성공했을 경우"),
+            @ApiResponse(responseCode = "404", description = "멤버가 존재하지 않을 경우")
+    })
+    @GetMapping("/profile")
+    public ResponseEntity<MemberMiniProfileDto> getMiniProfile(@RequestParam(name = "memberId") Long memberId) {
+
+        return ResponseEntity.ok(memberService.getMiniProfile(memberId));
+    }
 }

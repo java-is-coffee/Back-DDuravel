@@ -2,6 +2,7 @@ package javaiscoffee.polaroad.member;
 
 import javaiscoffee.polaroad.exception.BadRequestException;
 import javaiscoffee.polaroad.exception.NotFoundException;
+import javaiscoffee.polaroad.post.card.CardRepository;
 import javaiscoffee.polaroad.response.ResponseMessages;
 import javaiscoffee.polaroad.security.BaseException;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 
 @Slf4j
@@ -21,6 +23,7 @@ import java.util.Objects;
 public class MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CardRepository cardRepository;
 
     /**
      * 현재 사용 용도 : 자기 이메일을 통해 자기 정보를 반환
@@ -150,5 +153,23 @@ public class MemberService {
      */
     public FollowingMemberResponseDto getFollowingMemberInfo (Long memberId,int page, int pageSize) {
         return memberRepository.getFollowingMemberInfo(memberId,page,pageSize);
+    }
+
+    /**
+     * 멤버 미니프로필 조회
+     */
+    public MemberMiniProfileDto getMiniProfile (Long memberId) {
+        MemberBasicInfoDto basicInfo = memberRepository.getMemberMiniProfileDto(memberId);
+        if(!basicInfo.getStatus().equals(MemberStatus.ACTIVE)) throw new NotFoundException(ResponseMessages.MEMBER_NOT_FOUND.getMessage());
+        List<String> thumbnails = cardRepository.getMiniProfileImages(memberId);
+        return new MemberMiniProfileDto(
+                basicInfo.getName(),
+                basicInfo.getNickname(),
+                basicInfo.getProfileImage(),
+                basicInfo.getPostNumber(),
+                basicInfo.getFollowedNumber(),
+                basicInfo.getFollowingNumber(),
+                thumbnails
+        );
     }
 }

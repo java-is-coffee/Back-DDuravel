@@ -45,12 +45,13 @@ public class CardService {
     /**
      * 포스트 수정할 때 카드 수정하는 메서드
      */
-    public void editCards(List<CardSaveDto> updateCards, Post post, Member member) {
+    public List<Card> editCards(List<CardSaveDto> updateCards, Post post, Member member) {
         List<Card> oldCards = cardRepository.findCardsByPostAndStatusOrderByCardIndexAsc(post, CardStatus.ACTIVE);
 
         // updateCards의 복사본 생성
         List<CardSaveDto> remainingNewCards = new ArrayList<>(updateCards);
 
+        List<Card> toRemove = new ArrayList<>();
         for (Card oldCard : oldCards) {
             Optional<CardSaveDto> matchingNewCardOpt = remainingNewCards.stream()
                     .filter(newCard -> newCard.getCardId() != null && newCard.getCardId().equals(oldCard.getCardId()))
@@ -65,8 +66,10 @@ public class CardService {
             } else {
                 // 더 이상 사용되지 않는 카드 상태 변경
                 oldCard.setStatus(CardStatus.DELETED);
+                toRemove.add(oldCard);
             }
         }
+        oldCards.removeAll(toRemove);
 
         // 새로운 카드 엔터티 추가
         for (CardSaveDto newCardDto : remainingNewCards) {
@@ -75,9 +78,10 @@ public class CardService {
                 BeanUtils.copyProperties(newCardDto, newCard, "cardId");
                 newCard.setPost(post);
                 newCard.setMember(member);
-                cardRepository.save(newCard); // 새 카드 저장
+                oldCards.add(cardRepository.save(newCard)); // 새 카드 저장
             }
         }
+        return oldCards;
     }
 
     public CardListResponseDto getCardListByMember(Long memberId,int page, int pageSize) {
