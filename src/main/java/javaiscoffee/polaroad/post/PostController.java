@@ -207,7 +207,7 @@ public class PostController {
             postSaveDto.setCards(generateCardDummyList(random.nextInt(1,10)));
             postSaveDto.setHashtags(koreanTextGenerator.generateHashtags(random.nextInt(50),random.nextInt(10)));
             postService.savePost(postSaveDto, memberId);
-            sleep(5);
+            sleep(20);
         }
         return ResponseEntity.ok(true);
     }
