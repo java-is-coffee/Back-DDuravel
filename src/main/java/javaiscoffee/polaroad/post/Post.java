@@ -59,8 +59,10 @@ public class Post {
     @Setter
     private LocalDateTime updatedTime;
 
+    @Setter
     @NotNull @OneToMany(mappedBy = "post")
     private List<Card> cards;
+    @Setter
     @NotNull @OneToMany(mappedBy = "post")
     private List<PostHashtag> postHashtags;
     @NotNull @OneToMany(mappedBy = "post")

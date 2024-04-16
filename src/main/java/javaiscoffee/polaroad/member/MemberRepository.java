@@ -29,6 +29,8 @@ public interface MemberRepository {
     public void addMemberPostNumber(Long memberId, int changeNumber);
     //팔로잉하고 있는 멤버 리스트 조회
     FollowingMemberResponseDto getFollowingMemberInfo(Long followingMemberId, int page, int pageSize);
+    //미니프로필 조회
+    MemberBasicInfoDto getMemberMiniProfileDto(Long memberId);
 }
 
 

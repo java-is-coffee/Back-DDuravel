@@ -1,7 +1,9 @@
 package javaiscoffee.polaroad.member;
 
 import jakarta.persistence.*;
+import javaiscoffee.polaroad.exception.NotFoundException;
 import javaiscoffee.polaroad.post.PostMemberInfoDto;
+import javaiscoffee.polaroad.response.ResponseMessages;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -122,5 +124,16 @@ public class JpaMemberRepository implements MemberRepository {
                 .getResultList();
         boolean hasNext = memberInfoDtoList.size() == pageSize + 1;
         return new FollowingMemberResponseDto(memberInfoDtoList, hasNext);
+    }
+
+    @Override
+    public MemberBasicInfoDto getMemberMiniProfileDto(Long memberId) {
+        try{
+        return em.createQuery("select new javaiscoffee.polaroad.member.MemberBasicInfoDto(m.name,m.nickname,m.profileImage,m.postNumber,m.followedNumber,m.followingNumber,m.status) from Member m where m.memberId = :memberId", MemberBasicInfoDto.class)
+                .setParameter("memberId", memberId)
+                .getSingleResult();
+        } catch (NoResultException e) {
+            throw new NotFoundException(ResponseMessages.MEMBER_NOT_FOUND.getMessage());
+        }
     }
 }

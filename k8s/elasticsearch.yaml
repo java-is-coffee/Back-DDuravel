@@ -46,7 +46,7 @@ spec:
             - name: "cluster.initial_master_nodes"
               value: "elasticsearch-0,elasticsearch-1,elasticsearch-2"
             - name: "ES_JAVA_OPTS"
-              value: "-Xmx1g -Xms1g"
+              value: "-Xmx2g -Xms2g"
             - name: "ELASTIC_PASSWORD"
               valueFrom:
                 secretKeyRef:

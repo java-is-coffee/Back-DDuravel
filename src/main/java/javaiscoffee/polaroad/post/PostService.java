@@ -82,12 +82,16 @@ public class PostService {
         BeanUtils.copyProperties(postSaveDto, post);
         post.setMember(member);
         Post savedPost = postRepository.save(post);
+
         //해쉬태그 저장
+        List<PostHashtag> savedPostPostHashtags = savedPost.getPostHashtags();
         postSaveDto.getHashtags().forEach(tagName -> {
-            hashtagService.savePostHashtag(tagName, savedPost);
+            savedPostPostHashtags.add(hashtagService.savePostHashtag(tagName, savedPost));
         });
+
         //카드 저장
         int cardIndex = 0;
+        List<Card> savedCards = savedPost.getCards();
         for(CardSaveDto cardInfo : postSaveDto.getCards()) {
             Card newCard = new Card();
             newCard.setCardIndex(cardIndex++);
@@ -98,7 +102,7 @@ public class PostService {
             newCard.setContent(cardInfo.getContent());
             newCard.setPost(savedPost);
             newCard.setMember(member);
-            cardService.saveCard(newCard);
+            savedCards.add(cardService.saveCard(newCard));
         }
         //멤버 포스트 개수 1개 증가
         member.setPostNumber(member.getPostNumber() + 1);
@@ -135,7 +139,7 @@ public class PostService {
         oldPost.setUpdatedTime(LocalDateTime.now());
 
         //해쉬태그 업데이트
-        hashtagService.editPostHashtags(postSaveDto.getHashtags(),oldPost);
+        oldPost.setPostHashtags(hashtagService.editPostHashtags(postSaveDto.getHashtags(),oldPost));
 
         //카드 업데이트
         List<CardSaveDto> updateCards = postSaveDto.getCards();
@@ -143,7 +147,7 @@ public class PostService {
         for(CardSaveDto updateCard : updateCards) {
             updateCard.setCardIndex(index++);
         }
-        cardService.editCards(postSaveDto.getCards(), oldPost, member);
+        oldPost.setCards(cardService.editCards(postSaveDto.getCards(), oldPost, member));
 
         log.info("수정된 post = {}",oldPost);
         redisService.updateCachingPost(toPostInfoCachingDto(oldPost), postId);
