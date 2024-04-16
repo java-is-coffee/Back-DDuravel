@@ -13,3 +13,8 @@ configMapGenerator:
   - name: init-db
     files:
       - configs/init.sql
+  - name: elasticsearch-config
+    files:
+      - configs/elasticsearch-config.yml
+    options:
+      disableNameSuffixHash: true

@@ -22,6 +22,23 @@ import java.util.List;
 )
 @Builder
 @ToString
+@SqlResultSetMapping(
+        name = "MapCardListDtoMapping",
+        classes = {
+                @ConstructorResult(
+                        targetClass = MapCardListDto.class,
+                        columns = {
+                                @ColumnResult(name = "post_id", type = Long.class),
+                                @ColumnResult(name = "card_id", type = Long.class),
+                                @ColumnResult(name = "image", type = String.class),
+                                @ColumnResult(name = "content", type = String.class),
+                                @ColumnResult(name = "location", type = String.class),
+                                @ColumnResult(name = "latitude", type = Double.class),
+                                @ColumnResult(name = "longitude", type = Double.class)
+                        }
+                )
+        }
+)
 public class Card {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long cardId;
@@ -42,7 +59,7 @@ public class Card {
     @Column(length = 255)
     @NotNull @Setter
     private String location;//상세 위치
-    @Column(length = 255)
+    @Column(length = 1000)
     @NotNull @Setter
     private String image;    //이미지 주소
     @Setter

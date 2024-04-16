@@ -72,10 +72,10 @@ public class PostService {
     @Transactional
     public ResponseEntity<Post> savePost(PostSaveDto postSaveDto, Long memberId) {
         //썸네일 번호가 잘못되었을 경우 에러
-        if(postSaveDto.getThumbnailIndex() < 0 || postSaveDto.getThumbnailIndex() >= postSaveDto.getCards().size()) throw new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
+        if(postSaveDto.getThumbnailIndex() < 0 || postSaveDto.getThumbnailIndex() >= postSaveDto.getCards().size()) throw new BadRequestException("썸네일 인덱스가 잘못되었습니다.");
         //게시글 해쉬코드가 10개 넘어가면 에러
-        if(postSaveDto.getHashtags().size() > 10) throw new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
-        if(postSaveDto.getCards().size() > 10) throw new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
+        if(postSaveDto.getHashtags().size() > 10) throw new BadRequestException("해쉬태그 개수는 최대 10개입니다.");
+        if(postSaveDto.getCards().size() > 10) throw new BadRequestException("카드 개수는 최대 10개입니다.");
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         if(!member.getStatus().equals(MemberStatus.ACTIVE)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
         Post post = new Post();

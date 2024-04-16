@@ -11,6 +11,7 @@ import ext.javaiscoffee.polaroad.post.wishlist.QWishList;
 import ext.javaiscoffee.polaroad.post.wishlist.QWishListPost;
 import jakarta.persistence.EntityManager;
 import javaiscoffee.polaroad.post.Post;
+import javaiscoffee.polaroad.post.PostListRepositoryDto;
 import javaiscoffee.polaroad.post.card.Card;
 import org.springframework.stereotype.Repository;
 
@@ -35,16 +36,6 @@ public class QueryWishListRepositoryImpl implements QueryWishListRepository{
         QWishList wishList = QWishList.wishList;
         QWishListPost wishListPost = QWishListPost.wishListPost;
 
-        //검색 결과 최대 개수 구하기
-        Long totalPostsCount = queryFactory
-                .select(post.count())
-                .leftJoin(post.wishListPosts, wishListPost)
-                .leftJoin(wishListPost.wishList, wishList)
-                .where(wishListPost.wishList.wishListId.eq(wishListId))
-                .fetchOne();
-        //검색 결과가 없으므로 빈 배열 반환
-        if(totalPostsCount == null) return new WishListPostListResponseDto(new ArrayList<>(),0);
-
         // 주요 변경: fetchJoin 제거, DTO 직접 조회
         JPAQuery<WishListPostDto> query = queryFactory
                 .select(Projections.constructor(
@@ -64,11 +55,17 @@ public class QueryWishListRepositoryImpl implements QueryWishListRepository{
                 .where(wishListPost.wishList.wishListId.eq(wishListId))
                 .orderBy(wishListPost.createdTime.desc())
                 .offset(getOffset(page, pageSize))
-                .limit(pageSize);
+                .limit(pageSize + 1);
+        List<WishListPostDto> wishListPostDtos = query.fetch();
+        return new WishListPostListResponseDto(wishListPostDtos, hasNextPage(wishListPostDtos, pageSize));
+    }
 
-        int maxPage = (int) Math.ceil((double) totalPostsCount / pageSize);
-
-        return new WishListPostListResponseDto(query.fetch(), maxPage);
+    private boolean hasNextPage(List<WishListPostDto> list, int pageSize) {
+        if (list.size() > pageSize) {
+            list.remove(pageSize);
+            return true;
+        }
+        return false;
     }
 
     private int getOffset(int page, int pageSize) {
