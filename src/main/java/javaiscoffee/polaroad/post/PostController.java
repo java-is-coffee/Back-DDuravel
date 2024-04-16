@@ -193,10 +193,11 @@ public class PostController {
 
     @Operation(summary = "포스트 더미데이터 1만개 생성")
     @GetMapping("/dummy-create")
-    public ResponseEntity<Boolean> createDummyPost() throws InterruptedException {
+    public ResponseEntity<Boolean> createDummyPost(@AuthenticationPrincipal CustomUserDetails userDetails) throws InterruptedException {
+        Long memberId = userDetails.getMemberId();
         PostRegion[] regions = PostRegion.values();
         PostConcept[] concepts = PostConcept.values();
-        for(int i = 0; i < 10000; i++) {
+        for(int i = 0; i < 200000; i++) {
             PostSaveDto postSaveDto = new PostSaveDto();
             postSaveDto.setTitle(koreanTextGenerator.generateKoreanText(30));
             postSaveDto.setRoutePoint("");
@@ -205,8 +206,8 @@ public class PostController {
             postSaveDto.setRegion(regions[random.nextInt(regions.length)]);
             postSaveDto.setCards(generateCardDummyList(random.nextInt(1,10)));
             postSaveDto.setHashtags(koreanTextGenerator.generateHashtags(random.nextInt(50),random.nextInt(10)));
-            postService.savePost(postSaveDto, 1L);
-            sleep(50);
+            postService.savePost(postSaveDto, memberId);
+            sleep(5);
         }
         return ResponseEntity.ok(true);
     }
