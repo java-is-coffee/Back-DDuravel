@@ -197,7 +197,7 @@ public class PostController {
         Long memberId = userDetails.getMemberId();
         PostRegion[] regions = PostRegion.values();
         PostConcept[] concepts = PostConcept.values();
-        for(int i = 0; i < 200000; i++) {
+        for(int i = 0; i < 20000; i++) {
             PostSaveDto postSaveDto = new PostSaveDto();
             postSaveDto.setTitle(koreanTextGenerator.generateKoreanText(30));
             postSaveDto.setRoutePoint("");
