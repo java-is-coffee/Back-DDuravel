@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  namespace: elk
+  namespace: default
   name: elasticsearch-config
   labels:
     app: elasticsearch
