@@ -16,6 +16,13 @@ spec:
       labels:
         app: elasticsearch
     spec:
+      tolerations:  # Taints에 대응하는 tolerations 추가
+        - key: "node-role.dkosv3.9rum.cc/lb"
+          operator: "Exists"
+          effect: "NoSchedule"
+        - key: "node-role.kubernetes.io/master"
+          operator: "Exists"
+          effect: "NoSchedule"
       initContainers:
         - name: fix-permissions
           image: busybox
@@ -38,7 +45,7 @@ spec:
             - name: "cluster.name"
               value: "my-elasticsearch-cluster"
             - name: "ES_JAVA_OPTS"
-              value: "-Xms2g -Xmx2g"
+              value: "-Xms1g -Xmx1g"
           ports:
             - name: rest
               containerPort: 9200
@@ -46,10 +53,10 @@ spec:
               containerPort: 9300
           resources:
             requests:
-              memory: "4Gi"
+              memory: "2Gi"
               cpu: "500m"
             limits:
-              memory: "4Gi"
+              memory: "2Gi"
               cpu: "1"
           volumeMounts:
             - name: config
