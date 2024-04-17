@@ -9,6 +9,7 @@ public interface QueryPostRepository {
     List<Post> findPostByEmail(String email);
 
     PostListResponseDto searchPostByKeyword(int page, int pageSize, String searchWords, PostListSort order, PostConcept concept, PostRegion region, PostStatus status);
+    PostListResponseDto searchPostByKeywordIndexMatch(int page, int pageSize, String searchKeyword, PostListSort sortBy, PostConcept concept, PostRegion region, PostStatus status);
 
     PostListResponseDto searchPostByHashtag(int page, int pageSize, Long hashtagId, PostListSort order, PostConcept concept, PostRegion region, PostStatus status);
 
