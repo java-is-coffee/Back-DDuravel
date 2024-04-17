@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * 포스트 생성, 수정할 때 사용되는 서비스
@@ -50,6 +52,20 @@ public class HashtagService {
         PostHashtag postHashtag = new PostHashtag(new PostHashtagId(hashtag.getHashtagId(), post.getPostId()), hashtag, post);
         log.info("저장된 postHashtag = {}",postHashtag);
         return postHashtagRepository.save(postHashtag);
+    }
+
+    public List<PostHashtag> savePostHashtags(List<String> tagNames, Post post) {
+        List<Hashtag> existingHashtags = hashtagRepository.findHashtagByNameIn(tagNames);
+        Map<String, Hashtag> existingTagsMap = existingHashtags.stream()
+                .collect(Collectors.toMap(Hashtag::getName, Function.identity()));
+
+        List<PostHashtag> result = new ArrayList<>();
+        for (String tagName : tagNames) {
+            Hashtag hashtag = existingTagsMap.getOrDefault(tagName, hashtagRepository.save(new Hashtag(tagName)));
+            PostHashtag postHashtag = new PostHashtag(new PostHashtagId(hashtag.getHashtagId(), post.getPostId()), hashtag, post);
+            result.add(postHashtagRepository.save(postHashtag));
+        }
+        return result;
     }
 
     /**

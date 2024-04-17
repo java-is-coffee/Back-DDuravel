@@ -17,6 +17,7 @@ import ext.javaiscoffee.polaroad.post.good.QPostGood;
 import ext.javaiscoffee.polaroad.post.hashtag.QHashtag;
 import ext.javaiscoffee.polaroad.post.hashtag.QPostHashtag;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 import javaiscoffee.polaroad.post.card.CardInfoDto;
 import javaiscoffee.polaroad.post.card.CardListRepositoryDto;
 import javaiscoffee.polaroad.post.card.CardStatus;
@@ -26,10 +27,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class QueryPostRepositoryImpl implements QueryPostRepository{
-
+    private final EntityManager em;
     private final JPAQueryFactory queryFactory;
     public QueryPostRepositoryImpl(EntityManager em) {
         this.queryFactory = new JPAQueryFactory(em);
+        this.em = em;
     }
     public static final QPost post = QPost.post; //QueryDSL Q Class
     public static final QCard card = QCard.card;
@@ -82,6 +84,57 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
         }
 
         List<PostListRepositoryDto> posts = query.fetch();
+        // hasNext 판별하고 true면 1개 추가 조회한 컨텐트 삭제
+        boolean hasNext = hasNextPage(posts, pageSize);
+
+        // 2. 포스트들의 카드 정보 조회
+        List<Long> postIds = getPostIds(posts);
+        // 카드들을 맵으로 변경
+        Map<Long, List<CardListRepositoryDto>> cardsMap = getPostCardsMap(card, postIds);
+
+        // 3. DTO에 카드 정보 추가
+        setCardInfoToPostDto(posts, cardsMap);
+
+        // 포스트를 DTO로 변환하고 카드 이미지 처리
+        return getPostListResponseDto(posts, hasNext);
+    }
+
+    public PostListResponseDto searchPostByKeywordIndexMatch(int page, int pageSize, String searchKeyword, PostListSort sortBy, PostConcept concept, PostRegion region, PostStatus status) {
+        // 기본 쿼리 설정
+        String sql = "SELECT p.title, p.post_id, m.nickname, p.thumbnail_index, p.good_number, p.concept, p.region, p.updated_time " +
+                "FROM posts p JOIN member m ON p.member_id = m.member_id JOIN cards c ON p.post_id = c.post_id " +
+                "WHERE p.status = :status ";
+
+        // 조건 추가
+        if(region != null) {
+            sql += "AND p.region = :region ";
+        }
+        if(concept != null) {
+            sql += "AND p.concept = :concept ";
+        }
+        if (searchKeyword != null && !searchKeyword.isEmpty()) {
+            sql += "AND (MATCH(p.title) AGAINST(:keyword IN BOOLEAN MODE) OR MATCH(c.content) AGAINST(:keyword IN BOOLEAN MODE) OR MATCH(m.nickname) AGAINST(:keyword IN BOOLEAN MODE)) ";
+        }
+
+        // 정렬 설정
+        if(sortBy.equals(PostListSort.RECENT)) {
+            sql += "ORDER BY p.post_id DESC ";
+        } else {
+            sql += "ORDER BY p.good_number DESC, p.post_id DESC ";
+        }
+
+        //페이징처리
+        sql += "LIMIT :pageSize OFFSET :page";
+
+        Query query = em.createNativeQuery(sql,"PostListRepositoryDtoMapping");
+        query.setParameter("status", status.toString());
+        query.setParameter("region", region != null ? region.toString() : null);
+        query.setParameter("concept", concept != null ? concept.toString() : null);
+        query.setParameter("keyword", searchKeyword);
+        query.setParameter("pageSize", pageSize + 1);
+        query.setParameter("page", getOffset(page, pageSize));
+
+        List<PostListRepositoryDto> posts = query.getResultList();
         // hasNext 판별하고 true면 1개 추가 조회한 컨텐트 삭제
         boolean hasNext = hasNextPage(posts, pageSize);
 

@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import javaiscoffee.polaroad.member.Member;
 import javaiscoffee.polaroad.post.card.Card;
+import javaiscoffee.polaroad.post.card.MapCardListDto;
 import javaiscoffee.polaroad.post.good.PostGood;
 import javaiscoffee.polaroad.post.hashtag.PostHashtag;
 import javaiscoffee.polaroad.post.wishlist.WishListPost;
@@ -14,6 +15,7 @@ import javaiscoffee.polaroad.review.Review;
 import lombok.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 
 @Entity
@@ -27,6 +29,24 @@ import java.util.List;
 )
 @Builder
 @ToString(exclude = {"member","cards","postHashtags"})
+@SqlResultSetMapping(
+        name = "PostListRepositoryDtoMapping",
+        classes = {
+                @ConstructorResult(
+                        targetClass = PostListRepositoryDto.class,
+                        columns = {
+                                @ColumnResult(name = "title", type = String.class),
+                                @ColumnResult(name = "post_id", type = Long.class),
+                                @ColumnResult(name = "nickname", type = String.class),
+                                @ColumnResult(name = "thumbnailIndex", type = Integer.class),
+                                @ColumnResult(name = "good_number", type = Integer.class),
+                                @ColumnResult(name = "concept", type = PostConcept.class),
+                                @ColumnResult(name = "region", type = PostRegion.class),
+                                @ColumnResult(name = "updated_time", type = LocalDateTime.class)
+                        }
+                )
+        }
+)
 public class Post {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long postId;

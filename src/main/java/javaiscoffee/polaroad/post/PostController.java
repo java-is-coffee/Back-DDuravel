@@ -111,6 +111,41 @@ public class PostController {
         return postService.getPostList(page,pageSize,searchType,keyword,sortBy,concept,region,PostStatus.ACTIVE);
     }
 
+    @Operation(summary = "포스트 검색", description = "키워드, 해쉬태그 검색하는 API")
+    @Parameter(name = "page", description = "1부터 시작합니다. 몇 번째 페이지를 출력할 것인지",required = true, example = "1")
+    @Parameter(name = "pageSize", description = "한 페이지에 몇 개의 결과를 표시할 것인지 정하는 수치", required = true, example = "8")
+    @Parameter(name = "searchType", description = "검색 방식을 나타냅니다. \n - KEYWORD = 키워드검색 \n - HASHTAG = 해쉬태그검색", example = "KEYWORD")
+    @Parameter(name = "keyword", description = "검색할 키워드나 해쉬태그 \n null값이면 나머지 조건으로 검색", example = "자바")
+    @Parameter(name = "sortBy", description = "검색 결과를 정렬할 방식 \n - GOOD = 하트순 \n - RECENT = 최신순",  required = true, example = "RECENT")
+    @Parameter(name = "concept", description = "게시글 카테고리 \n null값이면 나머지 조건으로 검색 \n- FOOD 식도락\n" +
+            "- NATURE 자연\n" +
+            "- CITY 도시관광\n" +
+            "- PHOTO 사진&명소\n" +
+            "- HOT 인기게시글\n" +
+            "- WALK 도보여행\n" +
+            "- CAR 자동차&대중교통 여행\n" +
+            "- TRAIN 기차여행", example = "FOOD")
+    @Parameter(name = "region", description = "게시글 지역 \n null값이면 나머지 조건으로 검색 \n" +
+            "- SEOUL 서울, INCHEON 인천, BUSAN 부산, DAEGU 대구, \n" +
+            "- GWANGJU 광주, DAEJEON 대전, ULSAN 울산, GYEONGGIDO 경기도, GANGWONDO 강원도,\n " +
+            "- CHUNGCHEONGNAMDO 충남, CHUNGCHEONGBUKDO 충북,\n " +
+            "- JEOLLANAMDO 전남, JEOLLABUKDO 전북,\n " +
+            "- GYEONGSANGNAMDO 경남, GYEONGSANGBUKDO 경북,\n " +
+            "- JEJUDO 제주도", example = "SEOUL")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "리스트 조회에 성공한 경우")
+    })
+    @GetMapping("/list-match")
+    public ResponseEntity<PostListResponseDto> getPostListByIndexMatch(@RequestParam(name = "page") int page,
+                                                           @RequestParam(name = "pageSize") int pageSize,
+                                                           @RequestParam(name = "searchType") PostSearchType searchType,
+                                                           @RequestParam(name = "keyword",required = false) String keyword,
+                                                           @RequestParam(name = "sortBy") PostListSort sortBy,
+                                                           @RequestParam(name = "concept", required = false) PostConcept concept,
+                                                           @RequestParam(name = "region", required = false) PostRegion region) {
+        return postService.getPostListByIndexMatch(page,pageSize,searchType,keyword,sortBy,concept,region,PostStatus.ACTIVE);
+    }
+
     @Operation(summary = "포스트 내용 조회", description = "포스트 내용 조회 페이지에서 사용하는 API")
     @Parameter(name = "postId", description = "내용 조회할 포스트 ID",required = true, example = "1")
     @ApiResponses({
