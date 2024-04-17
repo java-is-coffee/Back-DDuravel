@@ -29,7 +29,7 @@ spec:
         - name: elasticsearch
           image: docker.elastic.co/elasticsearch/elasticsearch:8.7.1
           volumeMounts:
-            - name: writable-config
+            - name: config-volume
               mountPath: /usr/share/elasticsearch/config
             - name: elasticsearch-data
               mountPath: /usr/share/elasticsearch/data
