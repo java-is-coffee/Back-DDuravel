@@ -99,6 +99,7 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
         return getPostListResponseDto(posts, hasNext);
     }
 
+    @Override
     public PostListResponseDto searchPostByKeywordIndexMatch(int page, int pageSize, String searchKeyword, PostListSort sortBy, PostConcept concept, PostRegion region, PostStatus status) {
         // 기본 쿼리 설정
         String sql = "SELECT p.title, p.post_id, m.nickname, p.thumbnail_index, p.good_number, p.concept, p.region, p.updated_time " +
