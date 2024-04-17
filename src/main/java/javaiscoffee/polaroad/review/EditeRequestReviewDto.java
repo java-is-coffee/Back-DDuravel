@@ -3,12 +3,16 @@ package javaiscoffee.polaroad.review;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import javaiscoffee.polaroad.review.reviewPhoto.ReviewPhotoInfoDto;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.beans.ConstructorProperties;
 import java.util.List;
 
 @Data
+@NoArgsConstructor
+@Builder
 public class EditeRequestReviewDto {
     @Schema(description = "## 댓글 본문", example = "와 저도 가보고 싶어지네요.")
     private String content;

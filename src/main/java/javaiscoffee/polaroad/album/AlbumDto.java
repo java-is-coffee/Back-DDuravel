@@ -2,6 +2,7 @@ package javaiscoffee.polaroad.album;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -11,6 +12,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Schema(description = "앨범 생성 정보 받는 requestDto")
 public class AlbumDto {
     @Schema(description = "앨범 이름", example = "제주도")

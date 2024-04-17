@@ -19,6 +19,7 @@ import javaiscoffee.polaroad.review.reviewGood.ReviewGoodId;
 import javaiscoffee.polaroad.review.reviewGood.ReviewGoodRepository;
 import javaiscoffee.polaroad.review.reviewPhoto.JpaReviewPhotoRepository;
 import javaiscoffee.polaroad.review.reviewPhoto.ReviewPhoto;
+import javaiscoffee.polaroad.review.reviewPhoto.ReviewPhotoInfoDto;
 import javaiscoffee.polaroad.review.reviewPhoto.ReviewPhotoService;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
@@ -46,7 +47,7 @@ import static org.mockito.Mockito.*;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 //NOTE: 레포지토리 사용하는 부분, 예외 처리 부분을 검증하는 것, 레포지토리의 값을 담는 변수에 내가 만든 가짜 객체를 넣어주는 것
-// - "리뷰 생성 성공 테스트" 제외하고 다른 테스트들의 에러는 2,3번 실행하면 에러 해결 됌..
+// - 에러는 2,3번 실행하면 에러 해결 됌..
 @SpringBootTest(properties = {"JWT_SECRET_KEY=3123758a0d7ef02a46cba8bdd3f898dec8afc9f8470341af789d59f3695093be"})
 public class ReviewServiceUnitTest {
      @InjectMocks
@@ -83,42 +84,29 @@ public class ReviewServiceUnitTest {
      }
 
      //HACK : newReviewPhoto가 null이라고 NullPointerException 발생
-//     @Test
+     @Test
      @DisplayName("리뷰 생성 성공 테스트")
      public void successToCreateReview() {
-          Member member = Member.builder()
-                  .memberId(1L)
-                  .status(MemberStatus.ACTIVE)
+          Member member = Member.builder().memberId(1L).status(MemberStatus.ACTIVE).build();
+          Post post = Post.builder().postId(1L).status(PostStatus.ACTIVE).build();
+          List<ReviewPhoto> reviewPhotos = new ArrayList<>();
+          Review review = Review.builder()
+                  .reviewId(1L).status(ReviewStatus.ACTIVE)
+                  .member(member).post(post)
+                  .reviewPhoto(reviewPhotos)
                   .build();
+          ReviewPhoto reviewPhoto = ReviewPhoto.builder().image("이미지").review(review).build();
+          reviewPhotos.add(reviewPhoto);
+          ReviewDto reviewDto = ReviewDto.builder()
+                  .memberId(member.getMemberId()).postId(post.getPostId())
+                  .reviewPhotoList(Arrays.asList(reviewPhoto.getImage()))
+                  .build();
+
+
           when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
-          Post post = Post.builder()
-                  .postId(1L)
-                  .status(PostStatus.ACTIVE)
-                  .build();
           when(postRepository.findById(1L)).thenReturn(Optional.of(post));
-          ReviewPhoto reviewPhoto = fm.giveMeBuilder(ReviewPhoto.class)
-                  .set("image", "url입니다.")
-                  .set("reviewPhotoId", 1L)
-                  .set("review", new Review())
-                  .sample();
-          Review review = fm.giveMeBuilder(Review.class)
-                  .set("reviewPhoto", Arrays.asList(reviewPhoto))
-                  .set("status", ReviewStatus.ACTIVE)
-                  .sample();
-          ReviewDto reviewDto = fm.giveMeBuilder(ReviewDto.class)
-                  .set("memberId", 1L)
-                  .set("postId",1L)
-                  .set("reviewPhotoList", Arrays.asList(reviewPhoto.getImage()))
-                  .sample();
-          BeanUtils.copyProperties(reviewDto, review);
-
-          System.out.println("reviewDto = " + reviewDto);
-          System.out.println("review = " + review);
-
-          //HACK: saveReviewPhoto가 호출이 안됌
-          when(reviewPhotoService.saveReviewPhoto(reviewPhoto.getImage(), review)).thenReturn(reviewPhoto);
-          verify(reviewPhotoService).saveReviewPhoto(reviewPhoto.getImage(), review);
-          when(reviewService.createReview(reviewDto, 1L, 1L)).thenReturn(any(ResponseReviewDto.class));
+          when(reviewRepository.save(any(Review.class))).thenReturn(review);
+          when(reviewPhotoService.saveReviewPhoto(anyString(), any(Review.class))).thenReturn(reviewPhoto);
 
           //HACK: responseReviewDto null로 넘어오니까 값 넘어오게 해결할 것
           ResponseReviewDto responseReviewDto = reviewService.createReview(reviewDto, 1L, 1L);
@@ -145,7 +133,6 @@ public class ReviewServiceUnitTest {
                   .set("post", postRepository.findById(1L).get())
                   .sample();
           when(reviewRepository.save(any(Review.class))).thenReturn(review);
-
 
           ReviewDto reviewDto = fm.giveMeBuilder(ReviewDto.class)
                   .set("memberId", 1L)
@@ -247,46 +234,28 @@ public class ReviewServiceUnitTest {
      @Test
      @DisplayName("리뷰 수정 성공 테스트")
      public void successToEditReview() {
-          Member member = Member.builder()
-                  .memberId(1L)
-                  .status(MemberStatus.ACTIVE)
+          Member member = Member.builder().memberId(1L).status(MemberStatus.ACTIVE).build();
+          Post post = Post.builder().postId(1L).status(PostStatus.ACTIVE).build();
+          List<ReviewPhoto> reviewPhotos = new ArrayList<>();
+          Review review = Review.builder()
+                  .reviewId(1L).status(ReviewStatus.ACTIVE)
+                  .member(member).post(post)
+                  .reviewPhoto(reviewPhotos)
                   .build();
-          when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
-
-          Post post = Post.builder()
-                  .postId(1L)
-                  .status(PostStatus.ACTIVE)
+          ReviewPhoto reviewPhoto = ReviewPhoto.builder().image("이미지").review(review).build();
+          reviewPhotos.add(reviewPhoto);
+          ReviewPhotoInfoDto reviewPhotoInfoDto = ReviewPhotoInfoDto.builder()
+                  .reviewPhotoId(1L).reviewPhotoUrl("댓글사진").build();
+          EditeRequestReviewDto editDto = EditeRequestReviewDto.builder()
+                  .editPhotoList(Arrays.asList(reviewPhotoInfoDto))
                   .build();
-          when(postRepository.findById(1L)).thenReturn(Optional.of(post));
 
-          Review review = fm.giveMeBuilder(Review.class)
-                  .set("reviewId", 1L)
-                  .set("member", memberRepository.findById(1L).get())
-                  .set("post", postRepository.findById(1L).get())
-                  .set("status", ReviewStatus.ACTIVE)
-                  .sample();
-          System.out.println("review = " + review);
           when(reviewRepository.findByReviewId(1L)).thenReturn(review);
+          when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
+          when(postRepository.findById(1L)).thenReturn(Optional.of(post));
+          when(reviewRepository.update(review)).thenReturn(review);
+          doNothing().when(reviewPhotoService).editReviewPhoto(any(List.class), any(Review.class));
 
-          EditeRequestReviewDto editDto = fm.giveMeBuilder(EditeRequestReviewDto.class)
-                  .set("content", "수정된 댓글")
-                  .setNotNull("editPhotoList")
-                  .sample();
-          System.out.println("editDto = " + editDto);
-
-          Review updatedReview = fm.giveMeBuilder(Review.class)
-                  .set("reviewId", 1L)
-                  .set("member", memberRepository.findById(1L).get())
-                  .set("post", postRepository.findById(1L).get())
-                  .set("content", "수정된 댓글")
-                  .set("status", ReviewStatus.ACTIVE)
-                  .sample();
-          System.out.println("updatedReview = " + updatedReview);
-
-          when(reviewRepository.update(review)).thenReturn(updatedReview);
-//          verify(reviewPhotoService).editReviewPhoto(editDto.getEditPhotoList(),updatedReview);
-
-          //HACK : 댓글 내용 수정 성공, 리뷰사진 null이라 테스트 필요
           ResponseReviewDto responseDto = reviewService.editReview(editDto, 1L, 1L);
           System.out.println("responseReviewDto = " + responseDto);
           ResponseEntity<ResponseReviewDto> response = ResponseEntity.ok(responseDto);
@@ -334,15 +303,9 @@ public class ReviewServiceUnitTest {
      @Test
      @DisplayName("리뷰 수정 실패 테스트 - 4. 댓글 작성자가 아닌 경우")
      public void failedByOthersWhenEditReview() {
-          Member member = Member.builder()
-                  .memberId(1L)
-                  .status(MemberStatus.ACTIVE)
-                  .build();
-          Member others = fm.giveMeOne(Member.class);
-          Review review = fm.giveMeBuilder(Review.class)
-                  .set("member", others)
-                  .set("status", ReviewStatus.ACTIVE)
-                  .sample();
+          Member member = Member.builder().memberId(1L).status(MemberStatus.ACTIVE).build();
+          Member others = Member.builder().memberId(10L).build();
+          Review review = Review.builder().member(others).status(ReviewStatus.ACTIVE).build();
           EditeRequestReviewDto editDto = fm.giveMeOne(EditeRequestReviewDto.class);
 
           when(reviewRepository.findByReviewId(1L)).thenReturn(review);
@@ -358,20 +321,12 @@ public class ReviewServiceUnitTest {
                   .memberId(1L)
                   .status(MemberStatus.ACTIVE)
                   .build();
-          when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
-          Post post = Post.builder()
-                  .postId(1L)
-                  .status(PostStatus.ACTIVE)
-                  .build();
-          when(postRepository.findById(1L)).thenReturn(Optional.of(post));
-          Review review = fm.giveMeBuilder(Review.class)
-                  .set("member", memberRepository.findById(1L).get())
-                  .set("post", postRepository.findById(1L).get())
-                  .set("status", ReviewStatus.ACTIVE)
-                  .sample();
+          Post post = Post.builder().build();
+          Review review = Review.builder().member(member).reviewId(1L).post(post).build();
           EditeRequestReviewDto editDto = fm.giveMeOne(EditeRequestReviewDto.class);
 
           when(reviewRepository.findByReviewId(1L)).thenReturn(review);
+          when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
           when(postRepository.findById(1L)).thenReturn(Optional.empty());
 
           assertThatThrownBy(() -> reviewService.editReview(editDto, 1L, 1L)).isInstanceOf(NotFoundException.class);
@@ -380,23 +335,14 @@ public class ReviewServiceUnitTest {
      @Test
      @DisplayName("리뷰 수정 실패 테스트 - 6. 포스트가 삭제된 경우")
      public void failedByDeletedPostEditReview() {
-          Member member = Member.builder()
-                  .memberId(1L)
-                  .status(MemberStatus.ACTIVE)
-                  .build();
-          when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
-          Post post = Post.builder()
-                  .postId(1L)
-                  .status(PostStatus.DELETED)
-                  .build();
-          when(postRepository.findById(1L)).thenReturn(Optional.of(post));
-          Review review = fm.giveMeBuilder(Review.class)
-                  .set("member", memberRepository.findById(1L).get())
-                  .set("post", postRepository.findById(1L).get())
-                  .set("status", ReviewStatus.ACTIVE)
-                  .sample();
-          when(reviewRepository.findByReviewId(1L)).thenReturn(review);
+          Member member = Member.builder().memberId(1L).status(MemberStatus.ACTIVE).build();
+          Post post = Post.builder().postId(1L).status(PostStatus.DELETED).build();
+          Review review = Review.builder().member(member).reviewId(1L).post(post).build();
           EditeRequestReviewDto editDto = fm.giveMeOne(EditeRequestReviewDto.class);
+
+          when(reviewRepository.findByReviewId(1L)).thenReturn(review);
+          when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
+          when(postRepository.findById(1L)).thenReturn(Optional.of(post));
 
           assertThatThrownBy(() -> reviewService.editReview(editDto, 1L, 1L)).isInstanceOf(BadRequestException.class);
      }
@@ -404,23 +350,14 @@ public class ReviewServiceUnitTest {
      @Test
      @DisplayName("리뷰 수정 실패 테스트 - 7. 멤버가 삭제된 경우")
      public void failedByDeletedMemberWhenEditReview() {
-          Member member = Member.builder()
-                  .memberId(1L)
-                  .status(MemberStatus.DELETED)
-                  .build();
-          when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
-          Post post = Post.builder()
-                  .postId(1L)
-                  .status(PostStatus.ACTIVE)
-                  .build();
-          when(postRepository.findById(1L)).thenReturn(Optional.of(post));
-          Review review = fm.giveMeBuilder(Review.class)
-                  .set("member", memberRepository.findById(1L).get())
-                  .set("post", postRepository.findById(1L).get())
-                  .set("status", ReviewStatus.ACTIVE)
-                  .sample();
-          when(reviewRepository.findByReviewId(1L)).thenReturn(review);
+          Member member = Member.builder().memberId(1L).status(MemberStatus.DELETED).build();
+          Post post = Post.builder().postId(1L).status(PostStatus.DELETED).build();
+          Review review = Review.builder().member(member).reviewId(1L).post(post).build();
           EditeRequestReviewDto editDto = fm.giveMeOne(EditeRequestReviewDto.class);
+
+          when(reviewRepository.findByReviewId(1L)).thenReturn(review);
+          when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
+          when(postRepository.findById(1L)).thenReturn(Optional.of(post));
 
           assertThatThrownBy(() -> reviewService.editReview(editDto, 1L, 1L)).isInstanceOf(BadRequestException.class);
      }
@@ -428,33 +365,20 @@ public class ReviewServiceUnitTest {
      @Test
      @DisplayName("리뷰 삭제 성공 테스트")
      public void successToDeleteReview() {
-          Member member = Member.builder()
-                  .memberId(1L)
-                  .build();
-          when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
-          System.out.println("member = " + member);
+          Member member = Member.builder().memberId(1L).build();
 
-          Post post = Post.builder()
-                  .postId(1L)
-                  .build();
-          when(postRepository.findById(1L)).thenReturn(Optional.of(post));
+          Post post = Post.builder().postId(1L).build();
 
           List<ReviewPhoto> photos = new ArrayList<>();
-          ReviewPhoto photo = fm.giveMeBuilder(ReviewPhoto.class)
-                  .setNotNull("image")
-                  .set("review", reviewRepository.findByReviewId(1L))
-                  .sample();
+          Review review = Review.builder()
+                  .reviewId(1L).member(member)
+                  .post(post).reviewPhoto(photos).status(ReviewStatus.ACTIVE)
+                  .build();
+          ReviewPhoto photo = ReviewPhoto.builder().image("댓글 사진").review(review).build();
           photos.add(photo);
-          System.out.println("photos = " + photos);
 
-          Review review = fm.giveMeBuilder(Review.class)
-                  .set("reviewId", 1L)
-                  .set("member", memberRepository.findById(1L).get())
-                  .set("post", postRepository.findById(1L).get())
-                  .set("reviewPhoto", photos)
-                  .set("status", ReviewStatus.ACTIVE)
-                  .sample();
-
+          when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
+          when(postRepository.findById(1L)).thenReturn(Optional.of(post));
           when(reviewRepository.findByReviewId(1L)).thenReturn(review);
 
           Boolean responseDto = reviewService.deleteReview(1L, 1L);
@@ -561,33 +485,18 @@ public class ReviewServiceUnitTest {
      @Test
      @DisplayName("리뷰 좋아요 생성 성공 테스트")
      public void successLikedReview() {
-          Member member = Member.builder()
-                  .memberId(1L)
-                  .status(MemberStatus.ACTIVE)
-                  .build();
-          Member others = fm.giveMeBuilder(Member.class)
-                  .set("memberId", 10L)
-                  .sample();
-          Post post = Post.builder()
-                  .postId(1L)
-                  .status(PostStatus.ACTIVE)
-                  .build();
-          when(postRepository.findById(1L)).thenReturn(Optional.of(post));
-          Review review = fm.giveMeBuilder(Review.class)
-                  .set("reviewId", 1L)
-                  .set("member", others)
-                  .set("post", postRepository.findById(1L).get())
-                  .set("status", ReviewStatus.ACTIVE)
-                  .sample();
-          System.out.println("review = " + review);
+          Member member = Member.builder().memberId(1L).status(MemberStatus.ACTIVE).build();
+          Member others = Member.builder().memberId(10L).status(MemberStatus.ACTIVE).build();
+          Post post = Post.builder().postId(1L).status(PostStatus.ACTIVE).build();
+          List<ReviewPhoto> reviewPhotos = new ArrayList<>();
+          Review review = Review.builder().reviewId(1L).member(others).post(post).status(ReviewStatus.ACTIVE).reviewPhoto(reviewPhotos).build();
+          ReviewPhoto reviewPhoto = ReviewPhoto.builder().reviewPhotoId(1L).review(review).image("이미지").build();
+          reviewPhotos.add(reviewPhoto);
           ReviewGoodId reviewGoodId = ReviewGoodId.builder().build();
-          ReviewGood reviewGood = ReviewGood.builder()
-                  .reviewGoodId(reviewGoodId)
-                  .review(review)
-                  .member(member)
-                  .build();
+          ReviewGood reviewGood = ReviewGood.builder().reviewGoodId(reviewGoodId).review(review).member(member).build();
           boolean good = true;
 
+          when(postRepository.findById(1L)).thenReturn(Optional.of(post));
           when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
           when(reviewRepository.findByReviewId(1L)).thenReturn(review);
           when(reviewGoodRepository.findById(reviewGoodId)).thenReturn(Optional.empty());
@@ -605,31 +514,18 @@ public class ReviewServiceUnitTest {
      @Test
      @DisplayName("리뷰 좋아요 취소 성공 테스트")
      public void successUnlikedReview() {
-          Member member = Member.builder()
-                  .memberId(1L)
-                  .status(MemberStatus.ACTIVE)
-                  .build();
-          Member others = fm.giveMeOne(Member.class);
-          Post post = Post.builder()
-                  .postId(1L)
-                  .status(PostStatus.ACTIVE)
-                  .build();
-          when(postRepository.findById(1L)).thenReturn(Optional.of(post));
-          Review review = fm.giveMeBuilder(Review.class)
-                  .set("reviewId", 1L)
-                  .set("member", others)
-                  .set("post", postRepository.findById(1L).get())
-                  .set("status", ReviewStatus.ACTIVE)
-                  .sample();
-          System.out.println("review = " + review);
+          Member member = Member.builder().memberId(1L).status(MemberStatus.ACTIVE).build();
+          Member others = Member.builder().memberId(10L).status(MemberStatus.ACTIVE).build();
+          Post post = Post.builder().postId(1L).status(PostStatus.ACTIVE).build();
+          List<ReviewPhoto> reviewPhotos = new ArrayList<>();
+          Review review = Review.builder().reviewId(1L).member(others).post(post).status(ReviewStatus.ACTIVE).reviewPhoto(reviewPhotos).build();
+          ReviewPhoto reviewPhoto = ReviewPhoto.builder().reviewPhotoId(1L).review(review).image("이미지").build();
+          reviewPhotos.add(reviewPhoto);
           ReviewGoodId reviewGoodId = ReviewGoodId.builder().build();
-          ReviewGood reviewGood = ReviewGood.builder()
-                  .reviewGoodId(reviewGoodId)
-                  .review(review)
-                  .member(member)
-                  .build();
+          ReviewGood reviewGood = ReviewGood.builder().reviewGoodId(reviewGoodId).review(review).member(member).build();
           boolean good = false;
 
+          when(postRepository.findById(1L)).thenReturn(Optional.of(post));
           when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
           when(reviewRepository.findByReviewId(1L)).thenReturn(review);
           when(reviewGoodRepository.findById(reviewGoodId)).thenReturn(Optional.of(reviewGood));
@@ -647,37 +543,11 @@ public class ReviewServiceUnitTest {
      @Test
      @DisplayName("리뷰 좋아요 실패 테스트  - 1. 자신이 작성한 댓글은 좋아요 불가")
      public void failedBySameMemberIdWhenLikeReview() {
-          Member member = Member.builder()
-                  .memberId(1L)
-                  .status(MemberStatus.ACTIVE)
-                  .build();
-          when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
-          Post post = Post.builder()
-                  .postId(1L)
-                  .status(PostStatus.ACTIVE)
-                  .build();
-          when(postRepository.findById(1L)).thenReturn(Optional.of(post));
-          Review review = fm.giveMeBuilder(Review.class)
-                  .set("reviewId", 1L)
-                  .set("member", memberRepository.findById(1L).get())
-                  .set("post", postRepository.findById(1L).get())
-                  .set("status", ReviewStatus.ACTIVE)
-                  .sample();
-          System.out.println("review = " + review);
-          when(reviewRepository.findByReviewId(1L)).thenReturn(review);
-          ReviewGoodId reviewGoodId = ReviewGoodId.builder().build();
-          ReviewGood reviewGood = ReviewGood.builder()
-                  .reviewGoodId(reviewGoodId)
-                  .review(review)
-                  .member(member)
-                  .build();
-          boolean good = true;
+          Member member = Member.builder().memberId(1L).status(MemberStatus.ACTIVE).build();
+          Review review = Review.builder().reviewId(1L).member(member).status(ReviewStatus.ACTIVE).build();
 
-          when(reviewGoodRepository.findById(reviewGoodId)).thenReturn(Optional.empty());
-          when(reviewGoodRepository.save(reviewGood)).thenReturn(reviewGood);
-          doNothing().when(reviewGoodBatchUpdater).increaseReviewGoodCount(1L);
-          when(reviewRepository.findLikedReviewByMemberIdAndReviewId(1L, 1L)).thenReturn(review);
-          when(reviewGoodRepository.existsByReviewIdAndMemberId(1L, 1L)).thenReturn(good);
+          when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
+          when(reviewRepository.findByReviewId(1L)).thenReturn(review);
 
           assertThatThrownBy(() -> reviewService.goodReview(1L, 1L)).isInstanceOf(BadRequestException.class);
      }

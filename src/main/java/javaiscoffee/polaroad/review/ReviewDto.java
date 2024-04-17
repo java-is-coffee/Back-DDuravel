@@ -2,6 +2,7 @@ package javaiscoffee.polaroad.review;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
+import lombok.Builder;
 import lombok.Data;
 
 import java.beans.ConstructorProperties;
@@ -9,6 +10,7 @@ import java.util.List;
 
 
 @Data
+@Builder
 public class ReviewDto {
     @NotNull
     @Schema(description = "## 포스트 Id", example = "1")

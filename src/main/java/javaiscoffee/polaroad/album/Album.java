@@ -22,7 +22,7 @@ import java.util.List;
         property = "albumId"
 )
 @Builder
-@ToString/*(exclude = "member")*/
+@ToString(exclude = "member")
 @Table(name = "albums")
 public class Album {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)

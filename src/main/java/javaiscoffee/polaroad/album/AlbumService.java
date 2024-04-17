@@ -226,13 +226,13 @@ public class AlbumService {
         return albumInfoDto;
     }
 
-    public static List<AlbumCardInfoDto> toAlbumCardInfoDto(List<AlbumCard> albumCard) {
+    public static List<AlbumCardInfoDto> toAlbumCardInfoDto(List<AlbumCard> albumCards) {
 
         List<AlbumCardInfoDto> albumCardInfoDtoList = new ArrayList<>();
 
-        for (AlbumCard card : albumCard) {
+        for (AlbumCard albumCard : albumCards) {
             AlbumCardInfoDto albumCardInfoDto = new AlbumCardInfoDto();
-            CardInfoDto cardInfoDto = toCardInfoDto(card.getCard());
+            CardInfoDto cardInfoDto = toCardInfoDto(albumCard.getCard());
             albumCardInfoDto.setCardInfo(cardInfoDto);
             albumCardInfoDtoList.add(albumCardInfoDto);
         }
