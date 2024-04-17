@@ -60,7 +60,7 @@ public class QueryCardRepositoryImpl implements QueryCardRepository{
         if (concept != null) {
             query.setParameter("concept", concept);
         }
-        if (searchKeyword != null) {
+        if (searchKeyword != null && !searchKeyword.isEmpty()) {
             query.setParameter("keyword", searchKeyword);
         }
 

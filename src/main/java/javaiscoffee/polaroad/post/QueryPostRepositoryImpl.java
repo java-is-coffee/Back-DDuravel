@@ -128,11 +128,18 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
 
         Query query = em.createNativeQuery(sql,"PostListRepositoryDtoMapping");
         query.setParameter("status", status.toString());
-        query.setParameter("region", region != null ? region.toString() : null);
-        query.setParameter("concept", concept != null ? concept.toString() : null);
-        query.setParameter("keyword", searchKeyword);
         query.setParameter("pageSize", pageSize + 1);
         query.setParameter("page", getOffset(page, pageSize));
+
+        if (concept != null) {
+            query.setParameter("concept", concept);
+        }
+        if (region != null) {
+            query.setParameter("region", region);
+        }
+        if (searchKeyword != null && !searchKeyword.isEmpty()) {
+            query.setParameter("keyword", searchKeyword);
+        }
 
         List<PostListRepositoryDto> posts = query.getResultList();
         // hasNext 판별하고 true면 1개 추가 조회한 컨텐트 삭제
