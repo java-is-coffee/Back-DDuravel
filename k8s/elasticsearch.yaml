@@ -70,7 +70,7 @@ spec:
         name: elasticsearch-data
       spec:
         accessModes: [ "ReadWriteOnce" ]
-        storageClassName: "standard"
+        storageClassName: "cinder-tnt-csi"  # MySQL에서 사용되는 StorageClass 이름으로 변경
         resources:
           requests:
             storage: 10Gi
