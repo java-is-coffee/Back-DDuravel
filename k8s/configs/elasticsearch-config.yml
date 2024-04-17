@@ -7,6 +7,12 @@ data:
   elasticsearch.yml: |
     cluster.name: "elastic-cluster"
     node.name: "elasticsearch"
-    network.host: 0.0.0.0
     xpack.security.enabled: false
-    logger.org.elasticsearch: DEBUG
+  log4j2.properties: |
+    status = error
+    appender.console.type = Console
+    appender.console.name = console
+    appender.console.layout.type = PatternLayout
+    appender.console.layout.pattern = "[%d{ISO8601}][%-5p][%-25c] %marker%.-10000m%n"
+    rootLogger.level = info
+    rootLogger.appenderRef.console.ref = console
