@@ -7,7 +7,7 @@ metadata:
     app: elasticsearch
 spec:
   serviceName: "elasticsearch"
-  replicas: 3  # 멀티 노드 클러스터 구성
+  replicas: 1
   selector:
     matchLabels:
       app: elasticsearch
@@ -16,13 +16,6 @@ spec:
       labels:
         app: elasticsearch
     spec:
-      tolerations:  # Taints에 대응하는 tolerations 추가
-        - key: "node-role.dkosv3.9rum.cc/lb"
-          operator: "Exists"
-          effect: "NoSchedule"
-        - key: "node-role.kubernetes.io/master"
-          operator: "Exists"
-          effect: "NoSchedule"
       initContainers:
         - name: fix-permissions
           image: busybox
@@ -32,32 +25,17 @@ spec:
               mountPath: /usr/share/elasticsearch/data
       containers:
         - name: elasticsearch
-          image: docker.elastic.co/elasticsearch/elasticsearch:8.7.1
+          image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.8.23
           env:
-            - name: "node.name"
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.name
-            - name: "cluster.initial_master_nodes"
-              value: "elasticsearch-0,elasticsearch-1,elasticsearch-2"
-            - name: "discovery.seed_hosts"
-              value: "elasticsearch-0.elasticsearch,elasticsearch-1.elasticsearch,elasticsearch-2.elasticsearch"
-            - name: "cluster.name"
-              value: "my-elasticsearch-cluster"
-            - name: "ES_JAVA_OPTS"
-              value: "-Xms1g -Xmx1g"
+            - name: discovery.type
+              value: "single-node"
+            - name: ES_JAVA_OPTS
+              value: "-Xms300m -Xmx300m"
           ports:
             - name: rest
               containerPort: 9200
             - name: transport
               containerPort: 9300
-          resources:
-            requests:
-              memory: "2Gi"
-              cpu: "500m"
-            limits:
-              memory: "2Gi"
-              cpu: "1"
           volumeMounts:
             - name: config
               mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
@@ -73,7 +51,6 @@ spec:
         name: elasticsearch-data
       spec:
         accessModes: ["ReadWriteOnce"]
-        storageClassName: "cinder-tnt-csi"  # 적절한 storage class를 지정
         resources:
           requests:
             storage: 10Gi
@@ -94,20 +71,3 @@ spec:
       name: transport
   selector:
     app: elasticsearch  # StatefulSet의 라벨과 일치
----
-kind: Service
-apiVersion: v1
-metadata:
-  namespace: default
-  name: elasticsearch-nodeport
-  labels:
-    app: elasticsearch
-spec:
-  type: NodePort
-  ports:
-    - nodePort: 30920
-      port: 9200
-      targetPort: 9200
-      protocol: TCP
-  selector:
-    app: elasticsearch
