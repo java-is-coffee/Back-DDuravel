@@ -18,13 +18,13 @@ spec:
       initContainers:
         - name: copy-config
           image: busybox
-          command: ["sh", "-c", "cp /usr/share/elasticsearch/config/* /usr/share/elasticsearch/writable-config/"]
+          command: ["sh", "-c", "cp /config/* /usr/share/elasticsearch/config/"]
           volumeMounts:
             - name: config-volume
-              mountPath: /usr/share/elasticsearch/config
+              mountPath: /config
               readOnly: true
             - name: writable-config
-              mountPath: /usr/share/elasticsearch/writable-config
+              mountPath: /usr/share/elasticsearch/config
       containers:
         - name: elasticsearch
           image: docker.elastic.co/elasticsearch/elasticsearch:8.7.1
