@@ -38,7 +38,7 @@ import java.util.List;
                                 @ColumnResult(name = "title", type = String.class),
                                 @ColumnResult(name = "post_id", type = Long.class),
                                 @ColumnResult(name = "nickname", type = String.class),
-                                @ColumnResult(name = "thumbnailIndex", type = Integer.class),
+                                @ColumnResult(name = "thumbnail_index", type = Integer.class),
                                 @ColumnResult(name = "good_number", type = Integer.class),
                                 @ColumnResult(name = "concept", type = PostConcept.class),
                                 @ColumnResult(name = "region", type = PostRegion.class),
