@@ -110,7 +110,10 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
         if(region != null) {
             sql += "AND p.region = :region ";
         }
-        if(concept != null) {
+        if(concept != null && concept.equals(PostConcept.HOT)) {
+            sql += "AND p.good_number >= 10 ";
+        }
+        else if(concept != null) {
             sql += "AND p.concept = :concept ";
         }
         if (searchKeyword != null && !searchKeyword.isEmpty()) {
@@ -132,7 +135,7 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
         query.setParameter("pageSize", pageSize + 1);
         query.setParameter("page", getOffset(page, pageSize));
 
-        if (concept != null) {
+        if(concept != null && !concept.equals(PostConcept.HOT)) {
             query.setParameter("concept", concept);
         }
         if (region != null) {
