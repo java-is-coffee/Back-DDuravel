@@ -102,8 +102,8 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
     @Override
     public PostListResponseDto searchPostByKeywordIndexMatch(int page, int pageSize, String searchKeyword, PostListSort sortBy, PostConcept concept, PostRegion region, PostStatus status) {
         // 기본 쿼리 설정
-        String sql = "SELECT p.title, p.post_id, m.nickname, p.thumbnail_index, p.good_number, p.concept, p.region, p.updated_time " +
-                "FROM posts p JOIN member m ON p.member_id = m.member_id JOIN cards c ON p.post_id = c.post_id " +
+        String sql = "SELECT DISTINCT p.title, p.post_id, m.nickname, p.thumbnail_index, p.good_number, p.concept, p.region, p.updated_time " +
+                "FROM posts p JOIN member m ON p.member_id = m.member_id LEFT JOIN cards c ON p.post_id = c.post_id " +
                 "WHERE p.status = :status ";
 
         // 조건 추가
@@ -119,7 +119,7 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
         if (searchKeyword != null && !searchKeyword.isEmpty()) {
             sql += "AND (MATCH(p.title) AGAINST(:keyword IN BOOLEAN MODE) OR MATCH(c.content) AGAINST(:keyword IN BOOLEAN MODE) OR MATCH(m.nickname) AGAINST(:keyword IN BOOLEAN MODE)) ";
         }
-
+        sql += "GROUP BY p.post_id ";
         // 정렬 설정
         if(sortBy.equals(PostListSort.RECENT)) {
             sql += "ORDER BY p.post_id DESC ";
