@@ -95,7 +95,7 @@ class PostServiceUnitTest {
         when(postRepository.save(any(Post.class))).thenReturn(testPost);
         when(hashtagService.savePostHashtags(any(List.class),any(Post.class))).thenReturn(new ArrayList<>());
         when(cardService.saveAllCards(any(List.class))).thenReturn(new ArrayList<>());
-        doNothing().when(redisService).saveCachingPostInfo(any(PostInfoCachingDto.class), any(Long.class));
+//        doNothing().when(redisService).saveCachingPostInfo(any(PostInfoCachingDto.class), any(Long.class));
         ResponseEntity<Post> response = postService.savePost(postSaveDto, 1L);
         //then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
