@@ -47,6 +47,21 @@ public class PostController {
         log.info("저장하려는 포스트 Dto = {}",postSaveDto);
         return postService.savePost(postSaveDto, memberId);
     }
+    @Operation(summary = "포스트 생성 테스트", description = "생성 테스트 API")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "포스트 생성에 성공했을 경우"),
+            @ApiResponse(responseCode = "400", description = "입력값이 잘못된 경우"),
+            @ApiResponse(responseCode = "404", description = "멤버가 존재하지 않는 경우")
+    })
+    @PostMapping("/write2")
+    public ResponseEntity<String> savePostTest(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                         @RequestBody RequestWrapperDto<PostSaveDto> requestWrapperDto) {
+        Long memberId = userDetails.getMemberId();
+        PostSaveDto postSaveDto = requestWrapperDto.getData();
+        log.info("저장하려는 포스트 Dto = {}",postSaveDto);
+        postService.savePostTest(postSaveDto, memberId);
+        return ResponseEntity.ok("성공");
+    }
 
     @Operation(summary = "포스트 수정", description = "포스트 수정하는 API")
     @Parameter(name = "postId", description = "Path Variable로 수정할 포스트 ID를 넘겨주면 됩니다.")

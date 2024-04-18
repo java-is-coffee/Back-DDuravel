@@ -111,6 +111,47 @@ public class PostService {
         return ResponseEntity.ok(savedPost);
     }
     /**
+     * 포스트 저장 테스트
+     */
+    @Transactional
+    public void savePostTest(PostSaveDto postSaveDto, Long memberId) {
+        //썸네일 번호가 잘못되었을 경우 에러
+        if(postSaveDto.getThumbnailIndex() < 0 || postSaveDto.getThumbnailIndex() >= postSaveDto.getCards().size()) throw new BadRequestException("썸네일 인덱스가 잘못되었습니다.");
+        //게시글 해쉬코드가 10개 넘어가면 에러
+        if(postSaveDto.getHashtags().size() > 10) throw new BadRequestException("해쉬태그 개수는 최대 10개입니다.");
+        if(postSaveDto.getCards().size() > 10) throw new BadRequestException("카드 개수는 최대 10개입니다.");
+        Member member = memberRepository.findById(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
+        if(!member.getStatus().equals(MemberStatus.ACTIVE)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
+        Post post = new Post();
+        BeanUtils.copyProperties(postSaveDto, post);
+        post.setMember(member);
+        Post savedPost = postRepository.save(post);
+
+        //해쉬태그 저장
+        hashtagService.savePostHashtags(postSaveDto.getHashtags(), savedPost);
+
+        //카드 저장
+        int cardIndex = 0;
+        List<Card> cardsToSave = new ArrayList<>();
+        for(CardSaveDto cardInfo : postSaveDto.getCards()) {
+            Card newCard = new Card();
+            newCard.setCardIndex(cardIndex++);
+            newCard.setLocation(cardInfo.getLocation());
+            newCard.setLatitude(cardInfo.getLatitude());
+            newCard.setLongitude(cardInfo.getLongitude());
+            newCard.setImage(cardInfo.getImage());
+            newCard.setContent(cardInfo.getContent());
+            newCard.setPost(savedPost);
+            newCard.setMember(member);
+            cardsToSave.add(newCard);
+        }
+        cardService.saveAllCards(cardsToSave);
+        //멤버 포스트 개수 1개 증가
+        member.setPostNumber(member.getPostNumber() + 1);
+
+//        redisService.saveCachingPostInfo(toPostInfoCachingDto(savedPost), savedPost.getPostId());
+    }
+    /**
      * 포스트 수정
      */
     @Transactional

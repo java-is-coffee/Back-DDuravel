@@ -28,7 +28,7 @@ import java.util.List;
         property = "postId"
 )
 @Builder
-@ToString(exclude = {"member","cards","postHashtags"})
+@ToString(exclude = {"member","cards","postHashtags","reviews","postGoods","wishListPosts"})
 @SqlResultSetMapping(
         name = "PostListRepositoryDtoMapping",
         classes = {
