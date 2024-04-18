@@ -82,9 +82,10 @@ public class PostService {
         BeanUtils.copyProperties(postSaveDto, post);
         post.setMember(member);
         Post savedPost = postRepository.save(post);
+        post.setUpdatedTime(savedPost.getUpdatedTime());
 
         //해쉬태그 저장
-        savedPost.setPostHashtags(hashtagService.savePostHashtags(postSaveDto.getHashtags(), savedPost));
+        post.setPostHashtags(hashtagService.savePostHashtags(postSaveDto.getHashtags(), savedPost));
         
         //카드 저장
         int cardIndex = 0;
@@ -101,14 +102,14 @@ public class PostService {
             newCard.setMember(member);
             cardsToSave.add(newCard);
         }
-        savedPost.setCards(cardService.saveAllCards(cardsToSave));
+        post.setCards(cardService.saveAllCards(cardsToSave));
         //멤버 포스트 개수 1개 증가
         member.setPostNumber(member.getPostNumber() + 1);
 
         log.info("저장된 post = {}",post);
 
-        redisService.saveCachingPostInfo(toPostInfoCachingDto(savedPost), savedPost.getPostId());
-        return ResponseEntity.ok(savedPost);
+        redisService.saveCachingPostInfo(toPostInfoCachingDto(post), savedPost.getPostId());
+        return ResponseEntity.ok(post);
     }
     /**
      * 포스트 저장 테스트
