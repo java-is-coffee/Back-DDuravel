@@ -136,10 +136,10 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
         query.setParameter("page", getOffset(page, pageSize));
 
         if(concept != null && !concept.equals(PostConcept.HOT)) {
-            query.setParameter("concept", concept);
+            query.setParameter("concept", concept.toString());
         }
         if (region != null) {
-            query.setParameter("region", region);
+            query.setParameter("region", region.toString());
         }
         if (searchKeyword != null && !searchKeyword.isEmpty()) {
             query.setParameter("keyword", searchKeyword);
