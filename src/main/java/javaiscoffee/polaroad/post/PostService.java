@@ -84,14 +84,11 @@ public class PostService {
         Post savedPost = postRepository.save(post);
 
         //해쉬태그 저장
-        List<PostHashtag> savedPostPostHashtags = savedPost.getPostHashtags();
-        postSaveDto.getHashtags().forEach(tagName -> {
-            savedPostPostHashtags.add(hashtagService.savePostHashtag(tagName, savedPost));
-        });
-
+        savedPost.setPostHashtags(hashtagService.savePostHashtags(postSaveDto.getHashtags(), savedPost));
+        
         //카드 저장
         int cardIndex = 0;
-        List<Card> savedCards = savedPost.getCards();
+        List<Card> cardsToSave = new ArrayList<>();
         for(CardSaveDto cardInfo : postSaveDto.getCards()) {
             Card newCard = new Card();
             newCard.setCardIndex(cardIndex++);
@@ -102,8 +99,9 @@ public class PostService {
             newCard.setContent(cardInfo.getContent());
             newCard.setPost(savedPost);
             newCard.setMember(member);
-            savedCards.add(cardService.saveCard(newCard));
+            cardsToSave.add(newCard);
         }
+        savedPost.setCards(cardService.saveAllCards(cardsToSave));
         //멤버 포스트 개수 1개 증가
         member.setPostNumber(member.getPostNumber() + 1);
 

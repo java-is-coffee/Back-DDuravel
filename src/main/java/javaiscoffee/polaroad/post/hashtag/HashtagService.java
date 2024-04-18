@@ -55,17 +55,34 @@ public class HashtagService {
     }
 
     public List<PostHashtag> savePostHashtags(List<String> tagNames, Post post) {
+        // 데이터베이스에서 기존에 존재하는 모든 해시태그 조회
         List<Hashtag> existingHashtags = hashtagRepository.findHashtagByNameIn(tagNames);
         Map<String, Hashtag> existingTagsMap = existingHashtags.stream()
                 .collect(Collectors.toMap(Hashtag::getName, Function.identity()));
 
-        List<PostHashtag> result = new ArrayList<>();
+        List<PostHashtag> newPostHashtags = new ArrayList<>();
+        List<Hashtag> newHashtags = new ArrayList<>();
+
         for (String tagName : tagNames) {
-            Hashtag hashtag = existingTagsMap.getOrDefault(tagName, hashtagRepository.save(new Hashtag(tagName)));
+            // Map에서 해시태그를 가져오거나 새로 생성
+            Hashtag hashtag = existingTagsMap.computeIfAbsent(tagName, name -> {
+                Hashtag newHashtag = new Hashtag(name);
+                newHashtags.add(newHashtag);
+                return newHashtag;
+            });
+
+            // 새 PostHashtag 객체 생성
             PostHashtag postHashtag = new PostHashtag(new PostHashtagId(hashtag.getHashtagId(), post.getPostId()), hashtag, post);
-            result.add(postHashtagRepository.save(postHashtag));
+            newPostHashtags.add(postHashtag);
         }
-        return result;
+
+        // 새로운 해시태그를 데이터베이스에 일괄 저장
+        if (!newHashtags.isEmpty()) {
+            hashtagRepository.saveAll(newHashtags);
+        }
+
+        // 새로운 PostHashtag 객체들을 데이터베이스에 일괄 저장
+        return postHashtagRepository.saveAll(newPostHashtags);
     }
 
     /**
