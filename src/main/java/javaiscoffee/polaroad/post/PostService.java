@@ -70,7 +70,7 @@ public class PostService {
      * 포스트 저장
      */
     @Transactional
-    public ResponseEntity<Post> savePost(PostSaveDto postSaveDto, Long memberId) {
+    public Long savePost(PostSaveDto postSaveDto, Long memberId) {
         //썸네일 번호가 잘못되었을 경우 에러
         if(postSaveDto.getThumbnailIndex() < 0 || postSaveDto.getThumbnailIndex() >= postSaveDto.getCards().size()) throw new BadRequestException("썸네일 인덱스가 잘못되었습니다.");
         //게시글 해쉬코드가 10개 넘어가면 에러
@@ -85,7 +85,7 @@ public class PostService {
         post.setUpdatedTime(savedPost.getUpdatedTime());
 
         //해쉬태그 저장
-        post.setPostHashtags(hashtagService.savePostHashtags(postSaveDto.getHashtags(), savedPost));
+        savedPost.setPostHashtags(hashtagService.savePostHashtags(postSaveDto.getHashtags(), savedPost));
         
         //카드 저장
         int cardIndex = 0;
@@ -102,14 +102,14 @@ public class PostService {
             newCard.setMember(member);
             cardsToSave.add(newCard);
         }
-        post.setCards(cardService.saveAllCards(cardsToSave));
+        savedPost.setCards(cardService.saveAllCards(cardsToSave));
         //멤버 포스트 개수 1개 증가
         member.setPostNumber(member.getPostNumber() + 1);
 
         log.info("저장된 post = {}",post);
 
-//        redisService.saveCachingPostInfo(toPostInfoCachingDto(post), savedPost.getPostId());
-        return ResponseEntity.ok(post);
+        redisService.saveCachingPostInfo(toPostInfoCachingDto(savedPost), savedPost.getPostId());
+        return savedPost.getPostId();
     }
     /**
      * 포스트 저장 테스트

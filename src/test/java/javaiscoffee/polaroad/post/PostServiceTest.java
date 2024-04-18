@@ -89,9 +89,7 @@ class PostServiceTest {
         doNothing().when(redisService).saveCachingPostInfo(any(), anyLong());
         memberRepository.save(member1);
         Member findMember = memberRepository.findByEmail(member1.getEmail()).orElseThrow(() -> new BadRequestException(ResponseMessages.SAVE_FAILED.getMessage()));
-        ResponseEntity<Post> response = postService.savePost(postSaveDto1, findMember.getMemberId());
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        postService.savePost(postSaveDto1, findMember.getMemberId());
     }
 
     @Test
@@ -156,10 +154,10 @@ class PostServiceTest {
     void editPostSuccess() {
         memberRepository.save(member1);
         Member findMember = memberRepository.findByEmail(member1.getEmail()).get();
-        ResponseEntity<Post> response = postService.savePost(postSaveDto1, findMember.getMemberId());
+        Long postId = postService.savePost(postSaveDto1, findMember.getMemberId());
         postRepository.flush();
 
-        Post savedPost = postRepository.findById(response.getBody().getPostId()).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
+        Post savedPost = postRepository.findById(postId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         postSaveDto1.setTitle("수정된제목");
         postSaveDto1.setRoutePoint("수정된좌표");
         postSaveDto1.setThumbnailIndex(1);
@@ -220,8 +218,8 @@ class PostServiceTest {
         memberRepository.save(member2);
         Member writer = memberRepository.findByEmail(member1.getEmail()).get();
         Member noWriter = memberRepository.findByEmail(member2.getEmail()).get();
-        ResponseEntity<Post> response = postService.savePost(postSaveDto1, writer.getMemberId());
-        assertThatThrownBy(() -> postService.editPost(postSaveDto1, noWriter.getMemberId(), response.getBody().getPostId())).isInstanceOf(ForbiddenException.class);
+        Long postId = postService.savePost(postSaveDto1, writer.getMemberId());
+        assertThatThrownBy(() -> postService.editPost(postSaveDto1, noWriter.getMemberId(), postId)).isInstanceOf(ForbiddenException.class);
     }
 
     @Test

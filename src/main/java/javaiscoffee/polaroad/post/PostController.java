@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import javaiscoffee.polaroad.post.card.CardListResponseDto;
 import javaiscoffee.polaroad.post.card.CardSaveDto;
 import javaiscoffee.polaroad.post.card.CardService;
+import javaiscoffee.polaroad.response.ResponseMessages;
 import javaiscoffee.polaroad.security.CustomUserDetails;
 import javaiscoffee.polaroad.wrapper.RequestWrapperDto;
 import lombok.RequiredArgsConstructor;
@@ -40,12 +41,13 @@ public class PostController {
             @ApiResponse(responseCode = "404", description = "멤버가 존재하지 않는 경우")
     })
     @PostMapping("/write")
-    public ResponseEntity<Post> savePost(@AuthenticationPrincipal CustomUserDetails userDetails,
+    public ResponseEntity<String> savePost(@AuthenticationPrincipal CustomUserDetails userDetails,
                                          @RequestBody RequestWrapperDto<PostSaveDto> requestWrapperDto) {
         Long memberId = userDetails.getMemberId();
         PostSaveDto postSaveDto = requestWrapperDto.getData();
         log.info("저장하려는 포스트 Dto = {}",postSaveDto);
-        return postService.savePost(postSaveDto, memberId);
+        postService.savePost(postSaveDto, memberId);
+        return ResponseEntity.ok(ResponseMessages.SUCCESS.getMessage());
     }
     @Operation(summary = "포스트 생성 테스트", description = "생성 테스트 API")
     @ApiResponses({
