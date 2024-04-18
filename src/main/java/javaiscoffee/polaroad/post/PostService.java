@@ -109,7 +109,7 @@ public class PostService {
         log.info("저장된 post = {}",post);
 
 //        redisService.saveCachingPostInfo(toPostInfoCachingDto(post), savedPost.getPostId());
-        return ResponseEntity.ok(post);
+        return ResponseEntity.ok();
     }
     /**
      * 포스트 저장 테스트
@@ -129,7 +129,7 @@ public class PostService {
         Post savedPost = postRepository.save(post);
 
         //해쉬태그 저장
-        hashtagService.savePostHashtags(postSaveDto.getHashtags(), savedPost);
+        post.setPostHashtags(hashtagService.savePostHashtags(postSaveDto.getHashtags(), savedPost));
 
         //카드 저장
         int cardIndex = 0;
@@ -146,11 +146,11 @@ public class PostService {
             newCard.setMember(member);
             cardsToSave.add(newCard);
         }
-        cardService.saveAllCards(cardsToSave);
+        post.setCards(cardService.saveAllCards(cardsToSave));
         //멤버 포스트 개수 1개 증가
         member.setPostNumber(member.getPostNumber() + 1);
 
-//        redisService.saveCachingPostInfo(toPostInfoCachingDto(savedPost), savedPost.getPostId());
+        redisService.saveCachingPostInfo(toPostInfoCachingDto(savedPost), savedPost.getPostId());
     }
     /**
      * 포스트 수정
