@@ -212,7 +212,7 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
 
     //팔로잉하고 있는 멤버 포스트 목록 조회
     @Override
-    public PostListResponseDto getFollowingMembersPostByMember(Long memberId,int page, int pageSize, PostStatus status) {
+    public PostListResponseDto getFollowingMembersPostByMember(Long memberId, PostConcept concept, int page, int pageSize, PostStatus status) {
         QFollow follow = QFollow.follow;
 
         List<Long> followingMemberIds = queryFactory
@@ -221,14 +221,18 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
                 .where(follow.followingMember.memberId.eq(memberId))
                 .fetch();
 
+        BooleanBuilder booleanBuilder = new BooleanBuilder();
+        booleanBuilder.and(post.member.memberId.in(followingMemberIds));
+        booleanBuilder.and(post.status.eq(status));
+        if(concept != null) {
+            booleanBuilder.and(post.concept.eq(concept));
+        }
+
         // 팔로잉하는 멤버의 포스트를 조회
         List<PostListRepositoryDto> posts = queryFactory
                 .select(getPostListRepositoryDtoConstructor(post, post.member))
                 .from(post)
-                .where(
-                        post.member.memberId.in(followingMemberIds),
-                        post.status.eq(status)
-                )
+                .where(booleanBuilder)
                 .offset(getOffset(page, pageSize))
                 .limit(pageSize + 1)
                 .orderBy(post.postId.desc())

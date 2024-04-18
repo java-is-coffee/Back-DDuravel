@@ -17,5 +17,5 @@ public interface QueryPostRepository {
 
     PostInfoCachingDto getPostCachingDtoById(Long postId);
 
-    PostListResponseDto getFollowingMembersPostByMember(Long memberId,int page, int pageSize, PostStatus status);
+    PostListResponseDto getFollowingMembersPostByMember(Long memberId,PostConcept concept,int page, int pageSize, PostStatus status);
 }

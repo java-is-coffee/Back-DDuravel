@@ -108,7 +108,7 @@ public class PostController {
                                                          @RequestParam(name = "sortBy") PostListSort sortBy,
                                                          @RequestParam(name = "concept", required = false) PostConcept concept,
                                                          @RequestParam(name = "region", required = false) PostRegion region) {
-        return postService.getPostList(page,pageSize,searchType,keyword,sortBy,concept,region,PostStatus.ACTIVE);
+        return postService.getPostListByIndexMatch(page,pageSize,searchType,keyword,sortBy,concept,region,PostStatus.ACTIVE);
     }
 
     @Operation(summary = "포스트 검색", description = "키워드, 해쉬태그 검색하는 API")
@@ -135,7 +135,7 @@ public class PostController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "리스트 조회에 성공한 경우")
     })
-    @GetMapping("/list-match")
+    @GetMapping("/list-like")
     public ResponseEntity<PostListResponseDto> getPostListByIndexMatch(@RequestParam(name = "page") int page,
                                                            @RequestParam(name = "pageSize") int pageSize,
                                                            @RequestParam(name = "searchType") PostSearchType searchType,
@@ -143,7 +143,7 @@ public class PostController {
                                                            @RequestParam(name = "sortBy") PostListSort sortBy,
                                                            @RequestParam(name = "concept", required = false) PostConcept concept,
                                                            @RequestParam(name = "region", required = false) PostRegion region) {
-        return postService.getPostListByIndexMatch(page,pageSize,searchType,keyword,sortBy,concept,region,PostStatus.ACTIVE);
+        return postService.getPostList(page,pageSize,searchType,keyword,sortBy,concept,region,PostStatus.ACTIVE);
     }
 
     @Operation(summary = "포스트 내용 조회", description = "포스트 내용 조회 페이지에서 사용하는 API")
@@ -203,6 +203,7 @@ public class PostController {
     @Operation(summary = "팔로잉하고 있는 멤버들의 포스트 조회", description = "현재 멤버가 팔로잉하고 있는 멤버들이 올린 포스트 목록 조회")
     @Parameter(name = "page", description = "현재 페이지 숫자 1부터 시작 1페이지이면 1을 주입", required = true, example = "1")
     @Parameter(name = "pageSize",description = "페이지 크기, 한 페이지에 표시할 카드 개수", required = true, example = "8")
+    @Parameter(name = "concept", description = "게시글 카테고리", example = "FOOD")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "목록 조회에 성공했을 경우"),
             @ApiResponse(responseCode = "404", description = "멤버가 삭제되었거나 존재하지 않는 경우")
@@ -210,9 +211,10 @@ public class PostController {
     @GetMapping("/following")
     public ResponseEntity<PostListResponseDto> getFollowingMemberPosts(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                                        @RequestParam(name = "page") int page,
-                                                                       @RequestParam(name = "pageSize") int pageSize) {
+                                                                       @RequestParam(name = "pageSize") int pageSize,
+                                                                       @RequestParam(name = "concept", required = false) PostConcept concept) {
         Long memberId = userDetails.getMemberId();
-        return postService.getFollowingMemberPosts(memberId,page,pageSize,PostStatus.ACTIVE);
+        return postService.getFollowingMemberPosts(memberId,concept,page,pageSize,PostStatus.ACTIVE);
     }
 
     @Operation(summary = "시간별 조회수 랭킹으로 포스트 목록 조회", description = "1일,7일,30일 구간별 총 조회수 랭킹으로 포스트 목록을 조회하는 API")
