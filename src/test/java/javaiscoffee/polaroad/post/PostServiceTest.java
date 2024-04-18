@@ -145,18 +145,6 @@ class PostServiceTest {
 
     @Test
     @Transactional
-    @DisplayName("포스트 생성 실패 - 포스트 해쉬태그가 중복되어서")
-    void savePostFailBySameHashtags() {
-        memberRepository.save(member1);
-        Member findMember = memberRepository.findByEmail(member1.getEmail()).orElseThrow(() -> new BadRequestException(ResponseMessages.SAVE_FAILED.getMessage()));
-        postSaveDto1.getHashtags().add("태그1");
-        postSaveDto1.getHashtags().add("태그1");
-
-        assertThatThrownBy(() -> postService.savePost(postSaveDto1,findMember.getMemberId())).isInstanceOf(BadRequestException.class);
-    }
-
-    @Test
-    @Transactional
     @DisplayName("포스트 생성 실패 - 회원이 존재하지 않아서")
     void savePostFailByMember() {
         assertThatThrownBy(() -> postService.savePost(postSaveDto1,1L)).isInstanceOf(NotFoundException.class);

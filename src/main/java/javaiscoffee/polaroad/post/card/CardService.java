@@ -41,6 +41,9 @@ public class CardService {
     public Card saveCard(Card card) {
         return cardRepository.save(card);
     }
+    public List<Card> saveAllCards(List<Card> cards) {
+        return cardRepository.saveAll(cards);
+    }
 
     /**
      * 포스트 수정할 때 카드 수정하는 메서드

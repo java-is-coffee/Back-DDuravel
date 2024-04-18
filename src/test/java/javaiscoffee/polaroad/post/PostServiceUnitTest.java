@@ -93,8 +93,8 @@ class PostServiceUnitTest {
         //when
         when(memberRepository.findById(any(Long.class))).thenReturn(Optional.of(testMember1));
         when(postRepository.save(any(Post.class))).thenReturn(testPost);
-        when(hashtagService.savePostHashtag(any(String.class),any(Post.class))).thenReturn(new PostHashtag(new PostHashtagId(1L,1L),new Hashtag(),testPost));
-        when(cardService.saveCard(any(Card.class))).thenReturn(new Card());
+        when(hashtagService.savePostHashtags(any(List.class),any(Post.class))).thenReturn(new ArrayList<>());
+        when(cardService.saveAllCards(any(List.class))).thenReturn(new ArrayList<>());
         doNothing().when(redisService).saveCachingPostInfo(any(PostInfoCachingDto.class), any(Long.class));
         ResponseEntity<Post> response = postService.savePost(postSaveDto, 1L);
         //then
