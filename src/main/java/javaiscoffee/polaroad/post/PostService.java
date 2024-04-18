@@ -109,7 +109,7 @@ public class PostService {
         log.info("저장된 post = {}",post);
 
 //        redisService.saveCachingPostInfo(toPostInfoCachingDto(post), savedPost.getPostId());
-        return ResponseEntity.ok();
+        return ResponseEntity.ok(post);
     }
     /**
      * 포스트 저장 테스트
