@@ -208,10 +208,10 @@ public class PostService {
     /**
      * 팔로잉하고 있는 멤버의 게시글을 목록으로 조회
      */
-    public ResponseEntity<PostListResponseDto> getFollowingMemberPosts (Long memberId,int page, int pageSize, PostStatus status) {
+    public ResponseEntity<PostListResponseDto> getFollowingMemberPosts (Long memberId, PostConcept concept,int page, int pageSize, PostStatus status) {
         MemberSimpleInfoDto memberInfo = memberRepository.getMemberSimpleInfo(memberId).orElseThrow(() -> new NotFoundException(ResponseMessages.NOT_FOUND.getMessage()));
         if(!memberInfo.getStatus().equals(MemberStatus.ACTIVE)) throw new NotFoundException(ResponseMessages.NOT_FOUND.getMessage());
-        return ResponseEntity.ok(postRepository.getFollowingMembersPostByMember(memberInfo.getMemberId(), page, pageSize, status));
+        return ResponseEntity.ok(postRepository.getFollowingMembersPostByMember(memberInfo.getMemberId(), concept, page, pageSize, status));
     }
 
     /**
