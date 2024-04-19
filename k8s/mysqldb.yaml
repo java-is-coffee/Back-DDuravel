@@ -27,6 +27,10 @@ spec:
               value: krampoline
             - name: mysqldb_DISABLE_UPGRADE_BACKUP
               value: '1'
+            - name: MYSQL_CHARACTER_SET_SERVER
+              value: "utf8mb4"
+            - name: MYSQL_COLLATION_SERVER
+              value: "utf8mb4_unicode_ci"
           volumeMounts:
             - mountPath: /var/lib/mysql
               name: data
