@@ -30,12 +30,13 @@ import java.util.List;
 public class GmailConfig {
     private static final String APPLICATION_NAME = "polaroad";
     private static final String TOKENS_DIRECTORY_PATH = "/workspace/tokens"; // 토큰 저장 경로
-    private static final String CREDENTIALS_FILE_PATH = "/workspace/credentials.json"; // 인증 정보 파일 경로
+    @Value("${GOOGLE_APPLICATION_CREDENTIALS}")
+    private String credentialsFilePath; // 인증 정보 파일 경로
 
     @Bean
     public Gmail getGmailService() throws GeneralSecurityException, IOException {
         // Load client secrets.
-        InputStream in = new FileInputStream(CREDENTIALS_FILE_PATH);
+        InputStream in = new FileInputStream(credentialsFilePath);
         GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(GsonFactory.getDefaultInstance(), new InputStreamReader(in));
 
         // Build flow and trigger user authorization request.
