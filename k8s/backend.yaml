@@ -78,6 +78,12 @@ spec:
                   key: GOOGLE_APPLICATION_JSON
             - name: JAVA_OPTS
               value: "-Xms512m -Xmx2048m"
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: "/etc/credentials/credentials.json"
+          volumeMounts:
+            - name: google-credentials-volume
+              mountPath: "/etc/credentials"
+              readOnly: true
           resources:
             requests:
               memory: 2Gi
@@ -85,6 +91,10 @@ spec:
             httpGet:
               path: /api/test
               port: 8080
+      volumes:
+        - name: google-credentials-volume
+          secret:
+            secretName: google-credentials
 ---
 apiVersion: v1
 kind: Service
