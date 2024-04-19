@@ -102,6 +102,6 @@ public class CardService {
             if(hashtagId == null) return new ArrayList<>();
             return cardRepository.getMapCardListByHashtag(hashtagId, concept, swLatitude, neLatitude, swLongitude, neLongitude, pageSize);
         }
-        return cardRepository.getMapCardListByKeyword(searchKeyword, concept, swLatitude, neLatitude, swLongitude, neLongitude, pageSize);
+        return cardRepository.getMapCardListByKeyword(searchKeyword, concept, CardStatus.ACTIVE, swLatitude, neLatitude, swLongitude, neLongitude, pageSize);
     }
 }

@@ -22,7 +22,7 @@ public class QueryCardRepositoryImpl implements QueryCardRepository{
         this.em = em;
     }
     @Override
-    public List<MapCardListDto> getMapCardListByKeyword(String searchKeyword, PostConcept concept, double swLatitude, double neLatitude, double swLongitude, double neLongitude, int pageSize) {
+    public List<MapCardListDto> getMapCardListByKeyword(String searchKeyword, PostConcept concept, CardStatus status, double swLatitude, double neLatitude, double swLongitude, double neLongitude, int pageSize) {
         // 기본 쿼리 구성
         String sql = "SELECT c.post_id, c.card_id, c.image, c.content, c.location, c.latitude, c.longitude " +
                 "FROM cards c " +
@@ -35,7 +35,8 @@ public class QueryCardRepositoryImpl implements QueryCardRepository{
 
         // 위치 기반 검색 조건 추가
         sql += "WHERE c.latitude BETWEEN :swLatitude AND :neLatitude " +
-                "AND c.longitude BETWEEN :swLongitude AND :neLongitude";
+                "AND c.longitude BETWEEN :swLongitude AND :neLongitude " +
+        "AND c.status = :status";
 
         // 개념이 있을 경우 조건 추가
         if (concept != null) {
@@ -51,6 +52,7 @@ public class QueryCardRepositoryImpl implements QueryCardRepository{
         sql += " ORDER BY p.good_number DESC, c.card_id DESC LIMIT :pageSize";
 
         Query query = em.createNativeQuery(sql, "MapCardListDtoMapping")
+                .setParameter("status", status)
                 .setParameter("swLatitude", swLatitude)
                 .setParameter("neLatitude", neLatitude)
                 .setParameter("swLongitude", swLongitude)

@@ -148,4 +148,17 @@ public class MemberController {
         Long memberId2 = userDetails.getMemberId(); //조회한 멤버 아이디
         return ResponseEntity.ok(memberService.getMiniProfile(memberId,memberId2));
     }
+
+    @Operation(summary = "팔로우 여부 조회", description = "상대방을 팔로우하고 있는지 확인하는 API")
+    @Parameter(name = "memberId", description = "조회하려는 멤버 ID", required = true, example = "1")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "멤버 미니프로필 조회에 성공했을 경우"),
+            @ApiResponse(responseCode = "404", description = "멤버가 존재하지 않을 경우")
+    })
+    @GetMapping("/follow/check")
+    public ResponseEntity<Boolean> checkFollowing(@RequestParam(name = "memberId") Long memberId,
+                                                               @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long myId = userDetails.getMemberId(); //조회한 멤버 아이디
+        return ResponseEntity.ok(memberService.checkFollowing(myId,memberId));
+    }
 }

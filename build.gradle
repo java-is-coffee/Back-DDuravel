@@ -39,7 +39,7 @@ dependencies {
 
 	//gmail 인증을 위한 설정
 	// Google API Client Library for Java
-	implementation 'com.google.api-client:google-api-client:1.32.2'
+	implementation 'com.google.api-client:google-api-client:2.0.0'
 	// Google OAuth Client Library for Java
 	implementation 'com.google.auth:google-auth-library-oauth2-http:1.4.0'
 	// Google HTTP Client Library for Java (with Gson)
