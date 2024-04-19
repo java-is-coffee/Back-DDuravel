@@ -34,6 +34,7 @@ import org.springframework.stereotype.Service;
 import java.util.Collections;
 
 @Service
+@Profile("mail")
 public class GmailService {
     @Autowired
     private Gmail gmail;

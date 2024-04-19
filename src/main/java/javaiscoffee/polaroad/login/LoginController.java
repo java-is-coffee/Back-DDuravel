@@ -41,7 +41,6 @@ public class LoginController {
     private final LoginService loginService;
     private final MemberRepository memberRepository;
     private final MailSendService mailSendService;
-    private final GmailService gmailService;
 
     @Operation(summary = "로그인 API", description = "로그인할 때 사용하는 API \n ## 사용자 이메일 \n- 이메일 형식이어야 함 \n ## 사용자 비밀번호 \n- 8~20자 사이 \n- 소문자, 숫자, 특수문자 최소 1글자씩 있어야함")
     @ApiResponses({
@@ -132,8 +131,7 @@ public class LoginController {
         EmailCertificationRequest request = requestDto.getData();
 
         log.info(">> 사용자의 이메일 인증 요청");
-//        mailSendService.sendEmailForCertification(request.getEmail());
-        gmailService.sendEmail(request.getEmail(), "tkrhkrkfn@gmail.com","테스트메일","테스트입니다.");
+        mailSendService.sendEmailForCertification(request.getEmail());
         return ResponseEntity.ok(ResponseMessages.SUCCESS.getMessage());
     }
 }
