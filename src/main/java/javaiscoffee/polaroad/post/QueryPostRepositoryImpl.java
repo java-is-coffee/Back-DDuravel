@@ -159,6 +159,9 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
         List<Long> postIds = getPostIds(posts);
         // 카드들을 맵으로 변경
         Map<Long, List<CardListRepositoryDto>> cardsMap = getPostCardsMap(card, postIds);
+        if (cardsMap.isEmpty()) {
+            return new PostListResponseDto(new ArrayList<>(), false);
+        }
 
         // 3. DTO에 카드 정보 추가
         setCardInfoToPostDto(posts, cardsMap);
