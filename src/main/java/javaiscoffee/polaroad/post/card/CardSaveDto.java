@@ -18,7 +18,7 @@ public class CardSaveDto {
     @Max(10)
     @Schema(description = "카드 순서 \n 없어도 됩니다.", example = "0")
     private int cardIndex;      // 자동으로 지정되는 값
-    @Max(50)
+    @Size(max = 255)
     @Schema(description = "세부 위치", example = "인천시 남동구")
     private String location;// 사진 세부 위치
     @Schema(description = "위도 좌표", example = "123851.134521")
