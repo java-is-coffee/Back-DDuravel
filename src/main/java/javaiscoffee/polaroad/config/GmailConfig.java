@@ -11,6 +11,7 @@ import javaiscoffee.polaroad.login.emailAuthentication.CustomTransportWithProxy;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
