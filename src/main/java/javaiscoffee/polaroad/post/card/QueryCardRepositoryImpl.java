@@ -58,7 +58,7 @@ public class QueryCardRepositoryImpl implements QueryCardRepository{
                 .setParameter("pageSize", pageSize);
 
         if (concept != null) {
-            query.setParameter("concept", concept);
+            query.setParameter("concept", concept.toString());
         }
         if (searchKeyword != null && !searchKeyword.isEmpty()) {
             query.setParameter("keyword", searchKeyword);

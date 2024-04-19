@@ -1,5 +1,6 @@
 package javaiscoffee.polaroad.member;
 
+import javaiscoffee.polaroad.post.PostThumbnailDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,5 +16,6 @@ public class MemberMiniProfileDto{
     private int postNumber;
     private int followedNumber;
     private int followingNumber;
-    private List<String> thumbnails;
+    private boolean isFollowing;
+    private List<PostThumbnailDto> thumbnails;
 }

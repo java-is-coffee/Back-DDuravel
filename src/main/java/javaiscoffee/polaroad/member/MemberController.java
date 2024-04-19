@@ -143,8 +143,9 @@ public class MemberController {
             @ApiResponse(responseCode = "404", description = "멤버가 존재하지 않을 경우")
     })
     @GetMapping("/profile")
-    public ResponseEntity<MemberMiniProfileDto> getMiniProfile(@RequestParam(name = "memberId") Long memberId) {
-
-        return ResponseEntity.ok(memberService.getMiniProfile(memberId));
+    public ResponseEntity<MemberMiniProfileDto> getMiniProfile(@RequestParam(name = "memberId") Long memberId,
+                                                               @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long memberId2 = userDetails.getMemberId(); //조회한 멤버 아이디
+        return ResponseEntity.ok(memberService.getMiniProfile(memberId,memberId2));
     }
 }

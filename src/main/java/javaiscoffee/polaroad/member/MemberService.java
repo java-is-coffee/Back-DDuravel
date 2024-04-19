@@ -2,6 +2,7 @@ package javaiscoffee.polaroad.member;
 
 import javaiscoffee.polaroad.exception.BadRequestException;
 import javaiscoffee.polaroad.exception.NotFoundException;
+import javaiscoffee.polaroad.post.PostThumbnailDto;
 import javaiscoffee.polaroad.post.card.CardRepository;
 import javaiscoffee.polaroad.response.ResponseMessages;
 import javaiscoffee.polaroad.security.BaseException;
@@ -158,10 +159,10 @@ public class MemberService {
     /**
      * 멤버 미니프로필 조회
      */
-    public MemberMiniProfileDto getMiniProfile (Long memberId) {
-        MemberBasicInfoDto basicInfo = memberRepository.getMemberMiniProfileDto(memberId);
+    public MemberMiniProfileDto getMiniProfile (Long targetId, Long memberId) {
+        MemberBasicInfoDto basicInfo = memberRepository.getMemberMiniProfileDto(targetId);
         if(!basicInfo.getStatus().equals(MemberStatus.ACTIVE)) throw new NotFoundException(ResponseMessages.MEMBER_NOT_FOUND.getMessage());
-        List<String> thumbnails = cardRepository.getMiniProfileImages(memberId);
+        List<PostThumbnailDto> thumbnails = cardRepository.getMiniProfileImages(targetId);
         return new MemberMiniProfileDto(
                 basicInfo.getName(),
                 basicInfo.getNickname(),
@@ -169,6 +170,7 @@ public class MemberService {
                 basicInfo.getPostNumber(),
                 basicInfo.getFollowedNumber(),
                 basicInfo.getFollowingNumber(),
+                memberRepository.existsFollowing(memberId, targetId),
                 thumbnails
         );
     }

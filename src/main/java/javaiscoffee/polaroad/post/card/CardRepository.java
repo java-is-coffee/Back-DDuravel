@@ -1,6 +1,7 @@
 package javaiscoffee.polaroad.post.card;
 
 import javaiscoffee.polaroad.post.Post;
+import javaiscoffee.polaroad.post.PostThumbnailDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -29,6 +30,6 @@ public interface CardRepository extends JpaRepository<Card, Long>, QueryCardRepo
     Slice<MapCardListDto> getMapCardList(double swLatitude, double neLatitude, double swLongitude, double neLongitude, Pageable pageable);
 
     //미니프로필 최근 포스트 썸네일 이미지 조회
-    @Query("SELECT c.image FROM Card c join Post p on c.post = p WHERE p.member.memberId = :memberId AND p.thumbnailIndex = c.cardIndex ORDER BY p.postId DESC limit 3")
-    List<String> getMiniProfileImages(@Param("memberId") Long memberId);
+    @Query("SELECT new javaiscoffee.polaroad.post.PostThumbnailDto(p.postId,c.image) FROM Card c join Post p on c.post = p WHERE p.member.memberId = :memberId AND p.thumbnailIndex = c.cardIndex ORDER BY p.postId DESC limit 3")
+    List<PostThumbnailDto> getMiniProfileImages(@Param("memberId") Long memberId);
 }
