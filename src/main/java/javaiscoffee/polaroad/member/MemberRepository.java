@@ -31,6 +31,8 @@ public interface MemberRepository {
     FollowingMemberResponseDto getFollowingMemberInfo(Long followingMemberId, int page, int pageSize);
     //미니프로필 조회
     MemberBasicInfoDto getMemberMiniProfileDto(Long memberId);
+    //팔로우 존재 조회
+    boolean existsFollowing(Long memberId, Long targetId);
 }
 
 

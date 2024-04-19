@@ -136,4 +136,12 @@ public class JpaMemberRepository implements MemberRepository {
             throw new NotFoundException(ResponseMessages.MEMBER_NOT_FOUND.getMessage());
         }
     }
+
+    public boolean existsFollowing(Long memberId, Long targetId) {
+        Long count = em.createQuery("select count(f) from Follow f where f.followingMember.memberId = :memberId and f.followedMember.memberId = :targetId", Long.class)
+                .setParameter("memberId", memberId)
+                .setParameter("targetId", targetId)
+                .getSingleResult();
+        return count > 0;
+    }
 }
