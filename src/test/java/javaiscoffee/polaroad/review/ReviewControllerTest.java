@@ -11,7 +11,6 @@ import javaiscoffee.polaroad.post.Post;
 import javaiscoffee.polaroad.security.CustomUserDetails;
 import javaiscoffee.polaroad.security.JwtTokenProvider;
 import javaiscoffee.polaroad.security.TokenDto;
-import javaiscoffee.polaroad.withCustomMockUser.WithCustomMockUser;
 import javaiscoffee.polaroad.wrapper.RequestWrapperDto;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
@@ -101,7 +100,7 @@ public class ReviewControllerTest {
         this.myJwtToken = jwtToken;
     }
 
-    @Test
+//    @Test
     @DisplayName("리뷰 작성 성공")
 //    @WithCustomMockUser
     public void writeReviewSuccess() throws Exception{

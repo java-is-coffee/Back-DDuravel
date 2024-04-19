@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 @DataJpaTest
@@ -51,14 +52,15 @@ public class AlbumRepositoryUnitTest {
         this.savedAlbum2 = savedAlbum2.getAlbumId();
     }
 
+
     @Test
     @DisplayName("앨범 저장")
     public void saveAlbum() {
         // given
-        Album savedAlbum = albumRepository.findById(1L).get();
+        Album savedAlbum = albumRepository.findById(savedAlbum1).get();
         
         // when & then
-        assertThat(savedAlbum.getAlbumId()).isEqualTo(1L);
+        assertThat(savedAlbum.getAlbumId()).isEqualTo(savedAlbum1);
         assertThat(savedAlbum.getName()).isEqualTo("제목 1");
         assertThat(savedAlbum.getDescription()).isEqualTo("설명 1");
         assertThat(savedAlbum.getAlbumCards().size()).isEqualTo(0);

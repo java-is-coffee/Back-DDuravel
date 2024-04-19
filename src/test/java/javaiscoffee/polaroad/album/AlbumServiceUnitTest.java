@@ -64,27 +64,20 @@ public class AlbumServiceUnitTest {
         loginService.register(registerDto);
     }
 
-    //HACK: "javaiscoffee.polaroad.album.albumCard.AlbumCard.getCard()" because "card" is null 에러
-//    @Test
-    @DisplayName("앨범 생성 성공 테스트 - 1. 앨범카드 있을 경우")
+    //HACK: NullPointerException
+    // - "javaiscoffee.polaroad.album.albumCard.AlbumCard.getCard()" because "albumCard" is null
+    @Test
+    @DisplayName("앨범 생성 성공 테스트")
     public void successToCreateAlbum() {
         Member member = Member.builder().memberId(1L).status(MemberStatus.ACTIVE).build();
         List<AlbumCard> albumCards = new ArrayList<>();
         Album album = Album.builder().albumId(1L).member(member).albumCards(albumCards).build();
-        Card card1 = Card.builder()
-                .cardId(1L).member(member)
-                .cardIndex(1) .latitude(123.123)
-                .longitude(123.123) .location("위치")
-                .image("이미지") .content("내용")
-                .build();
+        Card card1 = Card.builder().cardId(1L).member(member).build();
         AlbumCardId albumCardId = AlbumCardId.builder().cardId(1L).albumId(1L).build();
         AlbumCard albumCard = AlbumCard.builder().id(albumCardId).card(card1).album(album).build();
         albumCards.add(albumCard);
-        AlbumDto albumDto = AlbumDto.builder()
-                .name("앨범")
-                .description("설명")
-                .cardIdList(Arrays.asList(card1.getCardId()))
-                .build();
+        System.out.println("albumCard = " + albumCard);
+        AlbumDto albumDto = AlbumDto.builder().cardIdList(Arrays.asList(card1.getCardId())).build();
         System.out.println("albumDto = " + albumDto);
 
         when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
@@ -246,7 +239,8 @@ public class AlbumServiceUnitTest {
         Card card2 = fm.giveMeOne(Card.class);
         AlbumCard ac1 = AlbumCard.builder().card(card1).album(album).build();
         AlbumCard ac2 = AlbumCard.builder().card(card2).album(album).build();
-        albumCards.add(ac1);    albumCards.add(ac2);
+        albumCards.add(ac1);
+        albumCards.add(ac2);
         RequestAlbumCardDto requestAlbumCardDto = new RequestAlbumCardDto();
 
         when(albumRepository.findById(1L)).thenReturn(Optional.of(album));
