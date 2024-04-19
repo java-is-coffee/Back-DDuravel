@@ -159,9 +159,6 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
         List<Long> postIds = getPostIds(posts);
         // 카드들을 맵으로 변경
         Map<Long, List<CardListRepositoryDto>> cardsMap = getPostCardsMap(card, postIds);
-        if (cardsMap.isEmpty()) {
-            return new PostListResponseDto(new ArrayList<>(), false);
-        }
 
         // 3. DTO에 카드 정보 추가
         setCardInfoToPostDto(posts, cardsMap);
@@ -437,15 +434,18 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
                     .collect(Collectors.toList());
 
             // 썸네일 이미지가 없으면 맨 앞에 추가
-            String thumbnailImage = p.getCards().get(p.getThumbnailIndex()).getImage();
-            if (!images.contains(thumbnailImage)) {
+            String thumbnailImage = null;
+            if(p.getCards() != null && !p.getCards().isEmpty()) {
+                thumbnailImage = p.getCards().get(p.getThumbnailIndex()).getImage();
+            }
+            if (thumbnailImage != null && !images.contains(thumbnailImage)) {
                 images.add(0, thumbnailImage); // 맨 앞에 썸네일 이미지 추가
                 if (images.size() > 3) {
                     images = images.subList(0, 3); // 최대 3개 이미지 유지
                 }
             }
             //썸네일 이미지가 있으면 맨 앞으로 옮기기
-            else {
+            else if (thumbnailImage != null){
                 images.remove(thumbnailImage);
                 images.add(0, thumbnailImage);
             }
