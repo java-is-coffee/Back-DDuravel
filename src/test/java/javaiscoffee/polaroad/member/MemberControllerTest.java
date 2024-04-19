@@ -1,6 +1,7 @@
 package javaiscoffee.polaroad.member;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import javaiscoffee.polaroad.config.JpaConfigTest;
 import javaiscoffee.polaroad.login.LoginDto;
 import javaiscoffee.polaroad.login.RegisterDto;
 import javaiscoffee.polaroad.wrapper.RequestWrapperDto;
@@ -18,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(properties = {"JWT_SECRET_KEY=3123755132fdfds4daas4551af789d59f36977df5093be12c2314515135ddasg1f5k12hdfhjk412bh531uiadfi14b14bwebs52"})
+@SpringBootTest(properties = {"JWT_SECRET_KEY=3123755132fdfds4daas4551af789d59f36977df5093be12c2314515135ddasg1f5k12hdfhjk412bh531uiadfi14b14bwebs52"},classes = {JpaConfigTest.class})
 @AutoConfigureMockMvc
 @Transactional
 class MemberControllerTest {

@@ -1,5 +1,6 @@
 package javaiscoffee.polaroad.post;
 
+import javaiscoffee.polaroad.config.JpaConfigTest;
 import javaiscoffee.polaroad.exception.BadRequestException;
 import javaiscoffee.polaroad.exception.ForbiddenException;
 import javaiscoffee.polaroad.exception.NotFoundException;
@@ -34,7 +35,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doNothing;
 
 @Slf4j
-@SpringBootTest(properties = {"JWT_SECRET_KEY=3123758a0d7ef02a46cba8bdd3f898dec8afc9f8470341af789d59f3695093be"})
+@SpringBootTest(properties = {"JWT_SECRET_KEY=3123758a0d7ef02a46cba8bdd3f898dec8afc9f8470341af789d59f3695093be"},classes = {JpaConfigTest.class})
 @Transactional(readOnly = true)
 class PostServiceTest {
     @Autowired

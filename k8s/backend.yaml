@@ -71,6 +71,11 @@ spec:
                 secretKeyRef:
                   name: db-secrets
                   key: GOOGLE_REDIRECT_URI
+            - name: GOOGLE_APPLICATION_JSON
+              valueFrom:
+                secretKeyRef:
+                  name: db-secrets
+                  key: GOOGLE_APPLICATION_JSON
             - name: JAVA_OPTS
               value: "-Xms512m -Xmx2048m"
           resources:

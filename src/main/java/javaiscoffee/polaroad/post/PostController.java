@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -42,7 +43,7 @@ public class PostController {
     })
     @PostMapping("/write")
     public ResponseEntity<String> savePost(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                         @RequestBody RequestWrapperDto<PostSaveDto> requestWrapperDto) {
+                                         @Validated @RequestBody RequestWrapperDto<PostSaveDto> requestWrapperDto) {
         Long memberId = userDetails.getMemberId();
         PostSaveDto postSaveDto = requestWrapperDto.getData();
         log.info("저장하려는 포스트 Dto = {}",postSaveDto);
@@ -73,7 +74,9 @@ public class PostController {
             @ApiResponse(responseCode = "404", description = "멤버가 존재하지 않는 경우")
     })
     @PatchMapping("/edit/{postId}")
-    public ResponseEntity<Post> editPost(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody RequestWrapperDto<PostSaveDto> requestWrapperDto, @PathVariable(name = "postId") Long postId) {
+    public ResponseEntity<Post> editPost(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                         @Validated @RequestBody RequestWrapperDto<PostSaveDto> requestWrapperDto,
+                                         @PathVariable(name = "postId") Long postId) {
         Long memberId = userDetails.getMemberId();
         PostSaveDto postSaveDto = requestWrapperDto.getData();
         log.info("수정하려는 포스트 Dto = {}",postSaveDto);
