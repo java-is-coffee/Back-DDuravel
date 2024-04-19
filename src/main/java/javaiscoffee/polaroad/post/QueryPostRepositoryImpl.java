@@ -146,9 +146,12 @@ public class QueryPostRepositoryImpl implements QueryPostRepository{
         }
 
         List<PostListRepositoryDto> posts = query.getResultList();
-        if(posts.isEmpty()) {
+
+        //비어있는 결과값 응답
+        if(posts == null || posts.isEmpty()) {
             return new PostListResponseDto(new ArrayList<>(), false);
         }
+
         // hasNext 판별하고 true면 1개 추가 조회한 컨텐트 삭제
         boolean hasNext = hasNextPage(posts, pageSize);
 
