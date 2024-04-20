@@ -4,15 +4,14 @@ import io.jsonwebtoken.JwtException;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletResponse;
 import javaiscoffee.polaroad.exception.BadRequestException;
+import javaiscoffee.polaroad.exception.NotFoundException;
 import javaiscoffee.polaroad.exception.UnAuthorizedException;
 import javaiscoffee.polaroad.login.emailAuthentication.CertificationGenerator;
-import javaiscoffee.polaroad.login.emailAuthentication.GmailService;
 import javaiscoffee.polaroad.login.emailAuthentication.MailSendService;
+import javaiscoffee.polaroad.member.*;
 import javaiscoffee.polaroad.redis.RedisService;
 import javaiscoffee.polaroad.response.ResponseMessages;
-import javaiscoffee.polaroad.exception.NotFoundException;
 import javaiscoffee.polaroad.security.JwtTokenProvider;
-import javaiscoffee.polaroad.member.*;
 import javaiscoffee.polaroad.security.TokenDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +23,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -41,7 +39,6 @@ public class LoginService {
     private final RedisService redisService;
     private final CertificationGenerator certificationGenerator;
     private final MailSendService mailSendService;
-    private final GmailService gmailService;
 
     private final String AWS_URL = "https://polaroad.shop";
 
@@ -202,10 +199,10 @@ public class LoginService {
         member.setPassword(tempPassword.toString());
         member.hashPassword(bCryptPasswordEncoder);
 
-        String mailContent = String.format("%s의 비밀번호 리셋을 위해 발송된 메일입니다.%n임시 비밀번호는   :   %s%n임시 비밀번호를 사용하여 로그인해주세요.%n로그인하고 비밀번호 변경 부탁드립니다.",requestDto.getEmail(),tempPassword);
+        String requestURL = AWS_URL + "/api/email/password-reset?email=" +requestDto.getEmail()+"&tempPassword=" + tempPassword;
 
         try {
-            gmailService.sendEmail(member.getEmail(),"tkrhkrkfn@gmail.com","POLAROAD 비밀번호 재설정 메일입니다.",mailContent);
+            mailSendService.sendMail(member.getEmail(),requestURL);
         } catch (MessagingException e) {
             throw new BadRequestException(ResponseMessages.ERROR.getMessage());
         } catch (IOException e) {
