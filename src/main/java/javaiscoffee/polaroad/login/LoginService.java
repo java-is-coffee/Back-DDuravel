@@ -198,12 +198,7 @@ public class LoginService {
         }
 
         StringBuffer tempPassword = new StringBuffer("!pola");
-        try {
-            tempPassword.append(certificationGenerator.createCertificationNumber(100000,999999));
-        } catch (NoSuchAlgorithmException e) {
-            log.error("임시 비밀번호 발급 실패");
-            throw new BadRequestException(ResponseMessages.ERROR.getMessage());
-        }
+        tempPassword.append(certificationGenerator.createCertificationNumber(100000,999999));
         member.setPassword(tempPassword.toString());
         member.hashPassword(bCryptPasswordEncoder);
 
