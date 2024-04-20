@@ -47,6 +47,7 @@ public class SecurityConfig {
                 .requestMatchers(new AntPathRequestMatcher("/api/oauth2/**")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/api/login/oauth2/**")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/api/email/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/oauth2callback")).permitAll()
                 //swagger 인증 예외
                 .requestMatchers(new AntPathRequestMatcher("/swagger-ui/**")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/swagger-ui.html")).permitAll()

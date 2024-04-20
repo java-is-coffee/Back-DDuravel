@@ -3,7 +3,6 @@ package javaiscoffee.polaroad.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import javaiscoffee.polaroad.response.ResponseMessages;
@@ -50,6 +49,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 || requestURI.startsWith("/webjars/")
                 || requestURI.startsWith("/v3/api-docs")
                 || requestURI.startsWith("/v3/api-docs/")
+                || requestURI.startsWith("/oauth2callback")
                 || "/api/test".equals(requestURI)
                 || "/api/db".equals(requestURI)) {
             filterChain.doFilter(request, response);

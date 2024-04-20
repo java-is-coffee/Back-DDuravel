@@ -3,7 +3,6 @@ package javaiscoffee.polaroad;
 import javaiscoffee.polaroad.config.JpaConfigTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 @SpringBootTest(classes = {JpaConfigTest.class})
@@ -16,6 +15,7 @@ import org.springframework.test.context.TestPropertySource;
 		"GOOGLE_CLIENT_ID=ta555412333i40l2s289a111c2223lg4vx",
 		"GOOGLE_CLIENT_SECRET=ta555412333i40l2s289a111c2223lg4vx",
 		"GOOGLE_REDIRECT_URI=http://localhost:3000/explore",
+		"GOOGLE_APPLICATION_CREDENTIALS=/workspace"
 		})
 class PolaRoadApplicationTest {
 

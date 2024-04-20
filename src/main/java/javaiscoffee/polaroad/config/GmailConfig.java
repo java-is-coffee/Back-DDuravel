@@ -55,7 +55,7 @@ public class GmailConfig {
     }
 
     @Bean
-    public Gmail gmailService(HttpTransport httpTransport, GoogleAuthorizationCodeFlow flow) throws IOException {
+    public Gmail gmail(HttpTransport httpTransport, GoogleAuthorizationCodeFlow flow) throws IOException {
         Credential credential = flow.loadCredential("user");
         if (credential == null) {
             // Need to prompt for authorization (typically done via a web browser)
