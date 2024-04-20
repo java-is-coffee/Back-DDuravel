@@ -50,7 +50,7 @@ public class MailSendService {
 
         log.info("이메일 = {}, 인증번호 = {}",email,certificationNumber);
 
-        String requestURL = URLEncoder.encode(AWS_URL, StandardCharsets.UTF_8) + "/api/email/certification?email=" + URLEncoder.encode(email, StandardCharsets.UTF_8) + "&certificationNumber=" + certificationNumber;
+        String requestURL = AWS_URL + "/api/email/certification?email=" + URLEncoder.encode(email, StandardCharsets.UTF_8) + "&certificationNumber=" + certificationNumber;
 
         // 레디스에 인증번호 저장
         redisService.saveEmailVerificationCode(email,certificationNumber,30);
