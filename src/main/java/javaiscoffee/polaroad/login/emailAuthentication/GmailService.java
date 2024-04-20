@@ -1,40 +1,23 @@
 package javaiscoffee.polaroad.login.emailAuthentication;
 
-import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
-import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
-import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.json.gson.GsonFactory;
-import com.google.api.client.auth.oauth2.Credential;
-import com.google.api.client.util.store.FileDataStoreFactory;
-import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
-import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 import com.google.api.services.gmail.Gmail;
-
-import java.io.*;
-
 import com.google.api.services.gmail.model.Message;
 import jakarta.mail.MessagingException;
 import jakarta.mail.Session;
 import jakarta.mail.internet.InternetAddress;
-import jakarta.mail.internet.MimeMessage;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Properties;
 import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
-import java.util.Base64;
-
-import com.google.api.services.gmail.GmailScopes;
-import org.hibernate.cfg.Environment;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
-import java.util.Collections;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Base64;
+import java.util.Properties;
 
 @Service
-@Profile("mail")
+//@Profile("mail")
 public class GmailService {
     @Autowired
     private Gmail gmail;
