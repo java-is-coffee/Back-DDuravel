@@ -201,7 +201,7 @@ public class LoginService {
         member.setPassword(tempPassword.toString());
         member.hashPassword(bCryptPasswordEncoder);
 
-        String requestURL = URLEncoder.encode(AWS_URL, StandardCharsets.UTF_8) + "/api/email/password-reset?email=" + URLEncoder.encode(requestDto.getEmail(), StandardCharsets.UTF_8)+"&tempPassword=" + tempPassword;
+        String requestURL = AWS_URL + "/api/email/password-reset?email=" + URLEncoder.encode(requestDto.getEmail(), StandardCharsets.UTF_8)+"&tempPassword=" + tempPassword;
 
         try {
             mailSendService.sendMail(member.getEmail(),requestURL);
