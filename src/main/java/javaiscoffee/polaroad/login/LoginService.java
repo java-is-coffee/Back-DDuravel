@@ -23,6 +23,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -199,7 +201,7 @@ public class LoginService {
         member.setPassword(tempPassword.toString());
         member.hashPassword(bCryptPasswordEncoder);
 
-        String requestURL = AWS_URL + "/api/email/password-reset?email=" +requestDto.getEmail()+"&tempPassword=" + tempPassword;
+        String requestURL = URLEncoder.encode(AWS_URL, StandardCharsets.UTF_8) + "/api/email/password-reset?email=" + URLEncoder.encode(requestDto.getEmail(), StandardCharsets.UTF_8)+"&tempPassword=" + tempPassword;
 
         try {
             mailSendService.sendMail(member.getEmail(),requestURL);
