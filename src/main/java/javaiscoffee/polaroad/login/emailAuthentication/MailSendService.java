@@ -79,6 +79,20 @@ public class MailSendService {
             conn.setRequestMethod("POST");
             log.info("요청 데이터 전송 완료: {}", email);
 
+            conn.setDoOutput(true); // 서버로 데이터를 전송할 수 있게 설정
+            conn.setRequestProperty("Content-Type", "application/json"); // 콘텐츠 타입 설정
+
+            conn.getOutputStream().close(); // 데이터를 전송하지 않고 스트림을 닫음
+
+            int responseCode = conn.getResponseCode(); // 서버로부터의 응답 코드 받기
+            log.info("HTTP 응답 코드: {}", responseCode);
+
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                log.info("요청 데이터 전송 완료: {}", email);
+            } else {
+                log.error("응답 오류: {}", responseCode);
+            }
+
         } catch (Exception e) {
             log.error("메일 전송 중 오류 발생: {}", email, e);
             throw new BadRequestException(ResponseMessages.BAD_REQUEST.getMessage());
