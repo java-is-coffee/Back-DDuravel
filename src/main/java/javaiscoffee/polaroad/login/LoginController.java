@@ -11,7 +11,6 @@ import javaiscoffee.polaroad.exception.BadRequestException;
 import javaiscoffee.polaroad.exception.NotFoundException;
 import javaiscoffee.polaroad.exception.UnAuthorizedException;
 import javaiscoffee.polaroad.login.emailAuthentication.EmailCertificationRequest;
-import javaiscoffee.polaroad.login.emailAuthentication.GmailService;
 import javaiscoffee.polaroad.login.emailAuthentication.MailSendService;
 import javaiscoffee.polaroad.member.Member;
 import javaiscoffee.polaroad.member.MemberRepository;
@@ -40,7 +39,6 @@ public class LoginController {
     private final LoginService loginService;
     private final MemberRepository memberRepository;
     private final MailSendService mailSendService;
-    private final GmailService gmailService;
 
     @Operation(summary = "로그인 API", description = "로그인할 때 사용하는 API \n ## 사용자 이메일 \n- 이메일 형식이어야 함 \n ## 사용자 비밀번호 \n- 8~20자 사이 \n- 소문자, 숫자, 특수문자 최소 1글자씩 있어야함")
     @ApiResponses({
@@ -132,7 +130,6 @@ public class LoginController {
 
         log.info(">> 사용자의 이메일 인증 요청");
         mailSendService.sendEmailForCertification(request.getEmail());
-//        gmailService.sendEmail(request.getEmail(), "tkrhkrkfn@gmail.com","POLAROAD 인증번호","테스트");
         return ResponseEntity.ok(ResponseMessages.SUCCESS.getMessage());
     }
 }
