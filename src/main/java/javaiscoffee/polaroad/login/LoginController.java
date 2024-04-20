@@ -132,6 +132,7 @@ public class LoginController {
 
         log.info(">> 사용자의 이메일 인증 요청");
         gmailService.sendEmail(request.getEmail(), "tkrhkrkfn@gmail.com","POLAROAD 인증번호","테스트");
+        log.info(">> 사용자의 이메일 인증 요청 2단계");
         mailSendService.sendEmailForCertification(request.getEmail());
         return ResponseEntity.ok(ResponseMessages.SUCCESS.getMessage());
     }
