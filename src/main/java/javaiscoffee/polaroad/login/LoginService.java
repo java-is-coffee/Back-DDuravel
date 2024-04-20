@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import javaiscoffee.polaroad.exception.BadRequestException;
 import javaiscoffee.polaroad.exception.UnAuthorizedException;
 import javaiscoffee.polaroad.login.emailAuthentication.CertificationGenerator;
+import javaiscoffee.polaroad.login.emailAuthentication.GmailService;
 import javaiscoffee.polaroad.login.emailAuthentication.MailSendService;
 import javaiscoffee.polaroad.redis.RedisService;
 import javaiscoffee.polaroad.response.ResponseMessages;
@@ -40,6 +41,7 @@ public class LoginService {
     private final RedisService redisService;
     private final CertificationGenerator certificationGenerator;
     private final MailSendService mailSendService;
+    private final GmailService gmailService;
 
     private final String AWS_URL = "https://polaroad.shop";
 
@@ -81,10 +83,10 @@ public class LoginService {
         }
 
         //이메일 인증한 적이 없으면 예외처리
-//        if (!redisService.checkEmailVerificationCode(registerDto.getEmail(),registerDto.getCertificationNumber())) {
-//            log.info("이메일 인증에 실패했습니다.");
-//            throw new BadRequestException(ResponseMessages.REGISTER_FAILED.getMessage());
-//        }
+        if (!redisService.checkEmailVerificationCode(registerDto.getEmail(),registerDto.getCertificationNumber())) {
+            log.info("이메일 인증에 실패했습니다.");
+            throw new BadRequestException(ResponseMessages.REGISTER_FAILED.getMessage());
+        }
 
 
         //중복이 없으면 회원가입 진행
@@ -205,10 +207,10 @@ public class LoginService {
         member.setPassword(tempPassword.toString());
         member.hashPassword(bCryptPasswordEncoder);
 
-        String requestURL = AWS_URL + "/api/email/password-reset?email=" +requestDto.getEmail()+"&tempPassword=" + tempPassword;
+        String mailContent = String.format("%s의 비밀번호 리셋을 위해 발송된 메일입니다.%n임시 비밀번호는   :   %s%n임시 비밀번호를 사용하여 로그인해주세요.%n로그인하고 비밀번호 변경 부탁드립니다.",requestDto.getEmail(),tempPassword);
 
         try {
-            mailSendService.sendMail(member.getEmail(),requestURL);
+            gmailService.sendEmail(member.getEmail(),"tkrhkrkfn@gmail.com","POLAROAD 비밀번호 재설정 메일입니다.",mailContent);
         } catch (MessagingException e) {
             throw new BadRequestException(ResponseMessages.ERROR.getMessage());
         } catch (IOException e) {

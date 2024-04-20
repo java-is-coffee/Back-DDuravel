@@ -131,8 +131,8 @@ public class LoginController {
         EmailCertificationRequest request = requestDto.getData();
 
         log.info(">> 사용자의 이메일 인증 요청");
-//        mailSendService.sendEmailForCertification(request.getEmail());
-        gmailService.sendEmail(request.getEmail(), "tkrhkrkfn@gmail.com","POLAROAD 인증번호","테스트");
+        mailSendService.sendEmailForCertification(request.getEmail());
+//        gmailService.sendEmail(request.getEmail(), "tkrhkrkfn@gmail.com","POLAROAD 인증번호","테스트");
         return ResponseEntity.ok(ResponseMessages.SUCCESS.getMessage());
     }
 }
