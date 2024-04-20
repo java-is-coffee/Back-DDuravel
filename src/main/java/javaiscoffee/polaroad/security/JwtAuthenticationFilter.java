@@ -50,6 +50,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 || requestURI.startsWith("/v3/api-docs")
                 || requestURI.startsWith("/v3/api-docs/")
                 || requestURI.startsWith("/oauth2callback")
+                || requestURI.startsWith("/error")
                 || "/api/test".equals(requestURI)
                 || "/api/db".equals(requestURI)) {
             filterChain.doFilter(request, response);
