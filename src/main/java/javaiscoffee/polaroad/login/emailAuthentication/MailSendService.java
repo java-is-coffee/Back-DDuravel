@@ -56,7 +56,7 @@ public class MailSendService {
         String content = String.format("%s의 이메일 인증을 위해 발송된 메일입니다.%n인증 번호는   :   %s%n인증 번호를 입력칸에 입력해주세요.%n 인증 번호는 30분 후 만료됩니다.",email,certificationNumber);
 
         // 레디스에 인증번호 저장
-        // redisService.saveEmailVerificationCode(email,certificationNumber,30);
+        redisService.saveEmailVerificationCode(email,certificationNumber,30);
 
         log.info("이메일 인증번호 저장 완료");
 
