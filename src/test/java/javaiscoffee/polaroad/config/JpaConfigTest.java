@@ -7,6 +7,7 @@ import com.google.api.services.gmail.Gmail;
 import jakarta.persistence.EntityManager;
 import javaiscoffee.polaroad.login.emailAuthentication.GmailService;
 import javaiscoffee.polaroad.member.JpaMemberRepository;
+import javaiscoffee.polaroad.redis.RedisService;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
@@ -36,5 +37,8 @@ public class JpaConfigTest {
 
     @MockBean
     public GmailService gmailService;
+
+    @MockBean
+    public RedisService redisService;
 
 }

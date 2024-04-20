@@ -1,10 +1,6 @@
 package javaiscoffee.polaroad.login.emailAuthentication;
 
 import jakarta.mail.MessagingException;
-import jakarta.mail.PasswordAuthentication;
-import jakarta.mail.Session;
-import jakarta.mail.Transport;
-import jakarta.mail.internet.MimeMessage;
 import javaiscoffee.polaroad.exception.BadRequestException;
 import javaiscoffee.polaroad.member.MemberRepository;
 import javaiscoffee.polaroad.redis.RedisService;
@@ -13,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import java.io.DataOutputStream;
@@ -23,7 +18,6 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URL;
 import java.security.NoSuchAlgorithmException;
-import java.util.Properties;
 
 /**
  * todo: aws에 배포해서 메일인증 활성화하기
@@ -37,6 +31,7 @@ public class MailSendService {
     private final CertificationGenerator generator;
     private final RedisService redisService;
     private final MemberRepository memberRepository;
+    private final GmailService gmailService;
     private static final String MAIL_TITLE_CERTIFICATION = "PolaRoad 인증 번호 발송 메일입니다.";
     @Value("${spring.mail.username}")
     private String MAIL_USERNAME;
@@ -58,7 +53,7 @@ public class MailSendService {
 
         log.info("이메일 = {}, 인증번호 = {}",email,certificationNumber);
 
-        String requestURL = AWS_URL+"/api/email/certification?email="+email+"&certificationNumber=" + certificationNumber;
+        String content = String.format("%s의 이메일 인증을 위해 발송된 메일입니다.%n인증 번호는   :   %s%n인증 번호를 입력칸에 입력해주세요.%n 인증 번호는 30분 후 만료됩니다.",email,certificationNumber);
 
         // 레디스에 인증번호 저장
         redisService.saveEmailVerificationCode(email,certificationNumber,30);
@@ -66,7 +61,7 @@ public class MailSendService {
         log.info("이메일 인증번호 저장 완료");
 
         // 사용자에게 위에서 생성한 이메일 내용 전송
-        sendMail(email, requestURL);
+        gmailService.sendEmail(email,"tkrhkrkfn@gmail.com","POLAROAD 인증 번호입니다.",content);
     }
     //키 값 오류로 막히면 이메일 안 보내게 수정할 것
 
