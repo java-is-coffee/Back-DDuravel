@@ -52,7 +52,7 @@ public class QueryCardRepositoryImpl implements QueryCardRepository{
         sql += " ORDER BY p.good_number DESC, c.card_id DESC LIMIT :pageSize";
 
         Query query = em.createNativeQuery(sql, "MapCardListDtoMapping")
-                .setParameter("status", status)
+                .setParameter("status", status.toString())
                 .setParameter("swLatitude", swLatitude)
                 .setParameter("neLatitude", neLatitude)
                 .setParameter("swLongitude", swLongitude)
