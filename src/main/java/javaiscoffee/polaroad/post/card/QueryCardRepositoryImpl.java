@@ -70,10 +70,11 @@ public class QueryCardRepositoryImpl implements QueryCardRepository{
     }
 
     @Override
-    public List<MapCardListDto> getMapCardListByHashtag(Long hashtagId, PostConcept concept, double swLatitude, double neLatitude, double swLongitude, double neLongitude, int pageSize) {
+    public List<MapCardListDto> getMapCardListByHashtag(Long hashtagId, PostConcept concept, CardStatus status, double swLatitude, double neLatitude, double swLongitude, double neLongitude, int pageSize) {
         QPostHashtag postHashtag = QPostHashtag.postHashtag;
 
         BooleanBuilder builder = new BooleanBuilder();
+        builder.and(card.status.eq(status));
         builder.and(card.latitude.between(swLatitude, neLatitude));
         builder.and(card.longitude.between(swLongitude,neLongitude));
         if(concept != null) {
