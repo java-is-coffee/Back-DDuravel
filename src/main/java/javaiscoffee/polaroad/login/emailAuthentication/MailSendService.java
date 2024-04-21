@@ -45,6 +45,8 @@ public class MailSendService {
 
         if(memberRepository.existsByEmail(email)) throw new BadRequestException(ResponseMessages.REGISTER_DUPLICATED.getMessage());
 
+        log.info("이메일 인증 번호 생성 = {}", email);
+
         // 이메일 인증을 위한 랜덤 인증 번호 생성 => 사용자가 인증 링크를 클릭할 때 확인하는 용도로 사용
         String certificationNumber = generator.createCertificationNumber(10000000,99999999);
 

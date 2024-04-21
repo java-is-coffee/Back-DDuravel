@@ -2,7 +2,6 @@ package javaiscoffee.polaroad.login.emailAuthentication;
 
 import org.springframework.stereotype.Component;
 
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
 // 난수를 만드는 클래스
