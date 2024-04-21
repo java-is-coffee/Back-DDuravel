@@ -8,6 +8,7 @@ import javaiscoffee.polaroad.member.MemberStatus;
 import javaiscoffee.polaroad.post.Post;
 import javaiscoffee.polaroad.post.PostConcept;
 import javaiscoffee.polaroad.post.PostSearchType;
+import javaiscoffee.polaroad.post.PostStatus;
 import javaiscoffee.polaroad.post.hashtag.HashtagService;
 import javaiscoffee.polaroad.response.ResponseMessages;
 import org.springframework.beans.BeanUtils;
@@ -101,8 +102,8 @@ public class CardService {
         if(searchType!=null && searchType.equals(PostSearchType.HASHTAG) && searchKeyword != null) {
             Long hashtagId = hashtagService.getHashtagIdByName(searchKeyword);
             if(hashtagId == null) return new ArrayList<>();
-            return cardRepository.getMapCardListByHashtag(hashtagId, concept, CardStatus.ACTIVE, swLatitude, neLatitude, swLongitude, neLongitude, pageSize);
+            return cardRepository.getMapCardListByHashtag(hashtagId, concept, CardStatus.ACTIVE, PostStatus.ACTIVE, swLatitude, neLatitude, swLongitude, neLongitude, pageSize);
         }
-        return cardRepository.getMapCardListByKeyword(searchKeyword, concept, CardStatus.ACTIVE, swLatitude, neLatitude, swLongitude, neLongitude, pageSize);
+        return cardRepository.getMapCardListByKeyword(searchKeyword, concept, CardStatus.ACTIVE, PostStatus.ACTIVE, swLatitude, neLatitude, swLongitude, neLongitude, pageSize);
     }
 }

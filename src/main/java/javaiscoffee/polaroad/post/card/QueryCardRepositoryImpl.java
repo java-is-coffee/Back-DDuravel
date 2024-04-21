@@ -9,6 +9,7 @@ import ext.javaiscoffee.polaroad.post.hashtag.QPostHashtag;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import javaiscoffee.polaroad.post.PostConcept;
+import javaiscoffee.polaroad.post.PostStatus;
 
 import java.util.List;
 
@@ -22,7 +23,7 @@ public class QueryCardRepositoryImpl implements QueryCardRepository{
         this.em = em;
     }
     @Override
-    public List<MapCardListDto> getMapCardListByKeyword(String searchKeyword, PostConcept concept, CardStatus status, double swLatitude, double neLatitude, double swLongitude, double neLongitude, int pageSize) {
+    public List<MapCardListDto> getMapCardListByKeyword(String searchKeyword, PostConcept concept, CardStatus status, PostStatus postStatus, double swLatitude, double neLatitude, double swLongitude, double neLongitude, int pageSize) {
         // 기본 쿼리 구성
         String sql = "SELECT c.post_id, c.card_id, c.image, c.content, c.location, c.latitude, c.longitude " +
                 "FROM cards c " +
@@ -36,7 +37,7 @@ public class QueryCardRepositoryImpl implements QueryCardRepository{
         // 위치 기반 검색 조건 추가
         sql += "WHERE c.latitude BETWEEN :swLatitude AND :neLatitude " +
                 "AND c.longitude BETWEEN :swLongitude AND :neLongitude " +
-        "AND c.status = :status";
+        "AND c.status = :status AND p.status = :postStatus";
 
         // 개념이 있을 경우 조건 추가
         if (concept != null) {
@@ -53,6 +54,7 @@ public class QueryCardRepositoryImpl implements QueryCardRepository{
 
         Query query = em.createNativeQuery(sql, "MapCardListDtoMapping")
                 .setParameter("status", status.toString())
+                .setParameter("postStatus", postStatus.toString())
                 .setParameter("swLatitude", swLatitude)
                 .setParameter("neLatitude", neLatitude)
                 .setParameter("swLongitude", swLongitude)
@@ -70,11 +72,12 @@ public class QueryCardRepositoryImpl implements QueryCardRepository{
     }
 
     @Override
-    public List<MapCardListDto> getMapCardListByHashtag(Long hashtagId, PostConcept concept, CardStatus status, double swLatitude, double neLatitude, double swLongitude, double neLongitude, int pageSize) {
+    public List<MapCardListDto> getMapCardListByHashtag(Long hashtagId, PostConcept concept, CardStatus status, PostStatus postStatus, double swLatitude, double neLatitude, double swLongitude, double neLongitude, int pageSize) {
         QPostHashtag postHashtag = QPostHashtag.postHashtag;
 
         BooleanBuilder builder = new BooleanBuilder();
         builder.and(card.status.eq(status));
+        builder.and(post.status.eq(postStatus));
         builder.and(card.latitude.between(swLatitude, neLatitude));
         builder.and(card.longitude.between(swLongitude,neLongitude));
         if(concept != null) {
