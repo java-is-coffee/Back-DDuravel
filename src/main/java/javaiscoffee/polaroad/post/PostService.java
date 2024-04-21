@@ -13,9 +13,9 @@ import javaiscoffee.polaroad.post.good.PostGood;
 import javaiscoffee.polaroad.post.good.PostGoodBatchUpdator;
 import javaiscoffee.polaroad.post.good.PostGoodId;
 import javaiscoffee.polaroad.post.good.PostGoodRepository;
-import javaiscoffee.polaroad.post.hashtag.PostHashtagInfoDto;
 import javaiscoffee.polaroad.post.hashtag.HashtagService;
 import javaiscoffee.polaroad.post.hashtag.PostHashtag;
+import javaiscoffee.polaroad.post.hashtag.PostHashtagInfoDto;
 import javaiscoffee.polaroad.redis.RedisService;
 import javaiscoffee.polaroad.response.ResponseMessages;
 import lombok.extern.slf4j.Slf4j;
@@ -28,11 +28,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
@@ -270,7 +268,7 @@ public class PostService {
             log.info("캐싱된 포스트 정보 전달 = {}",postId);
             PostGoodId postGoodId = new PostGoodId(memberId, postId);
             boolean isMemberGood = postGoodRepository.existsById(postGoodId);
-            PostMemberInfoDto postMemberInfo = memberRepository.getPostMemberInfoByMemberId(memberId);
+            PostMemberInfoDto postMemberInfo = memberRepository.getPostMemberInfoByMemberId(simplePostInfo.getMemberId());
 
             redisService.addPostView(postId, memberId);
             return ResponseEntity.ok(new PostInfoDto(
