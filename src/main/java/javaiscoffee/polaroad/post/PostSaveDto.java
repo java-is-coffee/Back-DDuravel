@@ -1,11 +1,11 @@
 package javaiscoffee.polaroad.post;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import javaiscoffee.polaroad.post.card.CardSaveDto;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.List;
 
@@ -15,7 +15,6 @@ public class PostSaveDto {
 
     @NotNull
     @NotBlank
-    @Max(255)
     @Schema(description = "포스트 제목", example = "꽃놀이 명당 추천")
     private String title;
 
